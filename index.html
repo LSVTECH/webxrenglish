@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spatial English Teacher VR Voice Prototype</title>
+  
+  <!-- A-Frame VR Library -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <!-- A-Frame Environment Component (For beautiful sky, ground, and grid) -->
+  <script src="https://unpkg.com/aframe-environment-component@1.3.3/dist/aframe-environment-component.min.js"></script>
+  
+  <!-- Google Fonts for Modern 2D Desktop UI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* Premium 2D Desktop/Mobile HUD Overlay Styles */
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+      background-color: #030712;
+      color: #f3f4f6;
+    }
+
+    #hud-overlay {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 10;
+      pointer-events: none;
+      max-width: 420px;
+      width: calc(100vw - 40px);
+    }
+
+    .glass-card {
+      background: rgba(10, 11, 28, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 
+                  0 0 40px rgba(99, 102, 241, 0.1);
+      pointer-events: auto;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .hud-title {
+      margin: 0 0 4px 0;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #818cf8, #c084fc, #f472b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.02em;
+    }
+
+    .hud-subtitle {
+      margin: 0 0 15px 0;
+      font-size: 0.8rem;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 600;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      color: #a5b4fc;
+      transition: all 0.3s ease;
+    }
+
+    .status-badge.listening {
+      background: rgba(6, 182, 212, 0.15);
+      border: 1px solid rgba(6, 182, 212, 0.4);
+      color: #22d3ee;
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.25);
+    }
+
+    .status-badge.thinking {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.25);
+    }
+
+    .status-badge.speaking {
+      background: rgba(236, 72, 153, 0.15);
+      border: 1px solid rgba(236, 72, 153, 0.4);
+      color: #f472b6;
+      box-shadow: 0 0 20px rgba(236, 72, 153, 0.25);
+    }
+
+    .talk-btn {
+      margin-top: 15px;
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #6366f1, #ec4899);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+      transition: all 0.2s ease;
+      pointer-events: auto;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .talk-btn:active {
+      transform: scale(0.97);
+      background: linear-gradient(135deg, #4f46e5, #db2777);
+    }
+
+    /* 2D Scoreboard styling */
+    .hud-scores {
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: none;
+    }
+
+    .score-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+
+    .score-label {
+      color: #9ca3af;
+      font-weight: 600;
+    }
+
+    .stars-display {
+      color: #374151;
+      font-size: 1.25rem;
+      letter-spacing: 2px;
+    }
+
+    .tip-box {
+      margin-top: 12px;
+      padding: 10px 14px;
+      background: rgba(99, 102, 241, 0.08);
+      border-left: 3px solid #818cf8;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      color: #c7d2fe;
+      line-height: 1.4;
+    }
+
+    .mic-instruction {
+      margin-top: 16px;
+      font-size: 0.8rem;
+      color: #9ca3af;
+      line-height: 1.4;
+    }
+
+    .key-cap {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      padding: 2px 6px;
+      font-family: 'Space Grotesk', monospace;
+      font-weight: 700;
+      color: #ffffff;
+      box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+    }
+
+    .mic-warning {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+      display: none;
+      pointer-events: auto;
+    }
+
+    #quick-guide {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      z-index: 10;
+      pointer-events: none;
+      font-size: 0.75rem;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 2D HUD OVERLAY (Desktop & Mobile) -->
+  <div id="hud-overlay">
+    <div class="glass-card">
+      <div class="hud-title">EnglishVR Teacher</div>
+      <div class="hud-subtitle">Spatial Language Coach</div>
+      
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span id="hudStatusBadge" class="status-badge">Idle</span>
+        <span id="langDisplay" style="font-size: 0.75rem; color: #818cf8; font-weight: bold;">Practice Mode: English</span>
+      </div>
+
+      <!-- Desktop Click/Touch talk button -->
+      <button id="talkButton" class="talk-btn">Hold to Speak</button>
+
+      <!-- 2D Scoreboard for stars display -->
+      <div id="hudScores" class="hud-scores">
+        <div class="score-row">
+          <span class="score-label">Pronunciation:</span>
+          <span id="pStars2D" class="stars-display">★★★</span>
+        </div>
+        <div class="score-row">
+          <span class="score-label">Grammar:</span>
+          <span id="gStars2D" class="stars-display">★★★</span>
+        </div>
+        <div id="hudTip" class="tip-box"></div>
+      </div>
+
+      <div class="mic-instruction">
+        👉 <strong>Inside VR:</strong> Hold the controller Trigger to speak.<br>
+        👉 <strong>On Keyboard:</strong> Hold key <span class="key-cap">M</span> to speak.<br>
+        👉 <strong>On Screen:</strong> Hold the button above or Click directly on the floating cube.
+      </div>
+
+      <div id="micWarning" class="mic-warning"></div>
+    </div>
+  </div>
+
+  <div id="quick-guide">
+    💡 Localhost or HTTPS is required for mic & WebXR.<br>
+    🔒 Allow mic permissions in your browser when prompted.
+  </div>
+
+  <!-- A-FRAME VR SCENE -->
+  <a-scene shadow="type: pcfsoft" renderer="antialias: true; colorManagement: true;">
+    
+    <!-- Environment preset 'contact' provides a dark futuristic grid and skyline -->
+    <a-entity environment="preset: contact; ground: flat; groundColor: #090a16; grid: 2d; gridColor: #4f46e5; skyType: gradient; skyColor: #04050d; horizonColor: #11132e; lighting: none; shadow: true"></a-entity>
+
+    <!-- CUSTOM LIGHTING SYSTEM -->
+    <a-entity light="type: ambient; color: #1e1b4b; intensity: 0.7"></a-entity>
+    <a-entity light="type: directional; color: #a5b4fc; intensity: 0.9; castShadow: true" position="-3 6 4"></a-entity>
+    <a-entity id="cubeLight" light="type: point; color: #818cf8; intensity: 1.5; distance: 6; castShadow: true" position="0 1.8 -1.5"></a-entity>
+
+    <!-- DECORATIVE SPAITAL EFFECTS -->
+    <a-ring position="0 3.2 -1.5" rotation="90 0 0" radius-inner="0.65" radius-outer="0.67" material="color: #6366f1; shader: flat; emissive: #6366f1; emissiveIntensity: 2.5"
+            animation="property: rotation; to: 90 360 0; dur: 25000; loop: true; easing: linear"></a-ring>
+            
+    <a-cylinder position="-2.5 2.5 -4.5" radius="0.04" height="6" material="color: #06b6d4; shader: flat; emissive: #06b6d4; emissiveIntensity: 2"></a-cylinder>
+    <a-cylinder position="2.5 2.5 -4.5" radius="0.04" height="6" material="color: #ec4899; shader: flat; emissive: #ec4899; emissiveIntensity: 2"></a-cylinder>
+    <a-cylinder position="-5 2 -2.5" radius="0.04" height="4" material="color: #4f46e5; shader: flat; emissive: #4f46e5; emissiveIntensity: 1.5"></a-cylinder>
+    <a-cylinder position="5 2 -2.5" radius="0.04" height="4" material="color: #4f46e5; shader: flat; emissive: #4f46e5; emissiveIntensity: 1.5"></a-cylinder>
+
+    <!-- THE AI CHARACTER (Floating & Rotating Metallic Cube) -->
+    <a-box id="aiCube"
+           class="clickable"
+           position="0 1.8 -1.5"
+           rotation="0 45 45"
+           width="0.38" height="0.38" depth="0.38"
+           material="color: #6366f1; roughness: 0.05; metalness: 0.95; emissive: #312e81; emissiveIntensity: 1.2"
+           animation__bob="property: position; to: 0 1.95 -1.5; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine"
+           animation__rotate="property: rotation; to: 360 405 45; dur: 9000; loop: true; easing: linear">
+    </a-box>
+
+    <!-- VR INTERACTION & DISPLAY PANEL (Adjusted height to 1.2 to fit the scoring stars neatly) -->
+    <a-plane id="uiPanel"
+             position="0 1.15 -1.35"
+             rotation="-18 0 0"
+             width="2.4" height="1.2"
+             material="shader: flat; color: #080a14; opacity: 0.88; transparent: true; roughness: 1"
+             class="clickable">
+      
+      <!-- Sub-frame borders to add premium high-tech look -->
+      <a-plane position="0 0.58 0.005" width="2.4" height="0.04" material="color: #4f46e5; shader: flat; emissive: #4f46e5; emissiveIntensity: 1.5"></a-plane>
+      <a-plane position="0 -0.58 0.005" width="2.4" height="0.04" material="color: #312e81; shader: flat; emissive: #312e81; emissiveIntensity: 0.5"></a-plane>
+
+      <!-- 3D status indicator text (e.g. Listening, Thinking, Speaking...) -->
+      <a-text id="statusText"
+              value="HOLD M TO SPEAK"
+              align="center"
+              position="0 0.46 0.01"
+              width="3.8"
+              color="#38bdf8"
+              font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
+              negate="false">
+      </a-text>
+
+      <!-- 3D text showing the user's spoken input -->
+      <a-text id="userText"
+              value="You: ..."
+              align="center"
+              position="0 0.25 0.01"
+              width="2.5"
+              color="#a5b4fc"
+              font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
+              wrap-count="45"
+              negate="false">
+      </a-text>
+
+      <!-- 3D text showing Gemini's response -->
+      <a-text id="aiText"
+              value="Teacher: Hello! I am your English teacher. Let's practice English! Hold down key 'M', your controller trigger, or click on the cube and tell me about yourself."
+              align="center"
+              position="0 -0.05 0.01"
+              width="2.5"
+              color="#f472b6"
+              font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
+              wrap-count="45"
+              negate="false">
+      </a-text>
+
+      <!-- 3D SCORE SYSTEM (Visual Stars) -->
+      <!-- Pronunciation Score Label & Star Assets -->
+      <a-text value="PRONUNCIATION"
+              align="center"
+              position="-0.6 -0.32 0.01"
+              width="1.8"
+              color="#9ca3af"
+              font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
+              negate="false">
+      </a-text>
+      <a-entity id="pronunciationStars" position="-0.6 -0.42 0.01">
+        <a-image id="pStar1" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzM3NDE1MSI+PHBhdGggZD0iTTEyIC41ODdsMy42NjggNy40MzEgOC4yIDEuMTkyLTUuOTM0IDUuNzg3IDEuNCA4LjE2OEwxMiAxOC44OTZsLTcuMzM0IDMuODU3IDEuNC04LjE2OEwuMTMzIDkuMjFsOC4yLTEuMTkyeiIvPjwvc3ZnPg==" position="-0.15 0 0" width="0.12" height="0.12"></a-image>
+        <a-image id="pStar2" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzM3NDE1MSI+PHBhdGggZD0iTTEyIC41ODdsMy42NjggNy40MzEgOC4yIDEuMTkyLTUuOTM0IDUuNzg3IDEuNCA4LjE2OEwxMiAxOC44OTZsLTcuMzM0IDMuODU3IDEuNC04LjE2OEwuMTMzIDkuMjFsOC4yLTEuMTkyeiIvPjwvc3ZnPg==" position="0 0 0" width="0.12" height="0.12"></a-image>
+        <a-image id="pStar3" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzM3NDE1MSI+PHBhdGggZD0iTTEyIC41ODdsMy42NjggNy40MzEgOC4yIDEuMTkyLTUuOTM0IDUuNzg3IDEuNCA4LjE2OEwxMiAxOC44OTZsLTcuMzM0IDMuODU3IDEuNC04LjE2OEwuMTMzIDkuMjFsOC4yLTEuMTkyeiIvPjwvc3ZnPg==" position="0.15 0 0" width="0.12" height="0.12"></a-image>
+      </a-entity>
+
+      <!-- Grammar Score Label & Star Assets -->
+      <a-text value="GRAMMAR"
+              align="center"
+              position="0.6 -0.32 0.01"
+              width="1.8"
+              color="#9ca3af"
+              font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
+              negate="false">
+      </a-text>
+      <a-entity id="grammarStars" position="0.6 -0.42 0.01">
+        <a-image id="gStar1" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzM3NDE1MSI+PHBhdGggZD0iTTEyIC41ODdsMy42NjggNy40MzEgOC4yIDEuMTkyLTUuOTM0IDUuNzg3IDEuNCA4LjE2OEwxMiAxOC44OTZsLTcuMzM0IDMuODU3IDEuNC04LjE2OEwuMTMzIDkuMjFsOC4yLTEuMTkyeiIvPjwvc3ZnPg==" position="-0.15 0 0" width="0.12" height="0.12"></a-image>
+        <a-image id="gStar2" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzM3NDE1MSI+PHBhdGggZD0iTTEyIC41ODdsMy42NjggNy40MzEgOC4yIDEuMTkyLTUuOTM0IDUuNzg3IDEuNCA4LjE2OEwxMiAxOC44OTZsLTcuMzM0IDMuODU3IDEuNC04LjE2OEwuMTMzIDkuMjFsOC4yLTEuMTkyeiIvPjwvc3ZnPg==" position="0 0 0" width="0.12" height="0.12"></a-image>
+        <a-image id="gStar3" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzM3NDE1MSI+PHBhdGggZD0iTTEyIC41ODdsMy42NjggNy40MzEgOC4yIDEuMTkyLTUuOTM0IDUuNzg3IDEuNCA4LjE2OEwxMiAxOC44OTZsLTcuMzM0IDMuODU3IDEuNC04LjE2OEwuMTMzIDkuMjFsOC4yLTEuMTkyeiIvPjwvc3ZnPg==" position="0.15 0 0" width="0.12" height="0.12"></a-image>
+      </a-entity>
+
+      <!-- 3D Improvement Tip Text -->
+      <a-text id="tipText"
+              value="Tip: Start talking to get feedback on your English pronunciation & grammar!"
+              align="center"
+              position="0 -0.52 0.01"
+              width="2.2"
+              color="#a5b4fc"
+              font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
+              wrap-count="45"
+              negate="false">
+      </a-text>
+
+    </a-plane>
+
+    <!-- PLAYER RIG (Camera & Hands) -->
+    <a-entity id="rig" position="0 0 0">
+      <!-- Camera with a gaze cursor for desktop fallback -->
+      <a-entity id="camera" camera look-controls wasd-controls position="0 1.6 0">
+        <a-cursor id="desktopCursor"
+                  raycaster="objects: .clickable; far: 4"
+                  material="color: #818cf8; shader: flat"
+                  position="0 0 -1"
+                  geometry="primitive: ring; radiusInner: 0.008; radiusOuter: 0.015">
+        </a-cursor>
+      </a-entity>
+      
+      <!-- VR Laser Controllers -->
+      <a-entity id="leftController"
+                laser-controls="hand: left"
+                raycaster="objects: .clickable; far: 10"
+                line="color: #06b6d4; opacity: 0.8; width: 2">
+      </a-entity>
+      <a-entity id="rightController"
+                laser-controls="hand: right"
+                raycaster="objects: .clickable; far: 10"
+                line="color: #ec4899; opacity: 0.8; width: 2">
+      </a-entity>
+    </a-entity>
+
+  </a-scene>
+
+  <!-- APP LOGIC -->
+  <script>
+    // ==========================================
+    // GLOBAL ERROR MONITORING
+    // ==========================================
+    window.onerror = function (message, source, lineno, colno, error) {
+      const errMsg = `Error: ${message} (Line ${lineno})`;
+      console.error(errMsg, error);
+      
+      const aiText = document.getElementById('aiText');
+      if (aiText) aiText.setAttribute('value', errMsg);
+      
+      showMicWarning(`JS Runtime Error: ${message} (Line ${lineno})`);
+      return false;
+    };
+
+    // ==========================================
+    // GEMINI CONFIGURATION
+    // ==========================================
+    const ENDPOINT = `/api/chat`;
+
+    // SVG Star Data URIs for Visual Scores
+    const STAR_FILLED = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2ZiYmYyNCI+PHBhdGggZD0iTTEyIC41ODdsMy42NjggNy40MzEgOC4yIDEuMTkyLTUuOTM0IDUuNzg3IDEuNCA4LjE2OEwxMiAxOC44OTZsLTcuMzM0IDMuODU3IDEuNC04LjE2OEwuMTMzIDkuMjFsOC4yLTEuMTkyeiIvPjwvc3ZnPg==";
+    const STAR_EMPTY = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzM3NDE1MSI+PHBhdGggZD0iTTEyIC41ODdsMy42NjggNy40MzEgOC4yIDEuMTkyLTUuOTM0IDUuNzg3IDEuNCA4LjE2OEwxMiAxOC44OTZsLTcuMzM0IDMuODU3IDEuNC04LjE2OEwuMTMzIDkuMjFsOC4yLTEuMTkyeiIvPjwvc3ZnPg==";
+
+    // ==========================================
+    // SPEECH RECOGNITION & SYNTHESIS SETUP
+    // ==========================================
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+    let isRecording = false;
+    let recognizedText = "";
+    let speechAnimationInterval = null;
+    
+    // Hardcode practice language to English (US) as we are practicing English
+    const currentLang = 'en-US';
+
+    // Try to request mic permission on load to ensure Chrome doesn't ignore SpeechRecognition
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then((stream) => {
+          console.log("Microphone permission verified.");
+          stream.getTracks().forEach(track => track.stop()); // close immediately to free resources
+        })
+        .catch((err) => {
+          console.warn("Microphone access permission prompt failed or denied:", err);
+          showMicWarning("Microphone access is blocked. Click the microphone/lock icon next to the address bar, allow permissions, and refresh.");
+        });
+    }
+
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = true; // Real-time feedback! Shows text on the fly
+      recognition.lang = currentLang;
+
+      // Realtime intermediate results
+      recognition.onresult = (event) => {
+        let interimTranscript = '';
+        let finalTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          } else {
+            interimTranscript += event.results[i][0].transcript;
+          }
+        }
+
+        const transcriptText = finalTranscript || interimTranscript;
+        if (transcriptText) {
+          recognizedText = transcriptText;
+          document.getElementById('userText').setAttribute('value', `You: "${recognizedText}"`);
+        }
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Speech Recognition Event Error:", event.error);
+        if (event.error === 'not-allowed') {
+          updateUIState("Err: Mic Blocked");
+          showMicWarning("Mic access was denied. Please allow microphone permissions in the browser settings and refresh.");
+        } else if (event.error === 'no-speech') {
+          // Silent skip
+        } else {
+          updateUIState("Err: " + event.error);
+        }
+        setCubeState("idle");
+      };
+
+      recognition.onend = () => {
+        console.log("Recognition lifecycle complete. recognizedText:", recognizedText);
+        isRecording = false;
+        
+        if (recognizedText) {
+          sendToGemini(recognizedText);
+        } else {
+          updateUIState("HOLD M TO SPEAK");
+          setCubeState("idle");
+        }
+      };
+    } else {
+      console.warn("SpeechRecognition not supported in this browser.");
+      showMicWarning("Speech recognition is NOT supported in this browser. Please open this page in Chrome or Edge over localhost or HTTPS.");
+    }
+
+    // ==========================================
+    // INITIALIZATION & USER INPUTS
+    // ==========================================
+    document.addEventListener('DOMContentLoaded', () => {
+      const scene = document.querySelector('a-scene');
+      if (scene.hasLoaded) {
+        initApp();
+      } else {
+        scene.addEventListener('loaded', initApp);
+      }
+    });
+
+    function initApp() {
+      console.log("App ready.");
+      
+      setCubeState("idle");
+      updateUIState("HOLD M TO SPEAK");
+
+      // A. Keyboard Hook
+      window.addEventListener('keydown', (e) => {
+        if (e.key.toLowerCase() === 'm' && !isRecording) {
+          startRecording();
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        if (e.key.toLowerCase() === 'm' && isRecording) {
+          stopRecording();
+        }
+      });
+
+      // B. 2D Button Hook (Desktop/Mobile overlay)
+      const talkBtn = document.getElementById('talkButton');
+      if (talkBtn) {
+        talkBtn.addEventListener('mousedown', startRecording);
+        talkBtn.addEventListener('mouseup', stopRecording);
+        talkBtn.addEventListener('mouseleave', stopRecording);
+        
+        // Touch supports
+        talkBtn.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          startRecording();
+        });
+        talkBtn.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          stopRecording();
+        });
+      }
+
+      // C. Click on AI Cube Hook (Toggles voice)
+      const cubeEl = document.getElementById('aiCube');
+      if (cubeEl) {
+        cubeEl.addEventListener('click', () => {
+          if (isRecording) {
+            stopRecording();
+          } else {
+            startRecording();
+          }
+        });
+      }
+
+      // D. VR Controller Trigger Hooks
+      const bindControllerEvents = (controllerId) => {
+        const controllerEl = document.getElementById(controllerId);
+        if (!controllerEl) return;
+
+        controllerEl.addEventListener('triggerdown', () => {
+          console.log(`VR Controller Trigger start: ${controllerId}`);
+          startRecording();
+        });
+
+        controllerEl.addEventListener('triggerup', () => {
+          console.log(`VR Controller Trigger stop: ${controllerId}`);
+          stopRecording();
+        });
+      };
+
+      bindControllerEvents('leftController');
+      bindControllerEvents('rightController');
+
+      // E. Clean up desktop camera cursor when entering VR mode
+      const sceneEl = document.querySelector('a-scene');
+      sceneEl.addEventListener('enter-vr', () => {
+        const cursor = document.getElementById('desktopCursor');
+        if (cursor) cursor.setAttribute('visible', 'false');
+      });
+      sceneEl.addEventListener('exit-vr', () => {
+        const cursor = document.getElementById('desktopCursor');
+        if (cursor) cursor.setAttribute('visible', 'true');
+      });
+
+      // Unlock Audio Context on chrome on first user click - removed to avoid WebSocket voice extraction error
+    }
+
+    // ==========================================
+    // RECORDING CONTROL FLOW
+    // ==========================================
+    function startRecording() {
+      if (!recognition) return;
+      if (isRecording) return;
+
+      // Reset text
+      recognizedText = "";
+
+      // Interrupt TTS
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+      stopSpeakingAnimation();
+
+      isRecording = true;
+      updateUIState("Listening...");
+      setCubeState("listening");
+      document.getElementById('userText').setAttribute('value', "You: [Listening...]");
+      
+      try {
+        recognition.lang = currentLang;
+        recognition.start();
+      } catch (err) {
+        console.error("Failed to start speech recognition:", err);
+      }
+    }
+
+    function stopRecording() {
+      if (!isRecording || !recognition) return;
+      
+      updateUIState("Thinking...");
+      setCubeState("thinking");
+      
+      try {
+        recognition.stop();
+      } catch (err) {
+        console.error("Failed to stop speech recognition:", err);
+      }
+    }
+
+    // ==========================================
+    // DYNAMIC VISUAL STATES & ANIMATIONS
+    // ==========================================
+    function updateUIState(stateText) {
+      // 3D VR text
+      const status3D = document.getElementById('statusText');
+      if (status3D) {
+        status3D.setAttribute('value', stateText.toUpperCase());
+        
+        if (stateText === "Listening...") status3D.setAttribute('color', '#22d3ee');
+        else if (stateText === "Thinking...") status3D.setAttribute('color', '#fbbf24');
+        else if (stateText === "Speaking...") status3D.setAttribute('color', '#f472b6');
+        else status3D.setAttribute('color', '#38bdf8');
+      }
+
+      // 2D Desktop badge
+      const badge2D = document.getElementById('hudStatusBadge');
+      if (badge2D) {
+        badge2D.textContent = stateText;
+        badge2D.className = 'status-badge'; // reset
+        if (stateText === "Listening...") badge2D.classList.add('listening');
+        if (stateText === "Thinking...") badge2D.classList.add('thinking');
+        if (stateText === "Speaking...") badge2D.classList.add('speaking');
+      }
+    }
+
+    function setCubeState(state) {
+      const cube = document.getElementById('aiCube');
+      const light = document.getElementById('cubeLight');
+      if (!cube || !light) return;
+
+      switch (state) {
+        case "idle":
+          cube.setAttribute('material', 'color: #6366f1; emissive: #312e81; emissiveIntensity: 1.2; roughness: 0.05; metalness: 0.95');
+          light.setAttribute('light', 'color: #818cf8; intensity: 1.5; distance: 6');
+          cube.setAttribute('animation__rotate', 'property: rotation; to: 360 405 45; dur: 9000; loop: true; easing: linear');
+          stopSpeakingAnimation();
+          break;
+
+        case "listening":
+          cube.setAttribute('material', 'color: #22d3ee; emissive: #0891b2; emissiveIntensity: 2.0; roughness: 0.1; metalness: 0.8');
+          light.setAttribute('light', 'color: #22d3ee; intensity: 2.2; distance: 7');
+          cube.setAttribute('animation__rotate', 'property: rotation; to: 360 405 45; dur: 4500; loop: true; easing: linear');
+          stopSpeakingAnimation();
+          break;
+
+        case "thinking":
+          cube.setAttribute('material', 'color: #fbbf24; emissive: #b45309; emissiveIntensity: 2.5; roughness: 0.15; metalness: 0.8');
+          light.setAttribute('light', 'color: #fbbf24; intensity: 2.5; distance: 7');
+          cube.setAttribute('animation__rotate', 'property: rotation; to: 720 405 45; dur: 2200; loop: true; easing: linear');
+          stopSpeakingAnimation();
+          break;
+
+        case "speaking":
+          cube.setAttribute('material', 'color: #ec4899; emissive: #db2777; emissiveIntensity: 2.2; roughness: 0.05; metalness: 0.9');
+          light.setAttribute('light', 'color: #f472b6; intensity: 2.0; distance: 8');
+          cube.setAttribute('animation__rotate', 'property: rotation; to: 360 405 45; dur: 6000; loop: true; easing: linear');
+          startSpeakingAnimation();
+          break;
+      }
+    }
+
+    function startSpeakingAnimation() {
+      stopSpeakingAnimation();
+      const cube = document.getElementById('aiCube');
+      if (!cube) return;
+
+      let direction = 1;
+      let scale = 1.0;
+      speechAnimationInterval = setInterval(() => {
+        scale += (0.04 + Math.random() * 0.03) * direction;
+        if (scale >= 1.25) direction = -1;
+        else if (scale <= 0.88) direction = 1;
+        cube.setAttribute('scale', `${scale} ${scale} ${scale}`);
+      }, 65);
+    }
+
+    function stopSpeakingAnimation() {
+      if (speechAnimationInterval) {
+        clearInterval(speechAnimationInterval);
+        speechAnimationInterval = null;
+      }
+      const cube = document.getElementById('aiCube');
+      if (cube) {
+        cube.setAttribute('scale', '1 1 1');
+      }
+    }
+
+    // ==========================================
+    // STAR GRAPHICAL DISPLAY LOGIC
+    // ==========================================
+    // Convert 1-10 numerical score into 1-3 stars
+    // 1-4 points = 1 star | 5-7 points = 2 stars | 8-10 points = 3 stars
+    function calculateStars(score) {
+      if (score >= 8) return 3;
+      if (score >= 5) return 2;
+      return 1;
+    }
+
+    function displayScores(pScore, gScore, tipText) {
+      const pStars = calculateStars(pScore);
+      const gStars = calculateStars(gScore);
+
+      // 1. Update A-Frame 3D Stars in VR
+      const updateStarAssets = (prefix, starsCount) => {
+        for (let i = 1; i <= 3; i++) {
+          const starEl = document.getElementById(`${prefix}Star${i}`);
+          if (starEl) {
+            starEl.setAttribute('src', i <= starsCount ? STAR_FILLED : STAR_EMPTY);
+            
+            // Subtle "pop-up" scale animation for unlocked stars
+            if (i <= starsCount) {
+              starEl.setAttribute('scale', '1.3 1.3 1.3');
+              starEl.setAttribute('animation', 'property: scale; to: 1.0 1.0 1.0; dur: 600; easing: easeOutBack');
+            } else {
+              starEl.setAttribute('scale', '1.0 1.0 1.0');
+              starEl.removeAttribute('animation');
+            }
+          }
+        }
+      };
+
+      updateStarAssets('p', pStars);
+      updateStarAssets('g', gStars);
+
+      // Update 3D VR Tip
+      const tip3D = document.getElementById('tipText');
+      if (tip3D) {
+        tip3D.setAttribute('value', `Tip: ${tipText}`);
+      }
+
+      // 2. Update 2D Screen Overlay
+      const hudScores = document.getElementById('hudScores');
+      const pStars2D = document.getElementById('pStars2D');
+      const gStars2D = document.getElementById('gStars2D');
+      const hudTip = document.getElementById('hudTip');
+
+      if (hudScores && pStars2D && gStars2D && hudTip) {
+        hudScores.style.display = 'block';
+        
+        // Render 2D Unicode stars
+        const renderStarsHTML = (count) => {
+          let html = '';
+          for (let i = 1; i <= 3; i++) {
+            const color = i <= count ? '#fbbf24' : '#374151';
+            html += `<span style="color: ${color}">★</span>`;
+          }
+          return html;
+        };
+
+        pStars2D.innerHTML = renderStarsHTML(pStars);
+        gStars2D.innerHTML = renderStarsHTML(gStars);
+        hudTip.textContent = tipText;
+      }
+    }
+
+    // ==========================================
+    // GEMINI CONNECTION & TEXT-TO-SPEECH
+    // ==========================================
+    async function sendToGemini(textPrompt) {
+      try {
+        console.log("Calling Gemini API with text:", textPrompt);
+        
+        // System prompt configures the AI role as an English Teacher returning JSON
+        const systemPrompt = `You are a friendly, encouraging, patient, and professional English teacher for VR students practicing English.
+Speak ONLY in English in your response text.
+Correct pronunciation and grammar mistakes gently. Keep it brief (1-3 sentences maximum) and ask a question to continue the conversation.
+
+Your response MUST be a JSON object with the following schema:
+{
+  "teacherResponse": "Your encouraging conversational reply in English, correcting mistakes and asking a question.",
+  "pronunciationScore": 8, // A score from 1 to 10 based on how clear/accurate the transcription seems
+  "grammarScore": 9,       // A score from 1 to 10 based on the grammar of the input text
+  "improvementTip": "One brief tip in English on pronunciation or grammar (e.g., 'Practice the \"th\" sound in words like \"think\"')"
+}
+
+Always output ONLY valid JSON. Speak only in English in the teacherResponse.`;
+
+        const payload = {
+          contents: [{
+            role: "user",
+            parts: [{ text: textPrompt }]
+          }],
+          systemInstruction: {
+            parts: [{ text: systemPrompt }]
+          },
+          generationConfig: {
+            responseMimeType: "application/json"
+          }
+        };
+
+        const response = await fetch(ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          const errBody = await response.text();
+          throw new Error(`API returned status ${response.status}: ${errBody}`);
+        }
+
+        const data = await response.json();
+        let replyJsonString = "";
+
+        if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0]) {
+          replyJsonString = data.candidates[0].content.parts[0].text;
+        } else {
+          throw new Error("Invalid API candidates response structure.");
+        }
+
+        console.log("Raw Gemini JSON Reply:", replyJsonString);
+
+        // Parse structured data from Gemini
+        let teacherData;
+        try {
+          teacherData = JSON.parse(replyJsonString);
+        } catch (jsonErr) {
+          // Fallback cleanup if the model included markdown wrappers
+          const cleanedString = replyJsonString.replace(/```json|```/g, "").trim();
+          teacherData = JSON.parse(cleanedString);
+        }
+
+        const teacherReply = teacherData.teacherResponse || "Good job! Keep practicing.";
+        const pronScore = teacherData.pronunciationScore || 5;
+        const gramScore = teacherData.grammarScore || 5;
+        const tipText = teacherData.improvementTip || "Keep talking to practice!";
+
+        // Display inside VR & Desktop HUD
+        document.getElementById('aiText').setAttribute('value', `Teacher: ${teacherReply}`);
+        displayScores(pronScore, gramScore, tipText);
+        
+        updateUIState("Speaking...");
+        setCubeState("speaking");
+        speakText(teacherReply);
+
+      } catch (error) {
+        console.error("Gemini Request Failed:", error);
+        
+        const fallbackText = "Sorry, I had trouble connecting to the school servers. Let's try again.";
+        document.getElementById('aiText').setAttribute('value', `AI Error: ${error.message}`);
+        updateUIState("HOLD M TO SPEAK");
+        setCubeState("idle");
+        speakText(fallbackText);
+      }
+    }
+
+    function speakText(textToSpeak) {
+      if (!window.speechSynthesis) return;
+
+      window.speechSynthesis.cancel(); // clear queue
+
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.lang = currentLang;
+
+      // Find compatible voice
+let voiceList = [];
+        // Populate voice list when available
+        window.speechSynthesis.onvoiceschanged = () => {
+          voiceList = window.speechSynthesis.getVoices();
+        };
+        // Initial fetch (may be empty until onvoiceschanged fires)
+        voiceList = window.speechSynthesis.getVoices();
+      const preferredVoice = voiceList.find(v => v.lang.startsWith(currentLang.substring(0, 2)) && (v.name.includes('Google') || v.name.includes('Natural'))) ||
+    voiceList.find(v => v.lang.startsWith(currentLang.substring(0, 2))) ||
+    voiceList[0];
+      
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
+
+      utterance.onend = () => {
+        updateUIState("HOLD M TO SPEAK");
+        setCubeState("idle");
+      };
+
+      utterance.onerror = (err) => {
+        console.error("SpeechSynthesis speak Error:", err);
+        updateUIState("HOLD M TO SPEAK");
+        setCubeState("idle");
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // Helper alerts
+    function showMicWarning(msg) {
+      const warningEl = document.getElementById('micWarning');
+      if (warningEl) {
+        warningEl.innerHTML = `⚠️ <strong>Notice:</strong> ${msg}`;
+        warningEl.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>
