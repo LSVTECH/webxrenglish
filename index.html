@@ -119,10 +119,17 @@
       font-weight: 700;
       cursor: pointer;
       box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-      transition: all 0.2s ease;
+      transition: all 0.2s ease, background 0.5s ease;
       pointer-events: auto;
       user-select: none;
       -webkit-user-select: none;
+    }
+    .talk-btn:hover {
+      background: linear-gradient(135deg, #4f46e5, #db2777);
+    }
+    .talk-btn.listening {
+      background: linear-gradient(135deg, #06b6d4, #22d3ee);
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
     }
 
     .talk-btn:active {
@@ -135,7 +142,7 @@
       margin-top: 20px;
       padding-top: 15px;
       border-top: 1px solid rgba(255, 255, 255, 0.08);
-      display: none;
+      display: block;
     }
 
     .score-row {
@@ -216,29 +223,37 @@
   <!-- 2D HUD OVERLAY (Desktop & Mobile) -->
   <div id="hud-overlay">
     <div class="glass-card">
-      <div class="hud-title">EnglishVR Teacher</div>
-      <div class="hud-subtitle">Spatial Language Coach</div>
+      <div class="hud-title">VR Hotel Receptionist</div>
+      <div class="hud-subtitle">Interactive Booking Simulator</div>
       
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <span id="hudStatusBadge" class="status-badge">Idle</span>
-        <span id="langDisplay" style="font-size: 0.75rem; color: #818cf8; font-weight: bold;">Practice Mode: English</span>
+        <span id="langDisplay" style="font-size: 0.75rem; color: #818cf8; font-weight: bold;">Language: English</span>
       </div>
 
       <!-- Desktop Click/Touch talk button -->
       <button id="talkButton" class="talk-btn">Hold to Speak</button>
 
-      <!-- 2D Scoreboard for stars display -->
-      <div id="hudScores" class="hud-scores">
-        <div class="score-row">
-          <span class="score-label">Pronunciation:</span>
-          <span id="pStars2D" class="stars-display">★★★</span>
-        </div>
-        <div class="score-row">
-          <span class="score-label">Grammar:</span>
-          <span id="gStars2D" class="stars-display">★★★</span>
-        </div>
-        <div id="hudTip" class="tip-box"></div>
-      </div>
+<!-- 2D Scoreboard for booking details -->
+<div id="hudScores" class="hud-scores">
+  <div class="score-row">
+    <span class="score-label">Booking Status:</span>
+    <span id="bookingStatus2D" style="color: #fbbf24; font-weight: bold;">In Progress...</span>
+  </div>
+  <div class="score-row">
+    <span class="score-label">Room:</span>
+    <span id="roomDetails2D" style="color: #a5b4fc; font-weight: 600;">Not Selected</span>
+  </div>
+  <div class="score-row">
+    <span class="score-label">Guest:</span>
+    <span id="guestName2D" style="color: #a5b4fc; font-weight: 600;">Guest: TBD</span>
+  </div>
+  <div class="score-row">
+    <span class="score-label">Nights:</span>
+    <span id="nights2D" style="color: #a5b4fc; font-weight: 600;">Nights: TBD</span>
+  </div>
+  <div id="hudTip" class="tip-box">Welcome! Tell me what kind of room you'd like to book.</div>
+</div>
 
       <div class="mic-instruction">
         👉 <strong>Inside VR:</strong> Hold the controller Trigger to speak.<br>
@@ -258,8 +273,8 @@
   <!-- A-FRAME VR SCENE -->
   <a-scene shadow="type: pcfsoft" renderer="antialias: true; colorManagement: true;">
     
-    <!-- Environment preset 'contact' provides a dark futuristic grid and skyline -->
-    <a-entity environment="preset: contact; ground: flat; groundColor: #090a16; grid: 2d; gridColor: #4f46e5; skyType: gradient; skyColor: #04050d; horizonColor: #11132e; lighting: none; shadow: true"></a-entity>
+    <!-- Environment preset 'japan' provides a nice hotel-like serene outdoor environment -->
+    <a-entity environment="preset: none; groundColor: #f5f5dc; groundTexture: none; skyColor: #f5f5dc; lighting: none; fog: 0.4" ></a-entity>
 
     <!-- CUSTOM LIGHTING SYSTEM -->
     <a-entity light="type: ambient; color: #1e1b4b; intensity: 0.7"></a-entity>
@@ -286,23 +301,23 @@
            animation__rotate="property: rotation; to: 360 405 45; dur: 9000; loop: true; easing: linear">
     </a-box>
 
-    <!-- VR INTERACTION & DISPLAY PANEL (Adjusted height to 1.2 to fit the scoring stars neatly) -->
+    <!-- VR INTERACTION & DISPLAY PANEL -->
     <a-plane id="uiPanel"
              position="0 1.15 -1.35"
              rotation="-18 0 0"
-             width="2.4" height="1.2"
+             width="2.4" height="1.45"
              material="shader: flat; color: #080a14; opacity: 0.88; transparent: true; roughness: 1"
              class="clickable">
       
       <!-- Sub-frame borders to add premium high-tech look -->
-      <a-plane position="0 0.58 0.005" width="2.4" height="0.04" material="color: #4f46e5; shader: flat; emissive: #4f46e5; emissiveIntensity: 1.5"></a-plane>
-      <a-plane position="0 -0.58 0.005" width="2.4" height="0.04" material="color: #312e81; shader: flat; emissive: #312e81; emissiveIntensity: 0.5"></a-plane>
+      <a-plane position="0 0.70 0.005" width="2.4" height="0.04" material="color: #4f46e5; shader: flat; emissive: #4f46e5; emissiveIntensity: 1.5"></a-plane>
+      <a-plane position="0 -0.70 0.005" width="2.4" height="0.04" material="color: #312e81; shader: flat; emissive: #312e81; emissiveIntensity: 0.5"></a-plane>
 
       <!-- 3D status indicator text (e.g. Listening, Thinking, Speaking...) -->
       <a-text id="statusText"
               value="HOLD M TO SPEAK"
               align="center"
-              position="0 0.46 0.01"
+              position="0 0.58 0.01"
               width="3.8"
               color="#38bdf8"
               font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
@@ -313,7 +328,7 @@
       <a-text id="userText"
               value="You: ..."
               align="center"
-              position="0 0.25 0.01"
+              position="0 0.35 0.01"
               width="2.5"
               color="#a5b4fc"
               font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
@@ -323,9 +338,9 @@
 
       <!-- 3D text showing Gemini's response -->
       <a-text id="aiText"
-              value="Teacher: Hello! I am your English teacher. Let's practice English! Hold down key 'M', your controller trigger, or click on the cube and tell me about yourself."
+              value="Receptionist: Welcome to our VR Hotel! How can I help you today? Would you like to book a room?"
               align="center"
-              position="0 -0.05 0.01"
+              position="0 0.05 0.01"
               width="2.5"
               color="#f472b6"
               font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
@@ -333,48 +348,46 @@
               negate="false">
       </a-text>
 
-      <!-- 3D SCORE SYSTEM (Visual Stars) -->
-      <!-- Pronunciation Score Label & Star Assets -->
-      <a-text value="PRONUNCIATION"
+      <!-- 3D Booking Status Info -->
+      <a-text id="bookingStatusLabel" value="BOOKING STATUS"
               align="center"
-              position="-0.6 -0.32 0.01"
+              position="0 -0.25 0.01"
               width="1.8"
               color="#9ca3af"
               font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
               negate="false">
       </a-text>
-      <a-entity id="pronunciationStars" position="-0.6 -0.42 0.01">
-        <a-image id="pStar1" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzM3NDE1MSI+PHBhdGggZD0iTTEyIC41ODdsMy42NjggNy40MzEgOC4yIDEuMTkyLTUuOTM0IDUuNzg3IDEuNCA4LjE2OEwxMiAxOC44OTZsLTcuMzM0IDMuODU3IDEuNC04LjE2OEwuMTMzIDkuMjFsOC4yLTEuMTkyeiIvPjwvc3ZnPg==" position="-0.15 0 0" width="0.12" height="0.12"></a-image>
-        <a-image id="pStar2" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzM3NDE1MSI+PHBhdGggZD0iTTEyIC41ODdsMy42NjggNy40MzEgOC4yIDEuMTkyLTUuOTM0IDUuNzg3IDEuNCA4LjE2OEwxMiAxOC44OTZsLTcuMzM0IDMuODU3IDEuNC04LjE2OEwuMTMzIDkuMjFsOC4yLTEuMTkyeiIvPjwvc3ZnPg==" position="0 0 0" width="0.12" height="0.12"></a-image>
-        <a-image id="pStar3" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzM3NDE1MSI+PHBhdGggZD0iTTEyIC41ODdsMy42NjggNy40MzEgOC4yIDEuMTkyLTUuOTM0IDUuNzg3IDEuNCA4LjE2OEwxMiAxOC44OTZsLTcuMzM0IDMuODU3IDEuNC04LjE2OEwuMTMzIDkuMjFsOC4yLTEuMTkyeiIvPjwvc3ZnPg==" position="0.15 0 0" width="0.12" height="0.12"></a-image>
-      </a-entity>
-
-      <!-- Grammar Score Label & Star Assets -->
-      <a-text value="GRAMMAR"
+      
+      <a-text id="bookingStatusText" value="In Progress..."
               align="center"
-              position="0.6 -0.32 0.01"
-              width="1.8"
+              position="0 -0.35 0.01"
+              width="2.5"
+              color="#fbbf24"
+              font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
+              negate="false">
+      </a-text>
+
+      <!-- 3D Room Details -->
+      <a-text id="roomDetailsLabel" value="ROOM"
+              align="center"
+              position="0 -0.48 0.01"
+              width="1.5"
               color="#9ca3af"
               font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
               negate="false">
       </a-text>
-      <a-entity id="grammarStars" position="0.6 -0.42 0.01">
-        <a-image id="gStar1" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzM3NDE1MSI+PHBhdGggZD0iTTEyIC41ODdsMy42NjggNy40MzEgOC4yIDEuMTkyLTUuOTM0IDUuNzg3IDEuNCA4LjE2OEwxMiAxOC44OTZsLTcuMzM0IDMuODU3IDEuNC04LjE2OEwuMTMzIDkuMjFsOC4yLTEuMTkyeiIvPjwvc3ZnPg==" position="-0.15 0 0" width="0.12" height="0.12"></a-image>
-        <a-image id="gStar2" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzM3NDE1MSI+PHBhdGggZD0iTTEyIC41ODdsMy42NjggNy40MzEgOC4yIDEuMTkyLTUuOTM0IDUuNzg3IDEuNCA4LjE2OEwxMiAxOC44OTZsLTcuMzM0IDMuODU3IDEuNC04LjE2OEwuMTMzIDkuMjFsOC4yLTEuMTkyeiIvPjwvc3ZnPg==" position="0 0 0" width="0.12" height="0.12"></a-image>
-        <a-image id="gStar3" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzM3NDE1MSI+PHBhdGggZD0iTTEyIC41ODdsMy42NjggNy40MzEgOC4yIDEuMTkyLTUuOTM0IDUuNzg3IDEuNCA4LjE2OEwxMiAxOC44OTZsLTcuMzM0IDMuODU3IDEuNC04LjE2OEwuMTMzIDkuMjFsOC4yLTEuMTkyeiIvPjwvc3ZnPg==" position="0.15 0 0" width="0.12" height="0.12"></a-image>
-      </a-entity>
-
-      <!-- 3D Improvement Tip Text -->
-      <a-text id="tipText"
-              value="Tip: Start talking to get feedback on your English pronunciation & grammar!"
+      
+      <a-text id="roomDetailsText" value="Not Selected"
               align="center"
-              position="0 -0.52 0.01"
-              width="2.2"
+              position="0 -0.58 0.01"
+              width="2.5"
               color="#a5b4fc"
               font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
-              wrap-count="45"
               negate="false">
       </a-text>
+
+      <a-text id="guestNameText" value="Guest: TBD" align="center" position="0 -0.60 0.01" width="2.5" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="nightsText" value="Nights: TBD" align="center" position="0 -0.70 0.01" width="2.5" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
 
     </a-plane>
 
@@ -438,6 +451,8 @@
     let isRecording = false;
     let recognizedText = "";
     let speechAnimationInterval = null;
+    let recognitionFallbackTimeout = null;
+    let chatHistory = [];
     
     // Hardcode practice language to English (US) as we are practicing English
     const currentLang = 'en-US';
@@ -496,13 +511,24 @@
 
       recognition.onend = () => {
         console.log("Recognition lifecycle complete. recognizedText:", recognizedText);
+        clearTimeout(recognitionFallbackTimeout);
         isRecording = false;
-        
+
+        // Reset button visual state
+        const talkBtn = document.getElementById('talkButton');
+        if (talkBtn) {
+          talkBtn.classList.remove('listening');
+          talkBtn.textContent = 'Hold to Speak';
+        }
+
         if (recognizedText) {
+          updateUIState("Thinking...");
+          setCubeState("thinking");
           sendToGemini(recognizedText);
         } else {
           updateUIState("HOLD M TO SPEAK");
           setCubeState("idle");
+          document.getElementById('userText').setAttribute('value', 'You: ...');
         }
       };
     } else {
@@ -611,6 +637,13 @@
       if (!recognition) return;
       if (isRecording) return;
 
+      // Update UI button visual state
+      const talkBtn = document.getElementById('talkButton');
+      if (talkBtn) {
+        talkBtn.classList.add('listening');
+        talkBtn.textContent = 'Hold to Speak (Listening…)';
+      }
+
       // Reset text
       recognizedText = "";
 
@@ -636,14 +669,20 @@
     function stopRecording() {
       if (!isRecording || !recognition) return;
       
-      updateUIState("Thinking...");
-      setCubeState("thinking");
-      
       try {
         recognition.stop();
       } catch (err) {
         console.error("Failed to stop speech recognition:", err);
       }
+
+      // Safety fallback: VR browsers sometimes fail to fire the onend event.
+      clearTimeout(recognitionFallbackTimeout);
+      recognitionFallbackTimeout = setTimeout(() => {
+        if (isRecording) {
+          console.warn("Safety fallback: onend did not fire. Forcing reset.");
+          recognition.onend();
+        }
+      }, 3000);
     }
 
     // ==========================================
@@ -736,69 +775,62 @@
 
     // ==========================================
     // STAR GRAPHICAL DISPLAY LOGIC
-    // ==========================================
-    // Convert 1-10 numerical score into 1-3 stars
-    // 1-4 points = 1 star | 5-7 points = 2 stars | 8-10 points = 3 stars
-    function calculateStars(score) {
-      if (score >= 8) return 3;
-      if (score >= 5) return 2;
-      return 1;
-    }
-
-    function displayScores(pScore, gScore, tipText) {
-      const pStars = calculateStars(pScore);
-      const gStars = calculateStars(gScore);
-
-      // 1. Update A-Frame 3D Stars in VR
-      const updateStarAssets = (prefix, starsCount) => {
-        for (let i = 1; i <= 3; i++) {
-          const starEl = document.getElementById(`${prefix}Star${i}`);
-          if (starEl) {
-            starEl.setAttribute('src', i <= starsCount ? STAR_FILLED : STAR_EMPTY);
-            
-            // Subtle "pop-up" scale animation for unlocked stars
-            if (i <= starsCount) {
-              starEl.setAttribute('scale', '1.3 1.3 1.3');
-              starEl.setAttribute('animation', 'property: scale; to: 1.0 1.0 1.0; dur: 600; easing: easeOutBack');
-            } else {
-              starEl.setAttribute('scale', '1.0 1.0 1.0');
-              starEl.removeAttribute('animation');
-            }
-          }
+    // ============================    // Convert 1-10 numerical score into 1-3 stars
+    // ------------------------------------------
+    // REPLACED WITH BOOKING STATUS DISPLAY LOGIC
+    // ------------------------------------------
+    function updateBookingUI(bookingStatus, roomType, roomNumber, guestName, nights) {
+      // 1. Update A-Frame 3D Texts in VR
+      const status3D = document.getElementById('bookingStatusText');
+      const details3D = document.getElementById('roomDetailsText');
+      const name3D = document.getElementById('guestNameText');
+      const nights3D = document.getElementById('nightsText');
+      
+      const isCompleted = bookingStatus === "completed";
+      
+      if (status3D) {
+        status3D.setAttribute('value', isCompleted ? "COMPLETED ✓" : "In Progress...");
+        status3D.setAttribute('color', isCompleted ? "#4ade80" : "#fbbf24");
+      }
+      
+      if (details3D) {
+        let roomText = "Not Selected";
+        if (roomType || roomNumber) {
+          roomText = `${roomType || 'Standard'} - No. ${roomNumber || 'TBD'}`;
         }
-      };
-
-      updateStarAssets('p', pStars);
-      updateStarAssets('g', gStars);
-
-      // Update 3D VR Tip
-      const tip3D = document.getElementById('tipText');
-      if (tip3D) {
-        tip3D.setAttribute('value', `Tip: ${tipText}`);
+        details3D.setAttribute('value', roomText);
+      }
+      
+      if (name3D) {
+        name3D.setAttribute('value', guestName ? `Guest: ${guestName}` : "Guest: TBD");
+      }
+      if (nights3D) {
+        nights3D.setAttribute('value', nights ? `${nights} night(s)` : "Nights: TBD");
       }
 
       // 2. Update 2D Screen Overlay
-      const hudScores = document.getElementById('hudScores');
-      const pStars2D = document.getElementById('pStars2D');
-      const gStars2D = document.getElementById('gStars2D');
-      const hudTip = document.getElementById('hudTip');
+      const status2D = document.getElementById('bookingStatus2D');
+      const details2D = document.getElementById('roomDetails2D');
+      const name2D = document.getElementById('guestName2D');
+      const nights2D = document.getElementById('nights2D');
 
-      if (hudScores && pStars2D && gStars2D && hudTip) {
-        hudScores.style.display = 'block';
+      if (status2D && details2D) {
+        status2D.textContent = isCompleted ? "Completed ✓" : "In Progress...";
+        status2D.style.color = isCompleted ? "#4ade80" : "#fbbf24";
         
-        // Render 2D Unicode stars
-        const renderStarsHTML = (count) => {
-          let html = '';
-          for (let i = 1; i <= 3; i++) {
-            const color = i <= count ? '#fbbf24' : '#374151';
-            html += `<span style="color: ${color}">★</span>`;
-          }
-          return html;
-        };
-
-        pStars2D.innerHTML = renderStarsHTML(pStars);
-        gStars2D.innerHTML = renderStarsHTML(gStars);
-        hudTip.textContent = tipText;
+        let roomText2D = "Not Selected";
+        if (roomType || roomNumber) {
+          roomText2D = `${roomType || 'Standard'} - No. ${roomNumber || 'TBD'}`;
+        }
+        details2D.textContent = roomText2D;
+      }
+      if (name2D) {
+        name2D.textContent = guestName ? `Guest: ${guestName}` : "Guest: TBD";
+      }
+      if (nights2D) {
+        nights2D.textContent = nights ? `${nights} night(s)` : "Nights: TBD";
+      }
+    }xt;
       }
     }
 
@@ -809,26 +841,33 @@
       try {
         console.log("Calling Gemini API with text:", textPrompt);
         
-        // System prompt configures the AI role as an English Teacher returning JSON
-        const systemPrompt = `You are a friendly, encouraging, patient, and professional English teacher for VR students practicing English.
-Speak ONLY in English in your response text.
-Correct pronunciation and grammar mistakes gently. Keep it brief (1-3 sentences maximum) and ask a question to continue the conversation.
+        // Save user message to memory
+        chatHistory.push({
+          role: "user",
+          parts: [{ text: textPrompt }]
+        });
+        
+        // System prompt configures the AI role as a Hotel Receptionist returning JSON
+        const systemPrompt = `You are a friendly, professional, and welcoming hotel receptionist in a virtual reality (VR) Hotel.
+Speak ONLY in English.
+Your goal is to help the user book a room. You MUST ask them for their full name, how many nights they will stay, and their preferred room type (e.g., Single, Double, Suite).
+Once you have this information, confirm their booking and assign them a random room number between 101 and 599.
+Keep your conversational responses brief (1-3 sentences maximum).
 
 Your response MUST be a JSON object with the following schema:
 {
-  "teacherResponse": "Your encouraging conversational reply in English, correcting mistakes and asking a question.",
-  "pronunciationScore": 8, // A score from 1 to 10 based on how clear/accurate the transcription seems
-  "grammarScore": 9,       // A score from 1 to 10 based on the grammar of the input text
-  "improvementTip": "One brief tip in English on pronunciation or grammar (e.g., 'Practice the \"th\" sound in words like \"think\"')"
+  "receptionistResponse": "Your conversational reply in English, confirming or asking for details.",
+  "bookingStatus": "in_progress", // Change to "completed" ONLY when you have all info and have assigned a room number.
+  "guestName": null, // The user's name, or null if not yet provided.
+  "nights": null, // Number of nights, or null if not yet provided.
+  "roomType": null, // The room type chosen, or null if not yet confirmed.
+  "roomNumber": null // The assigned room number, or null if not yet assigned.
 }
 
-Always output ONLY valid JSON. Speak only in English in the teacherResponse.`;
+Always output ONLY valid JSON. Speak only in English in the receptionistResponse.`;
 
         const payload = {
-          contents: [{
-            role: "user",
-            parts: [{ text: textPrompt }]
-          }],
+          contents: chatHistory,
           systemInstruction: {
             parts: [{ text: systemPrompt }]
           },
@@ -855,6 +894,12 @@ Always output ONLY valid JSON. Speak only in English in the teacherResponse.`;
 
         if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0]) {
           replyJsonString = data.candidates[0].content.parts[0].text;
+          
+          // Save model response to memory
+          chatHistory.push({
+            role: "model",
+            parts: [{ text: replyJsonString }]
+          });
         } else {
           throw new Error("Invalid API candidates response structure.");
         }
@@ -862,36 +907,57 @@ Always output ONLY valid JSON. Speak only in English in the teacherResponse.`;
         console.log("Raw Gemini JSON Reply:", replyJsonString);
 
         // Parse structured data from Gemini
-        let teacherData;
+        let aiData;
         try {
-          teacherData = JSON.parse(replyJsonString);
+          aiData = JSON.parse(replyJsonString);
         } catch (jsonErr) {
           // Fallback cleanup if the model included markdown wrappers
           const cleanedString = replyJsonString.replace(/```json|```/g, "").trim();
-          teacherData = JSON.parse(cleanedString);
+          aiData = JSON.parse(cleanedString);
         }
 
-        const teacherReply = teacherData.teacherResponse || "Good job! Keep practicing.";
-        const pronScore = teacherData.pronunciationScore || 5;
-        const gramScore = teacherData.grammarScore || 5;
-        const tipText = teacherData.improvementTip || "Keep talking to practice!";
+        const aiReply = aiData.receptionistResponse || "Let me check that for you.";
+        const bStatus = aiData.bookingStatus || "in_progress";
+        const guestName = aiData.guestName || null;
+        const nights = aiData.nights || null;
 
-        // Display inside VR & Desktop HUD
-        document.getElementById('aiText').setAttribute('value', `Teacher: ${teacherReply}`);
-        displayScores(pronScore, gramScore, tipText);
+        // Update UI
+        document.getElementById('aiText').setAttribute('value', `Receptionist: ${aiReply}`);
+        updateBookingUI(bStatus, aiData.roomType, aiData.roomNumber, guestName, nights);
         
         updateUIState("Speaking...");
         setCubeState("speaking");
-        speakText(teacherReply);
+        speakText(aiReply);
+
+        // If booking is completed, trigger animation
+        if (bStatus === "completed") {
+            triggerGoToRoomAnimation();
+        }
 
       } catch (error) {
         console.error("Gemini Request Failed:", error);
         
-        const fallbackText = "Sorry, I had trouble connecting to the school servers. Let's try again.";
+        // Remove the last user message so they can try again without breaking history
+        chatHistory.pop();
+        
+        const fallbackText = "Sorry, our booking system is currently down. Let's try again.";
         document.getElementById('aiText').setAttribute('value', `AI Error: ${error.message}`);
         updateUIState("HOLD M TO SPEAK");
         setCubeState("idle");
         speakText(fallbackText);
+      }
+    }
+
+    function triggerGoToRoomAnimation() {
+      const cubeEl = document.getElementById('aiCube');
+      if (cubeEl) {
+        // Stop the bobbing animation to prevent conflicting positions
+        cubeEl.removeAttribute('animation__bob');
+        
+        // Animate the cube flying away to the "room"
+        cubeEl.setAttribute('animation__move_room', 'property: position; to: -15 2 -20; dur: 8000; easing: easeInOutQuad');
+        
+        // Optional: you can add a visual path or sound here
       }
     }
 
