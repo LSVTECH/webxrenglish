@@ -10,15 +10,25 @@ export default async function handler(req, res) {
   }
 
   const geminiModel = "gemini-2.5-flash-lite";
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${apiKey}`;
+  const payload = req.body;
+
+  if (!payload || typeof payload !== 'object' || !Array.isArray(payload.contents)) {
+    return res.status(400).json({ error: 'Bad request: body must contain a "contents" array.' });
+  }
+
+  // Prevent abuse: cap total history entries
+  if (payload.contents.length > 100) {
+    return res.status(400).json({ error: 'Too many messages in contents (max 100).' });
+  }
+
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent`;
 
   try {
-    const payload = req.body;
-
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': apiKey
       },
       body: JSON.stringify(payload)
     });

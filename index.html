@@ -311,7 +311,7 @@
       
       <!-- Sub-frame borders to add premium high-tech look -->
       <a-plane position="0 0.70 0.005" width="2.4" height="0.04" material="color: #4f46e5; shader: flat; emissive: #4f46e5; emissiveIntensity: 1.5"></a-plane>
-      <a-plane position="0 -0.70 0.005" width="2.4" height="0.04" material="color: #312e81; shader: flat; emissive: #312e81; emissiveIntensity: 0.5"></a-plane>
+      <a-plane position="0 -0.73 0.005" width="2.4" height="0.04" material="color: #312e81; shader: flat; emissive: #312e81; emissiveIntensity: 0.5"></a-plane>
 
       <!-- 3D status indicator text (e.g. Listening, Thinking, Speaking...) -->
       <a-text id="statusText"
@@ -379,15 +379,15 @@
       
       <a-text id="roomDetailsText" value="Not Selected"
               align="center"
-              position="0 -0.58 0.01"
+              position="0 -0.55 0.01"
               width="2.5"
               color="#a5b4fc"
               font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
               negate="false">
       </a-text>
 
-      <a-text id="guestNameText" value="Guest: TBD" align="center" position="0 -0.60 0.01" width="2.5" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="nightsText" value="Nights: TBD" align="center" position="0 -0.70 0.01" width="2.5" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="guestNameText" value="Guest: TBD" align="center" position="0 -0.62 0.01" width="2.5" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="nightsText" value="Nights: TBD" align="center" position="0 -0.69 0.01" width="2.5" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
 
     </a-plane>
 
@@ -439,10 +439,6 @@
     // ==========================================
     const ENDPOINT = `/api/chat`;
 
-    // SVG Star Data URIs for Visual Scores
-    const STAR_FILLED = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2ZiYmYyNCI+PHBhdGggZD0iTTEyIC41ODdsMy42NjggNy40MzEgOC4yIDEuMTkyLTUuOTM0IDUuNzg3IDEuNCA4LjE2OEwxMiAxOC44OTZsLTcuMzM0IDMuODU3IDEuNC04LjE2OEwuMTMzIDkuMjFsOC4yLTEuMTkyeiIvPjwvc3ZnPg==";
-    const STAR_EMPTY = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzM3NDE1MSI+PHBhdGggZD0iTTEyIC41ODdsMy42NjggNy40MzEgOC4yIDEuMTkyLTUuOTM0IDUuNzg3IDEuNCA4LjE2OEwxMiAxOC44OTZsLTcuMzM0IDMuODU3IDEuNC04LjE2OEwuMTMzIDkuMjFsOC4yLTEuMTkyeiIvPjwvc3ZnPg==";
-
     // ==========================================
     // SPEECH RECOGNITION & SYNTHESIS SETUP
     // ==========================================
@@ -453,6 +449,20 @@
     let speechAnimationInterval = null;
     let recognitionFallbackTimeout = null;
     let chatHistory = [];
+    let recognitionStarted = false;
+
+    // Preload TTS voices once globally
+    let ttsVoiceList = [];
+    function loadTtsVoices() {
+      if (!window.speechSynthesis) return;
+      ttsVoiceList = window.speechSynthesis.getVoices();
+      if (ttsVoiceList.length === 0) {
+        window.speechSynthesis.onvoiceschanged = () => {
+          ttsVoiceList = window.speechSynthesis.getVoices();
+        };
+      }
+    }
+    loadTtsVoices();
     
     // Hardcode practice language to English (US) as we are practicing English
     const currentLang = 'en-US';
@@ -496,6 +506,10 @@
         }
       };
 
+      recognition.onstart = () => {
+        recognitionStarted = true;
+      };
+
       recognition.onerror = (event) => {
         console.error("Speech Recognition Event Error:", event.error);
         if (event.error === 'not-allowed') {
@@ -513,6 +527,7 @@
         console.log("Recognition lifecycle complete. recognizedText:", recognizedText);
         clearTimeout(recognitionFallbackTimeout);
         isRecording = false;
+        recognitionStarted = false;
 
         // Reset button visual state
         const talkBtn = document.getElementById('talkButton');
@@ -653,11 +668,22 @@
       }
       stopSpeakingAnimation();
 
+      // Reset cube position and restore bob animation if it flew away
+      const cubeEl = document.getElementById('aiCube');
+      if (cubeEl) {
+        cubeEl.removeAttribute('animation__move_room');
+        cubeEl.setAttribute('position', '0 1.8 -1.5');
+        if (!cubeEl.hasAttribute('animation__bob')) {
+          cubeEl.setAttribute('animation__bob', 'property: position; to: 0 1.95 -1.5; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine');
+        }
+      }
+
       isRecording = true;
       updateUIState("Listening...");
       setCubeState("listening");
       document.getElementById('userText').setAttribute('value', "You: [Listening...]");
       
+      recognitionStarted = false;
       try {
         recognition.lang = currentLang;
         recognition.start();
@@ -668,6 +694,10 @@
 
     function stopRecording() {
       if (!isRecording || !recognition) return;
+      if (!recognitionStarted) {
+        isRecording = false;
+        return;
+      }
       
       try {
         recognition.stop();
@@ -830,8 +860,6 @@
       if (nights2D) {
         nights2D.textContent = nights ? `${nights} night(s)` : "Nights: TBD";
       }
-    }xt;
-      }
     }
 
     // ==========================================
@@ -846,6 +874,7 @@
           role: "user",
           parts: [{ text: textPrompt }]
         });
+        chatHistory = chatHistory.slice(-20);
         
         // System prompt configures the AI role as a Hotel Receptionist returning JSON
         const systemPrompt = `You are a friendly, professional, and welcoming hotel receptionist in a virtual reality (VR) Hotel.
@@ -911,9 +940,12 @@ Always output ONLY valid JSON. Speak only in English in the receptionistResponse
         try {
           aiData = JSON.parse(replyJsonString);
         } catch (jsonErr) {
-          // Fallback cleanup if the model included markdown wrappers
           const cleanedString = replyJsonString.replace(/```json|```/g, "").trim();
-          aiData = JSON.parse(cleanedString);
+          try {
+            aiData = JSON.parse(cleanedString);
+          } catch (jsonErr2) {
+            throw new Error("Failed to parse Gemini response as JSON: " + jsonErr2.message);
+          }
         }
 
         const aiReply = aiData.receptionistResponse || "Let me check that for you.";
@@ -951,13 +983,11 @@ Always output ONLY valid JSON. Speak only in English in the receptionistResponse
     function triggerGoToRoomAnimation() {
       const cubeEl = document.getElementById('aiCube');
       if (cubeEl) {
-        // Stop the bobbing animation to prevent conflicting positions
         cubeEl.removeAttribute('animation__bob');
-        
-        // Animate the cube flying away to the "room"
         cubeEl.setAttribute('animation__move_room', 'property: position; to: -15 2 -20; dur: 8000; easing: easeInOutQuad');
-        
-        // Optional: you can add a visual path or sound here
+        cubeEl.addEventListener('animationcomplete', function onMoveDone() {
+          cubeEl.removeEventListener('animationcomplete', onMoveDone);
+        });
       }
     }
 
@@ -969,17 +999,11 @@ Always output ONLY valid JSON. Speak only in English in the receptionistResponse
       const utterance = new SpeechSynthesisUtterance(textToSpeak);
       utterance.lang = currentLang;
 
-      // Find compatible voice
-let voiceList = [];
-        // Populate voice list when available
-        window.speechSynthesis.onvoiceschanged = () => {
-          voiceList = window.speechSynthesis.getVoices();
-        };
-        // Initial fetch (may be empty until onvoiceschanged fires)
-        voiceList = window.speechSynthesis.getVoices();
-      const preferredVoice = voiceList.find(v => v.lang.startsWith(currentLang.substring(0, 2)) && (v.name.includes('Google') || v.name.includes('Natural'))) ||
-    voiceList.find(v => v.lang.startsWith(currentLang.substring(0, 2))) ||
-    voiceList[0];
+      // Find compatible voice using preloaded list (Task 3.2 fix)
+      const voices = ttsVoiceList.length > 0 ? ttsVoiceList : window.speechSynthesis.getVoices();
+      const preferredVoice = voices.find(v => v.lang.startsWith(currentLang.substring(0, 2)) && (v.name.includes('Google') || v.name.includes('Natural'))) ||
+    voices.find(v => v.lang.startsWith(currentLang.substring(0, 2))) ||
+    voices[0];
       
       if (preferredVoice) {
         utterance.voice = preferredVoice;
