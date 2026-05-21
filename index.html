@@ -223,8 +223,8 @@
   <!-- 2D HUD OVERLAY (Desktop & Mobile) -->
   <div id="hud-overlay">
     <div class="glass-card">
-      <div class="hud-title">VR Hotel Receptionist</div>
-      <div class="hud-subtitle">Interactive Booking Simulator</div>
+      <div class="hud-title">VR Receptionist Desk</div>
+      <div class="hud-subtitle">Guest Booking Practice Mode</div>
       
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <span id="hudStatusBadge" class="status-badge">Idle</span>
@@ -236,23 +236,21 @@
 
 <!-- 2D Scoreboard for booking details -->
 <div id="hudScores" class="hud-scores">
-  <div class="score-row">
-    <span class="score-label">Booking Status:</span>
-    <span id="bookingStatus2D" style="color: #fbbf24; font-weight: bold;">In Progress...</span>
+  <div style="font-size: 0.85rem; color: #9ca3af; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Receptionist Checklist:</div>
+  <div class="score-row"><span class="score-label" id="taskGreet">⬜ 1. Greet the guest</span></div>
+  <div class="score-row"><span class="score-label" id="taskName">⬜ 2. Get guest's name</span></div>
+  <div class="score-row"><span class="score-label" id="taskCount">⬜ 3. Ask guest count</span></div>
+  <div class="score-row"><span class="score-label" id="taskRoom">⬜ 4. Ask preferred room type</span></div>
+  <div class="score-row"><span class="score-label" id="taskNights">⬜ 5. Ask number of nights</span></div>
+  <div class="score-row"><span class="score-label" id="taskConfirm">⬜ 6. Confirm the booking</span></div>
+  
+  <div style="margin-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 10px;">
+    <div class="score-row"><span class="score-label">Guest:</span><span id="guestName2D" style="color: #a5b4fc; font-weight: bold;">TBD</span></div>
+    <div class="score-row"><span class="score-label">Room Type:</span><span id="roomDetails2D" style="color: #a5b4fc; font-weight: bold;">Not Selected</span></div>
+    <div class="score-row"><span class="score-label">Nights:</span><span id="nights2D" style="color: #a5b4fc; font-weight: bold;">TBD</span></div>
+    <div class="score-row"><span class="score-label">Assigned Room:</span><span id="bookingStatus2D" style="color: #fbbf24; font-weight: bold;">TBD</span></div>
   </div>
-  <div class="score-row">
-    <span class="score-label">Room:</span>
-    <span id="roomDetails2D" style="color: #a5b4fc; font-weight: 600;">Not Selected</span>
-  </div>
-  <div class="score-row">
-    <span class="score-label">Guest:</span>
-    <span id="guestName2D" style="color: #a5b4fc; font-weight: 600;">Guest: TBD</span>
-  </div>
-  <div class="score-row">
-    <span class="score-label">Nights:</span>
-    <span id="nights2D" style="color: #a5b4fc; font-weight: 600;">Nights: TBD</span>
-  </div>
-  <div id="hudTip" class="tip-box">Welcome! Tell me what kind of room you'd like to book.</div>
+  <div id="hudTip" class="tip-box">Welcome! A guest has arrived at your reception desk. Say "Hello!" or "Welcome to our hotel!" to start the check-in process.</div>
 </div>
 
       <div class="mic-instruction">
@@ -279,10 +277,10 @@
     <!-- CUSTOM LIGHTING SYSTEM -->
     <a-entity light="type: ambient; color: #1e1b4b; intensity: 0.7"></a-entity>
     <a-entity light="type: directional; color: #a5b4fc; intensity: 0.9; castShadow: true" position="-3 6 4"></a-entity>
-    <a-entity id="cubeLight" light="type: point; color: #818cf8; intensity: 1.5; distance: 6; castShadow: true" position="0 1.8 -1.5"></a-entity>
+    <a-entity id="cubeLight" light="type: point; color: #818cf8; intensity: 1.5; distance: 6; castShadow: true" position="0 1.6 -1.8"></a-entity>
 
     <!-- DECORATIVE SPAITAL EFFECTS -->
-    <a-ring position="0 3.2 -1.5" rotation="90 0 0" radius-inner="0.65" radius-outer="0.67" material="color: #6366f1; shader: flat; emissive: #6366f1; emissiveIntensity: 2.5"
+    <a-ring position="0 3.2 -1.8" rotation="90 0 0" radius-inner="0.65" radius-outer="0.67" material="color: #6366f1; shader: flat; emissive: #6366f1; emissiveIntensity: 2.5"
             animation="property: rotation; to: 90 360 0; dur: 25000; loop: true; easing: linear"></a-ring>
             
     <a-cylinder position="-2.5 2.5 -4.5" radius="0.04" height="6" material="color: #06b6d4; shader: flat; emissive: #06b6d4; emissiveIntensity: 2"></a-cylinder>
@@ -293,101 +291,142 @@
     <!-- THE AI CHARACTER (Floating & Rotating Metallic Cube) -->
     <a-box id="aiCube"
            class="clickable"
-           position="0 1.8 -1.5"
+           position="0 1.6 -1.8"
            rotation="0 45 45"
            width="0.38" height="0.38" depth="0.38"
            material="color: #6366f1; roughness: 0.05; metalness: 0.95; emissive: #312e81; emissiveIntensity: 1.2"
-           animation__bob="property: position; to: 0 1.95 -1.5; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine"
+           animation__bob="property: position; to: 0 1.75 -1.8; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine"
            animation__rotate="property: rotation; to: 360 405 45; dur: 9000; loop: true; easing: linear">
     </a-box>
 
-    <!-- VR INTERACTION & DISPLAY PANEL -->
+    <!-- RECEPCIÓN DE HOTEL - MOSTRADOR -->
+    <a-box id="receptionDesk"
+           position="0 0.5 -0.9"
+           scale="2.0 1.0 0.6"
+           material="color: #1e293b; roughness: 0.7; metalness: 0.1"
+           shadow="cast: true; receive: true">
+    </a-box>
+
+    <!-- CLIPBOARD INTERACTIVO (TABLA DE TAREAS) -->
+    <a-plane id="clipboardPanel"
+             position="-0.5 1.05 -0.85"
+             rotation="-25 20 0"
+             width="0.75" height="0.95"
+             material="shader: flat; color: #0d1527; opacity: 0.95; transparent: true"
+             class="clickable">
+      
+      <!-- Bordes del clipboard -->
+      <a-plane position="0 0.46 0.005" width="0.75" height="0.03" material="color: #6366f1; shader: flat; emissive: #6366f1; emissiveIntensity: 1.0"></a-plane>
+      <a-plane position="0 -0.46 0.005" width="0.75" height="0.03" material="color: #312e81; shader: flat; emissive: #312e81; emissiveIntensity: 0.5"></a-plane>
+
+      <a-text id="clipTitle" value="RECEPTIONIST CLIPBOARD" align="center" position="0 0.40 0.01" width="1.6" color="#38bdf8" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+
+      <!-- Checklist Items (Checkboxes) -->
+      <a-text id="clipTaskGreet" value="[ ] 1. Greet Guest" align="left" position="-0.32 0.28 0.01" width="1.4" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskName" value="[ ] 2. Ask Name" align="left" position="-0.32 0.20 0.01" width="1.4" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskCount" value="[ ] 3. Ask Guest Count" align="left" position="-0.32 0.12 0.01" width="1.4" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskRoom" value="[ ] 4. Ask Room Type" align="left" position="-0.32 0.04 0.01" width="1.4" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskNights" value="[ ] 5. Ask Nights Count" align="left" position="-0.32 -0.04 0.01" width="1.4" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskConfirm" value="[ ] 6. Confirm Booking" align="left" position="-0.32 -0.12 0.01" width="1.4" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+
+      <!-- Seccion de Datos de Reserva -->
+      <a-plane position="0 -0.20 0.004" width="0.68" height="0.002" material="color: #374151; shader: flat"></a-plane>
+      
+      <a-text id="clipGuestLabel" value="Guest Info:" align="left" position="-0.32 -0.25 0.01" width="1.2" color="#9ca3af" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipGuestVal" value="Guest: TBD" align="left" position="-0.10 -0.25 0.01" width="1.3" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+
+      <a-text id="clipRoomLabel" value="Room Type:" align="left" position="-0.32 -0.30 0.01" width="1.2" color="#9ca3af" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipRoomVal" value="Type: TBD" align="left" position="-0.10 -0.30 0.01" width="1.3" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+
+      <a-text id="clipNightsLabel" value="Nights Count:" align="left" position="-0.32 -0.35 0.01" width="1.2" color="#9ca3af" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipNightsVal" value="Nights: TBD" align="left" position="-0.10 -0.35 0.01" width="1.3" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+
+      <a-text id="clipAssignedLabel" value="Room Assigned:" align="left" position="-0.32 -0.40 0.01" width="1.2" color="#9ca3af" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipAssignedVal" value="Room: TBD" align="left" position="-0.10 -0.40 0.01" width="1.3" color="#fbbf24" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+
+    </a-plane>
+
+    <!-- VR INTERACTION & DISPLAY PANEL (Holographic Screen) -->
     <a-plane id="uiPanel"
-             position="0 1.15 -1.35"
-             rotation="-18 0 0"
-             width="2.4" height="1.45"
+             position="0.25 1.5 -1.4"
+             rotation="-15 -10 0"
+             width="1.8" height="1.1"
              material="shader: flat; color: #080a14; opacity: 0.88; transparent: true; roughness: 1"
              class="clickable">
       
-      <!-- Sub-frame borders to add premium high-tech look -->
-      <a-plane position="0 0.70 0.005" width="2.4" height="0.04" material="color: #4f46e5; shader: flat; emissive: #4f46e5; emissiveIntensity: 1.5"></a-plane>
-      <a-plane position="0 -0.73 0.005" width="2.4" height="0.04" material="color: #312e81; shader: flat; emissive: #312e81; emissiveIntensity: 0.5"></a-plane>
+      <!-- Sub-frame borders -->
+      <a-plane position="0 0.53 0.005" width="1.8" height="0.03" material="color: #4f46e5; shader: flat; emissive: #4f46e5; emissiveIntensity: 1.5"></a-plane>
+      <a-plane position="0 -0.54 0.005" width="1.8" height="0.03" material="color: #312e81; shader: flat; emissive: #312e81; emissiveIntensity: 0.5"></a-plane>
 
-      <!-- 3D status indicator text (e.g. Listening, Thinking, Speaking...) -->
+      <!-- Status indicator -->
       <a-text id="statusText"
               value="HOLD M TO SPEAK"
               align="center"
-              position="0 0.58 0.01"
-              width="3.8"
+              position="0 0.44 0.01"
+              width="2.8"
               color="#38bdf8"
               font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
               negate="false">
       </a-text>
 
-      <!-- 3D text showing the user's spoken input -->
+      <!-- User Text (Your question) -->
       <a-text id="userText"
               value="You: ..."
               align="center"
-              position="0 0.35 0.01"
-              width="2.5"
+              position="0 0.24 0.01"
+              width="1.9"
               color="#a5b4fc"
               font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
-              wrap-count="45"
+              wrap-count="40"
               negate="false">
       </a-text>
 
-      <!-- 3D text showing Gemini's response -->
+      <!-- AI Text (Guest response) -->
       <a-text id="aiText"
-              value="Receptionist: Welcome to our VR Hotel! How can I help you today? Would you like to book a room?"
+              value="Guest: (Checking in...) Say Hello to begin."
               align="center"
-              position="0 0.05 0.01"
-              width="2.5"
+              position="0 -0.10 0.01"
+              width="1.9"
               color="#f472b6"
               font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
-              wrap-count="45"
+              wrap-count="40"
               negate="false">
       </a-text>
 
-      <!-- 3D Booking Status Info -->
-      <a-text id="bookingStatusLabel" value="BOOKING STATUS"
-              align="center"
-              position="0 -0.25 0.01"
-              width="1.8"
-              color="#9ca3af"
-              font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
-              negate="false">
-      </a-text>
+    </a-plane>
+
+    <!-- EVALUATION PANEL (visible after booking completion) -->
+    <a-plane id="evaluationPanel"
+             position="0 1.55 -1.4"
+             rotation="-10 0 0"
+             width="2.4" height="1.8"
+             material="shader: flat; color: #0a0320; opacity: 0.95; transparent: true; roughness: 1"
+             class="clickable"
+             visible="false">
       
-      <a-text id="bookingStatusText" value="In Progress..."
-              align="center"
-              position="0 -0.35 0.01"
-              width="2.5"
-              color="#fbbf24"
-              font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
-              negate="false">
-      </a-text>
+      <!-- Borders -->
+      <a-plane position="0 0.88 0.005" width="2.4" height="0.03" material="color: #f472b6; shader: flat; emissive: #f472b6; emissiveIntensity: 1.5"></a-plane>
+      <a-plane position="0 -0.88 0.005" width="2.4" height="0.03" material="color: #831843; shader: flat; emissive: #831843; emissiveIntensity: 0.5"></a-plane>
 
-      <!-- 3D Room Details -->
-      <a-text id="roomDetailsLabel" value="ROOM"
-              align="center"
-              position="0 -0.48 0.01"
-              width="1.5"
-              color="#9ca3af"
-              font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
-              negate="false">
-      </a-text>
-      
-      <a-text id="roomDetailsText" value="Not Selected"
-              align="center"
-              position="0 -0.55 0.01"
-              width="2.5"
-              color="#a5b4fc"
-              font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
-              negate="false">
-      </a-text>
+      <a-text value="EVALUATION REPORT" align="center" position="0 0.80 0.01" width="3.5" color="#f472b6" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
 
-      <a-text id="guestNameText" value="Guest: TBD" align="center" position="0 -0.62 0.01" width="2.5" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="nightsText" value="Nights: TBD" align="center" position="0 -0.69 0.01" width="2.5" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <!-- Overall Score -->
+      <a-text id="evalScore" value="OVERALL: -- / 10" align="center" position="0 0.60 0.01" width="3.5" color="#fbbf24" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+
+      <!-- Criteria Left Column -->
+      <a-text id="evalCriteria1" value="Communication: -\nLogical Order: -\nProfessionalism: -" align="left" position="-0.85 0.15 0.01" width="1.6" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+
+      <!-- Criteria Right Column -->
+      <a-text id="evalCriteria2" value="Precision: -\nFluency: -" align="left" position="0.15 0.20 0.01" width="1.6" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+
+      <!-- Summary / Recommendations -->
+      <a-text id="evalSummary" value="Summary: awaiting results..." align="center" position="0 -0.25 0.01" width="3.2" color="#e2e8f0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" wrap-count="55" negate="false"></a-text>
+
+      <!-- Mistakes -->
+      <a-text id="evalMistakes" value="Mistakes: -" align="center" position="0 -0.55 0.01" width="3.2" color="#fca5a5" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" wrap-count="55" negate="false"></a-text>
+
+      <!-- Recommendations -->
+      <a-text id="evalRecommendations" value="Recommendations: -" align="center" position="0 -0.78 0.01" width="3.2" color="#86efac" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" wrap-count="55" negate="false"></a-text>
 
     </a-plane>
 
@@ -645,6 +684,11 @@ loadTtsVoices();
     function initApp() {
       console.log("App ready.");
       
+      // Select random guest profile for role reversal
+      selectRandomGuestProfile();
+      update3DClipboard();
+      update2DHUD();
+      
       setCubeState("idle");
       updateUIState("HOLD M TO SPEAK");
 
@@ -760,9 +804,9 @@ async function startRecording() {
        const cubeEl = document.getElementById('aiCube');
        if (cubeEl) {
          cubeEl.removeAttribute('animation__move_room');
-         cubeEl.setAttribute('position', '0 1.8 -1.5');
+          cubeEl.setAttribute('position', '0 1.6 -1.8');
          if (!cubeEl.hasAttribute('animation__bob')) {
-           cubeEl.setAttribute('animation__bob', 'property: position; to: 0 1.95 -1.5; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine');
+            cubeEl.setAttribute('animation__bob', 'property: position; to: 0 1.75 -1.8; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine');
          }
        }
 
@@ -900,57 +944,462 @@ async function startRecording() {
     // ------------------------------------------
     // REPLACED WITH BOOKING STATUS DISPLAY LOGIC
     // ------------------------------------------
-    function updateBookingUI(bookingStatus, roomType, roomNumber, guestName, nights) {
-      // 1. Update A-Frame 3D Texts in VR
-      const status3D = document.getElementById('bookingStatusText');
-      const details3D = document.getElementById('roomDetailsText');
-      const name3D = document.getElementById('guestNameText');
-      const nights3D = document.getElementById('nightsText');
-      
-      const isCompleted = bookingStatus === "completed";
-      
-      if (status3D) {
-        status3D.setAttribute('value', isCompleted ? "COMPLETED ✓" : "In Progress...");
-        status3D.setAttribute('color', isCompleted ? "#4ade80" : "#fbbf24");
+    // ==========================================
+    // ROLE REVERSAL: GUEST PROFILES & STATE
+    // ==========================================
+    const GUEST_PROFILES = [
+      {
+        name: "James Sterling",
+        nights: 3,
+        guestsCount: 2,
+        secretRoomType: "Suite",
+        personality: "Polite",
+        guidance: "You are a very polite, friendly, and helpful guest. Answer the receptionist clearly, cordially, and in brief sentences."
+      },
+      {
+        name: "Sophia Vance",
+        nights: 2,
+        guestsCount: 1,
+        secretRoomType: "Single Room",
+        personality: "Impatient",
+        guidance: "You are in a big hurry. Your answers must be direct, brief, and slightly rushed. Absolutely do NOT include any stage directions or physical descriptions (like looks at watch, sighs, etc.) in your spoken text. Speak only as a natural, hurried human. Make sure to verbally push the receptionist to be quick, but answer when asked."
+      },
+      {
+        name: "David Kim",
+        nights: 5,
+        guestsCount: 4,
+        secretRoomType: "Family Room",
+        personality: "Indecisive",
+        guidance: "You are traveling with your family and need space, but you are highly indecisive. If asked about room type, ask the receptionist for advice or to list and describe options. Do not make up your mind immediately. Ask questions like 'What would you recommend for a family?'."
+      },
+      {
+        name: "Elena Rostova",
+        nights: 4,
+        guestsCount: 3,
+        secretRoomType: "Double Room",
+        personality: "Demanding",
+        guidance: "You are a demanding VIP guest. Before fully giving your information or confirming the booking, ask if premium Wi-Fi is available, or if breakfast is included, and if parking is covered. Expect high-class service and respond accordingly."
       }
-      
-      if (details3D) {
-        let roomText = "Not Selected";
-        if (roomType || roomNumber) {
-          roomText = `${roomType || 'Standard'} - No. ${roomNumber || 'TBD'}`;
-        }
-        details3D.setAttribute('value', roomText);
-      }
-      
-      if (name3D) {
-        name3D.setAttribute('value', guestName ? `Guest: ${guestName}` : "Guest: TBD");
-      }
-      if (nights3D) {
-        nights3D.setAttribute('value', nights ? `${nights} night(s)` : "Nights: TBD");
-      }
+    ];
 
-      // 2. Update 2D Screen Overlay
-      const status2D = document.getElementById('bookingStatus2D');
-      const details2D = document.getElementById('roomDetails2D');
-      const name2D = document.getElementById('guestName2D');
-      const nights2D = document.getElementById('nights2D');
+    let currentGuestProfile = null;
 
-      if (status2D && details2D) {
-        status2D.textContent = isCompleted ? "Completed ✓" : "In Progress...";
-        status2D.style.color = isCompleted ? "#4ade80" : "#fbbf24";
+    function selectRandomGuestProfile() {
+      const randomIndex = Math.floor(Math.random() * GUEST_PROFILES.length);
+      currentGuestProfile = GUEST_PROFILES[randomIndex];
+      console.log("Selected guest profile:", currentGuestProfile);
+    }
+
+    // Missions / Tasks tracking state
+    let missions = {
+      greeted: false,
+      nameObtained: false,
+      guestsConfirmed: false,
+      roomTypeSelected: false,
+      nightsCountAsked: false,
+      bookingConfirmed: false
+    };
+
+    // Obtained values during the booking
+    let obtainedValues = {
+      guestName: "TBD",
+      roomType: "Not Selected",
+      nights: "TBD",
+      roomNumberAssigned: "TBD"
+    };
+
+    let evaluationComplete = false;
+
+    // Native feedback chime using Web Audio API (cross-browser compatible)
+    function playSuccessSound() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
-        let roomText2D = "Not Selected";
-        if (roomType || roomNumber) {
-          roomText2D = `${roomType || 'Standard'} - No. ${roomNumber || 'TBD'}`;
+        // First note (C5)
+        const osc1 = audioCtx.createOscillator();
+        const gain1 = audioCtx.createGain();
+        osc1.type = "sine";
+        osc1.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+        gain1.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+        osc1.connect(gain1);
+        gain1.connect(audioCtx.destination);
+        osc1.start();
+        osc1.stop(audioCtx.currentTime + 0.15);
+        
+        // Second note (E5) after 0.08 seconds
+        setTimeout(() => {
+          const osc2 = audioCtx.createOscillator();
+          const gain2 = audioCtx.createGain();
+          osc2.type = "sine";
+          osc2.frequency.setValueAtTime(659.25, audioCtx.currentTime); // E5
+          gain2.gain.setValueAtTime(0.12, audioCtx.currentTime);
+          gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+          osc2.connect(gain2);
+          gain2.connect(audioCtx.destination);
+          osc2.start();
+          osc2.stop(audioCtx.currentTime + 0.25);
+        }, 80);
+        
+      } catch (err) {
+        console.warn("Could not play success sound:", err);
+      }
+    }
+
+    function updateMissionsAndUI(detectedMissions, currentValues) {
+      if (!detectedMissions || !currentValues) return;
+      
+      let anyMissionCompleted = false;
+      const missionKeys = ["greeted", "nameObtained", "guestsConfirmed", "roomTypeSelected", "nightsCountAsked", "bookingConfirmed"];
+      
+      missionKeys.forEach(key => {
+        if (detectedMissions[key] === true && missions[key] === false) {
+          missions[key] = true;
+          anyMissionCompleted = true;
         }
-        details2D.textContent = roomText2D;
+      });
+      
+      if (anyMissionCompleted) {
+        playSuccessSound();
       }
-      if (name2D) {
-        name2D.textContent = guestName ? `Guest: ${guestName}` : "Guest: TBD";
+      
+      // Update values
+      if (currentValues.guestName) obtainedValues.guestName = currentValues.guestName;
+      if (currentValues.roomType) obtainedValues.roomType = currentValues.roomType;
+      if (currentValues.nights) obtainedValues.nights = currentValues.nights;
+      if (currentValues.roomNumberAssigned) obtainedValues.roomNumberAssigned = currentValues.roomNumberAssigned;
+      
+      // Update displays
+      update3DClipboard();
+      update2DHUD();
+    }
+
+    function update3DClipboard() {
+      const getTaskText = (isCompleted, taskName) => {
+        return isCompleted ? `[X] ${taskName}` : `[ ] ${taskName}`;
+      };
+      
+      const getTaskColor = (isCompleted) => {
+        return isCompleted ? "#4ade80" : "#ef4444";
+      };
+      
+      const clipTaskGreet = document.getElementById('clipTaskGreet');
+      const clipTaskName = document.getElementById('clipTaskName');
+      const clipTaskCount = document.getElementById('clipTaskCount');
+      const clipTaskRoom = document.getElementById('clipTaskRoom');
+      const clipTaskNights = document.getElementById('clipTaskNights');
+      const clipTaskConfirm = document.getElementById('clipTaskConfirm');
+      
+      if (clipTaskGreet) {
+        clipTaskGreet.setAttribute('value', getTaskText(missions.greeted, "1. Greet Guest"));
+        clipTaskGreet.setAttribute('color', getTaskColor(missions.greeted));
       }
-      if (nights2D) {
-        nights2D.textContent = nights ? `${nights} night(s)` : "Nights: TBD";
+      if (clipTaskName) {
+        clipTaskName.setAttribute('value', getTaskText(missions.nameObtained, "2. Ask Name"));
+        clipTaskName.setAttribute('color', getTaskColor(missions.nameObtained));
       }
+      if (clipTaskCount) {
+        clipTaskCount.setAttribute('value', getTaskText(missions.guestsConfirmed, "3. Ask Guest Count"));
+        clipTaskCount.setAttribute('color', getTaskColor(missions.guestsConfirmed));
+      }
+      if (clipTaskRoom) {
+        clipTaskRoom.setAttribute('value', getTaskText(missions.roomTypeSelected, "4. Ask Room Type"));
+        clipTaskRoom.setAttribute('color', getTaskColor(missions.roomTypeSelected));
+      }
+      if (clipTaskNights) {
+        clipTaskNights.setAttribute('value', getTaskText(missions.nightsCountAsked, "5. Ask Nights Count"));
+        clipTaskNights.setAttribute('color', getTaskColor(missions.nightsCountAsked));
+      }
+      if (clipTaskConfirm) {
+        clipTaskConfirm.setAttribute('value', getTaskText(missions.bookingConfirmed, "6. Confirm Booking"));
+        clipTaskConfirm.setAttribute('color', getTaskColor(missions.bookingConfirmed));
+      }
+      
+      const clipGuestVal = document.getElementById('clipGuestVal');
+      const clipRoomVal = document.getElementById('clipRoomVal');
+      const clipNightsVal = document.getElementById('clipNightsVal');
+      const clipAssignedVal = document.getElementById('clipAssignedVal');
+      
+      if (clipGuestVal) clipGuestVal.setAttribute('value', `Guest: ${obtainedValues.guestName}`);
+      if (clipRoomVal) clipRoomVal.setAttribute('value', `Type: ${obtainedValues.roomType}`);
+      if (clipNightsVal) clipNightsVal.setAttribute('value', `Nights: ${obtainedValues.nights}`);
+      if (clipAssignedVal) clipAssignedVal.setAttribute('value', `Room: ${obtainedValues.roomNumberAssigned}`);
+    }
+
+    function update2DHUD() {
+      const getTask2DHTML = (isCompleted, taskName) => {
+        return isCompleted ? `✅ ${taskName}` : `⬜ ${taskName}`;
+      };
+      
+      const getTask2DColor = (isCompleted) => {
+        return isCompleted ? "#4ade80" : "#9ca3af";
+      };
+      
+      const taskGreet = document.getElementById('taskGreet');
+      const taskName = document.getElementById('taskName');
+      const taskCount = document.getElementById('taskCount');
+      const taskRoom = document.getElementById('taskRoom');
+      const taskNights = document.getElementById('taskNights');
+      const taskConfirm = document.getElementById('taskConfirm');
+      
+      if (taskGreet) {
+        taskGreet.textContent = getTask2DHTML(missions.greeted, "1. Greet the guest");
+        taskGreet.style.color = getTask2DColor(missions.greeted);
+      }
+      if (taskName) {
+        taskName.textContent = getTask2DHTML(missions.nameObtained, "2. Get guest's name");
+        taskName.style.color = getTask2DColor(missions.nameObtained);
+      }
+      if (taskCount) {
+        taskCount.textContent = getTask2DHTML(missions.guestsConfirmed, "3. Ask guest count");
+        taskCount.style.color = getTask2DColor(missions.guestsConfirmed);
+      }
+      if (taskRoom) {
+        taskRoom.textContent = getTask2DHTML(missions.roomTypeSelected, "4. Ask preferred room type");
+        taskRoom.style.color = getTask2DColor(missions.roomTypeSelected);
+      }
+      if (taskNights) {
+        taskNights.textContent = getTask2DHTML(missions.nightsCountAsked, "5. Ask number of nights");
+        taskNights.style.color = getTask2DColor(missions.nightsCountAsked);
+      }
+      if (taskConfirm) {
+        taskConfirm.textContent = getTask2DHTML(missions.bookingConfirmed, "6. Confirm the booking");
+        taskConfirm.style.color = getTask2DColor(missions.bookingConfirmed);
+      }
+      
+      const guestName2D = document.getElementById('guestName2D');
+      const roomDetails2D = document.getElementById('roomDetails2D');
+      const nights2D = document.getElementById('nights2D');
+      const bookingStatus2D = document.getElementById('bookingStatus2D');
+      const hudTip = document.getElementById('hudTip');
+      
+      if (guestName2D) guestName2D.textContent = obtainedValues.guestName;
+      if (roomDetails2D) roomDetails2D.textContent = obtainedValues.roomType;
+      if (nights2D) nights2D.textContent = obtainedValues.nights;
+      if (bookingStatus2D) {
+        bookingStatus2D.textContent = obtainedValues.roomNumberAssigned;
+        bookingStatus2D.style.color = (obtainedValues.roomNumberAssigned !== "TBD") ? "#4ade80" : "#fbbf24";
+      }
+      
+      if (hudTip) {
+        if (!missions.greeted) {
+          hudTip.textContent = "Tip: Welcome the guest! Try saying 'Hello, welcome to our hotel.'";
+        } else if (!missions.nameObtained) {
+          hudTip.textContent = "Tip: Ask for the guest's name. Try 'Could I have your name, please?'";
+        } else if (!missions.guestsConfirmed) {
+          hudTip.textContent = "Tip: Ask how many people are staying. Try 'For how many people is the room?'";
+        } else if (!missions.roomTypeSelected) {
+          hudTip.textContent = "Tip: Offer room types and ask which one they'd prefer. Try 'We have single rooms, double rooms, and suites. Which would you like?'";
+        } else if (!missions.nightsCountAsked) {
+          hudTip.textContent = "Tip: Ask how many nights they will stay. Try 'How many nights will you be staying with us?'";
+        } else if (!missions.bookingConfirmed) {
+          hudTip.textContent = "Tip: Assign a room number and confirm the booking! Try 'I have assigned you Room 204. Your booking is confirmed!'";
+        } else {
+          hudTip.textContent = "Congratulations! You have completed all checklist items. Waiting for evaluation results...";
+        }
+      }
+    }
+
+    // ==========================================
+    // FINAL EVALUATION SYSTEM
+    // ==========================================
+    async function triggerEvaluation() {
+      if (evaluationComplete) return;
+      evaluationComplete = true;
+
+      updateUIState("EVALUATING...");
+      setCubeState("thinking");
+
+      try {
+        const evalPrompt = `You are an expert hospitality instructor. Evaluate the receptionist's performance in the preceding hotel booking conversation.
+
+Analyze the entire conversation history. Rate the receptionist 1-10 for each criterion:
+1. Communication - clear, polite, appropriate vocabulary
+2. LogicalOrder - proper sequence: greeting → details → assigning room → confirmation
+3. Professionalism - courteous, helpful, service attitude
+4. Precision - successfully gathered all required information
+5. Fluency - smooth natural interaction
+
+Provide evaluation in this JSON schema:
+{
+  "communication": number,
+  "logicalOrder": number,
+  "professionalism": number,
+  "precision": number,
+  "fluency": number,
+  "overallScore": number,
+  "summary": "Brief summary of overall performance.",
+  "mistakes": "Specific mistakes or areas needing improvement.",
+  "recommendations": "Actionable recommendations to improve."
+}
+
+Be honest but constructive. Use numbers only for scores (1-10).`;
+
+        const evalPayload = {
+          contents: chatHistory,
+          systemInstruction: {
+            parts: [{ text: evalPrompt }]
+          },
+          generationConfig: {
+            responseMimeType: "application/json"
+          }
+        };
+
+        const response = await fetch(ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(evalPayload)
+        });
+
+        if (!response.ok) {
+          throw new Error(`Evaluation API failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+        let evalString = "";
+        if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0]) {
+          evalString = data.candidates[0].content.parts[0].text;
+        }
+
+        let evalData;
+        try {
+          evalData = JSON.parse(evalString);
+        } catch {
+          const cleaned = evalString.replace(/```json|```/g, "").trim();
+          evalData = JSON.parse(cleaned);
+        }
+
+        // Update VR 3D Evaluation Panel
+        updateEvaluationUI(evalData);
+
+        // Update 2D HUD Evaluation
+        updateEvaluationHUD(evalData);
+
+        updateUIState("EVALUATION COMPLETE");
+        setCubeState("idle");
+
+      } catch (error) {
+        console.error("Evaluation failed:", error);
+        updateUIState("HOLD M TO SPEAK");
+        setCubeState("idle");
+        evaluationComplete = false;
+      }
+    }
+
+    function updateEvaluationUI(evalData) {
+      const evalPanel = document.getElementById('evaluationPanel');
+      if (!evalPanel) return;
+
+      evalPanel.setAttribute('visible', 'true');
+
+      const evalScore = document.getElementById('evalScore');
+      if (evalScore) {
+        evalScore.setAttribute('value', `OVERALL: ${evalData.overallScore || '?'}/10`);
+      }
+
+      const evalCriteria1 = document.getElementById('evalCriteria1');
+      if (evalCriteria1) {
+        evalCriteria1.setAttribute('value', `Communication: ${evalData.communication || '-'}/10\nLogical Order: ${evalData.logicalOrder || '-'}/10\nProfessionalism: ${evalData.professionalism || '-'}/10`);
+      }
+
+      const evalCriteria2 = document.getElementById('evalCriteria2');
+      if (evalCriteria2) {
+        evalCriteria2.setAttribute('value', `Precision: ${evalData.precision || '-'}/10\nFluency: ${evalData.fluency || '-'}/10`);
+      }
+
+      const evalSummary = document.getElementById('evalSummary');
+      if (evalSummary) {
+        evalSummary.setAttribute('value', `Summary: ${evalData.summary || 'No summary provided.'}`);
+      }
+
+      const evalMistakes = document.getElementById('evalMistakes');
+      if (evalMistakes) {
+        evalMistakes.setAttribute('value', `Mistakes: ${evalData.mistakes || 'None recorded'}`);
+      }
+
+      const evalRecommendations = document.getElementById('evalRecommendations');
+      if (evalRecommendations) {
+        evalRecommendations.setAttribute('value', `Recommendations: ${evalData.recommendations || 'Continue practicing!'}`);
+      }
+
+      // Hide dialogue panel, show evaluation panel
+      const uiPanel = document.getElementById('uiPanel');
+      if (uiPanel) uiPanel.setAttribute('visible', 'false');
+    }
+
+    function updateEvaluationHUD(evalData) {
+      const hudTip = document.getElementById('hudTip');
+      if (hudTip) {
+        hudTip.innerHTML = `<strong>EVALUATION COMPLETE</strong><br>Overall: ${evalData.overallScore || '?'}/10<br>Communication: ${evalData.communication || '-'}/10 | Logical Order: ${evalData.logicalOrder || '-'}/10 | Professionalism: ${evalData.professionalism || '-'}/10<br>Precision: ${evalData.precision || '-'}/10 | Fluency: ${evalData.fluency || '-'}/10<br><br>Summary: ${evalData.summary || ''}<br>Mistakes: ${evalData.mistakes || 'None recorded'}<br>Recommendations: ${evalData.recommendations || 'Continue practicing!'}`;
+      }
+
+      // Show reset button
+      let resetBtn = document.getElementById('resetSimulationBtn');
+      if (!resetBtn) {
+        resetBtn = document.createElement('button');
+        resetBtn.id = 'resetSimulationBtn';
+        resetBtn.className = 'talk-btn';
+        resetBtn.textContent = '🔄 Start New Simulation';
+        resetBtn.style.marginTop = '15px';
+        resetBtn.addEventListener('click', resetSimulation);
+
+        const hudOverlay = document.querySelector('.glass-card');
+        if (hudOverlay) {
+          hudOverlay.appendChild(resetBtn);
+        }
+      }
+    }
+
+    function resetSimulation() {
+      // Reset all state
+      missions = {
+        greeted: false,
+        nameObtained: false,
+        guestsConfirmed: false,
+        roomTypeSelected: false,
+        nightsCountAsked: false,
+        bookingConfirmed: false
+      };
+      obtainedValues = {
+        guestName: "TBD",
+        roomType: "Not Selected",
+        nights: "TBD",
+        roomNumberAssigned: "TBD"
+      };
+      evaluationComplete = false;
+
+      // Clear chat history for a fresh conversation
+      chatHistory = [];
+
+      // Select new random guest
+      selectRandomGuestProfile();
+
+      // Reset UI panels
+      const evalPanel = document.getElementById('evaluationPanel');
+      if (evalPanel) evalPanel.setAttribute('visible', 'false');
+
+      const uiPanel = document.getElementById('uiPanel');
+      if (uiPanel) uiPanel.setAttribute('visible', 'true');
+
+      const aiText = document.getElementById('aiText');
+      if (aiText) aiText.setAttribute('value', `Guest: (New guest arriving...) Welcome to begin.`);
+
+      const userText = document.getElementById('userText');
+      if (userText) userText.setAttribute('value', 'You: ...');
+
+      // Update displays
+      update3DClipboard();
+      update2DHUD();
+
+      // Remove reset button
+      const resetBtn = document.getElementById('resetSimulationBtn');
+      if (resetBtn) resetBtn.remove();
+
+      updateUIState("HOLD M TO SPEAK");
+      setCubeState("idle");
+
+      const hudTip = document.getElementById('hudTip');
+      if (hudTip) hudTip.textContent = "A new guest has arrived! Say 'Hello!' to start.";
     }
 
     // ==========================================
@@ -967,24 +1416,48 @@ async function startRecording() {
         });
         chatHistory = chatHistory.slice(-20);
         
-        // System prompt configures the AI role as a Hotel Receptionist returning JSON
-        const systemPrompt = `You are a friendly, professional, and welcoming hotel receptionist in a virtual reality (VR) Hotel.
-Speak ONLY in English.
-Your goal is to help the user book a room. You MUST ask them for their full name, how many nights they will stay, and their preferred room type (e.g., Single, Double, Suite).
-Once you have this information, confirm their booking and assign them a random room number between 101 and 599.
-Keep your conversational responses brief (1-3 sentences maximum).
+        // System prompt configures the AI role as a hotel GUEST (role reversal)
+        const profile = currentGuestProfile;
+        const systemPrompt = `You are a hotel guest (the customer) in a virtual reality hotel. The user is the hotel receptionist.
+
+Your profile (internal - do not reveal all at once):
+- Name: ${profile.name}
+- Number of guests in your party: ${profile.guestsCount}
+- Preferred room type (secret until you are offered options): ${profile.secretRoomType}
+- Number of nights staying: ${profile.nights}
+- Personality: ${profile.personality}
+
+Personality Guidance: ${profile.guidance}
+
+IMPORTANT RULES:
+- Speak ONLY in English.
+- NEVER include stage directions, asterisks, brackets, or descriptions of physical actions in your speech. Speak only as a real person talking.
+- Do NOT reveal your profile information unless the receptionist asks you specific questions.
+- If the receptionist asks about room type, ONLY choose from the options they list. If they don't offer options, ask them to describe what is available.
+- Keep your conversational responses brief (1-2 sentences maximum).
+- Be a realistic guest - behave according to your personality.
 
 Your response MUST be a JSON object with the following schema:
 {
-  "receptionistResponse": "Your conversational reply in English, confirming or asking for details.",
-  "bookingStatus": "in_progress", // Change to "completed" ONLY when you have all info and have assigned a room number.
-  "guestName": null, // The user's name, or null if not yet provided.
-  "nights": null, // Number of nights, or null if not yet provided.
-  "roomType": null, // The room type chosen, or null if not yet confirmed.
-  "roomNumber": null // The assigned room number, or null if not yet assigned.
+  "guestResponse": "Your conversational reply in English as the guest speaking to the receptionist.",
+  "detectedMissions": {
+    "greeted": false, // SET TO TRUE if the receptionist has greeted or welcomed you
+    "nameObtained": false, // SET TO TRUE if the receptionist has asked for or confirmed your name
+    "guestsConfirmed": false, // SET TO TRUE if the receptionist has asked how many guests
+    "roomTypeSelected": false, // SET TO TRUE if the receptionist has asked about or selected a room type
+    "nightsCountAsked": false, // SET TO TRUE if the receptionist has asked how many nights
+    "bookingConfirmed": false // SET TO TRUE if the receptionist has confirmed and assigned a room number
+  },
+  "currentValues": {
+    "guestName": null, // Your name, or null if not yet asked
+    "guestsCount": null, // Number of guests, or null if not yet asked
+    "roomType": null, // Your preferred room type, or null if not yet asked
+    "nights": null, // Number of nights, or null if not yet asked
+    "roomNumberAssigned": null // Assigned room number (e.g. "Room 204" between 101-599), or null if not yet assigned
+  }
 }
 
-Always output ONLY valid JSON. Speak only in English in the receptionistResponse.`;
+Always output ONLY valid JSON. Speak only in English in guestResponse.`;
 
         const payload = {
           contents: chatHistory,
@@ -1039,22 +1512,29 @@ Always output ONLY valid JSON. Speak only in English in the receptionistResponse
           }
         }
 
-        const aiReply = aiData.receptionistResponse || "Let me check that for you.";
-        const bStatus = aiData.bookingStatus || "in_progress";
-        const guestName = aiData.guestName || null;
-        const nights = aiData.nights || null;
+        const aiReply = aiData.guestResponse || "Hello, I'd like to check in please.";
+        const detectedMissions = aiData.detectedMissions || {};
+        const currentValues = aiData.currentValues || {};
 
-        // Update UI
-        document.getElementById('aiText').setAttribute('value', `Receptionist: ${aiReply}`);
-        updateBookingUI(bStatus, aiData.roomType, aiData.roomNumber, guestName, nights);
+        // Update missions and UI
+        updateMissionsAndUI(detectedMissions, currentValues);
         
-updateUIState("Speaking...");
-         setCubeState("speaking");
-         await speakText(aiReply);
+        // Update VR dialogue
+        document.getElementById('aiText').setAttribute('value', `Guest: ${aiReply}`);
+        document.getElementById('userText').setAttribute('value', `You: ${recognizedText}`);
+        
+        updateUIState("Speaking...");
+        setCubeState("speaking");
+        await speakText(aiReply);
 
-        // If booking is completed, trigger animation
-        if (bStatus === "completed") {
-            triggerGoToRoomAnimation();
+        // If booking is confirmed, options for evaluation trigger
+        if (currentValues.roomNumberAssigned && detectedMissions.bookingConfirmed === true) {
+          // Will trigger evaluation after brief delay
+          setTimeout(() => {
+            if (missions.bookingConfirmed && !evaluationComplete) {
+              triggerEvaluation();
+            }
+          }, 2000);
         }
 
       } catch (error) {
