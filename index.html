@@ -9,6 +9,8 @@
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <!-- A-Frame Environment Component (For beautiful sky, ground, and grid) -->
   <script src="https://unpkg.com/aframe-environment-component@1.3.3/dist/aframe-environment-component.min.js"></script>
+  <!-- A-Frame Physics System for wall colliders -->
+  <script src="https://cdn.jsdelivr.net/npm/aframe-physics-system@1.4.1/dist/aframe-physics-system.min.js"></script>
   
   <!-- Google Fonts for Modern 2D Desktop UI -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -269,101 +271,213 @@
   </div>
 
   <!-- A-FRAME VR SCENE -->
-  <a-scene shadow="type: pcfsoft" renderer="antialias: true; colorManagement: true;">
+  <a-scene physics="gravity: 0" fog="type: exponential; color: #1a1628; density: 0.035" shadow="type: pcfsoft" renderer="antialias: true; colorManagement: true;">
     
-    <!-- Environment preset 'japan' provides a nice hotel-like serene outdoor environment -->
-    <a-entity environment="preset: none; groundColor: #f5f5dc; groundTexture: none; skyColor: #f5f5dc; lighting: none; fog: 0.4" ></a-entity>
-
     <!-- CUSTOM LIGHTING SYSTEM -->
-    <a-entity light="type: ambient; color: #1e1b4b; intensity: 0.7"></a-entity>
-    <a-entity light="type: directional; color: #a5b4fc; intensity: 0.9; castShadow: true" position="-3 6 4"></a-entity>
-    <a-entity id="cubeLight" light="type: point; color: #818cf8; intensity: 1.5; distance: 6; castShadow: true" position="0 1.6 -1.8"></a-entity>
+    <a-entity light="type: ambient; color: #c4b5a0; intensity: 0.25"></a-entity>
+    <a-entity light="type: hemisphere; skyColor: #f0e8d8; groundColor: #7a6a5a; intensity: 0.4"></a-entity>
+    <a-entity light="type: directional; color: #fef5e0; intensity: 0.7; castShadow: true" position="3 7 4"></a-entity>
+    <a-entity id="cubeLight" light="type: point; color: #818cf8; intensity: 1.5; distance: 6; castShadow: true" position="0 1.6 -2.2"></a-entity>
 
-    <!-- DECORATIVE SPAITAL EFFECTS -->
-    <a-ring position="0 3.2 -1.8" rotation="90 0 0" radius-inner="0.65" radius-outer="0.67" material="color: #6366f1; shader: flat; emissive: #6366f1; emissiveIntensity: 2.5"
-            animation="property: rotation; to: 90 360 0; dur: 25000; loop: true; easing: linear"></a-ring>
-            
-    <a-cylinder position="-2.5 2.5 -4.5" radius="0.04" height="6" material="color: #06b6d4; shader: flat; emissive: #06b6d4; emissiveIntensity: 2"></a-cylinder>
-    <a-cylinder position="2.5 2.5 -4.5" radius="0.04" height="6" material="color: #ec4899; shader: flat; emissive: #ec4899; emissiveIntensity: 2"></a-cylinder>
-    <a-cylinder position="-5 2 -2.5" radius="0.04" height="4" material="color: #4f46e5; shader: flat; emissive: #4f46e5; emissiveIntensity: 1.5"></a-cylinder>
-    <a-cylinder position="5 2 -2.5" radius="0.04" height="4" material="color: #4f46e5; shader: flat; emissive: #4f46e5; emissiveIntensity: 1.5"></a-cylinder>
+    <!-- CEILING RECESSED LIGHTS -->
+    <a-entity light="type: point; color: #fef5e0; intensity: 0.35; distance: 4" position="-1.5 2.95 -0.5"></a-entity>
+    <a-entity light="type: point; color: #fef5e0; intensity: 0.35; distance: 4" position="1.5 2.95 -0.5"></a-entity>
+    <a-entity light="type: point; color: #fef5e0; intensity: 0.3; distance: 4" position="0 2.95 -2.8"></a-entity>
+
+    <!-- INTERIOR ARCHITECTURE (cajas con static-body para colliders) -->
+    <a-entity id="room">
+      <a-box id="floor" position="0 -0.04 -1.5" scale="8 0.08 5"
+             material="shader: standard; roughness: 0.6; metalness: 0.1" shadow="receive: true"
+             static-body></a-box>
+      <a-box id="backWall" position="0 1.5 0.96" scale="8 3 0.08"
+             material="shader: standard; roughness: 0.9; metalness: 0" shadow="receive: true"
+             static-body></a-box>
+      <a-box id="leftWall" position="-3.96 1.5 -1.5" scale="0.08 3 5"
+             material="shader: standard; roughness: 0.9; metalness: 0" shadow="receive: true"
+             static-body></a-box>
+      <a-box id="rightWall" position="3.96 1.5 -1.5" scale="0.08 3 5"
+             material="shader: standard; roughness: 0.9; metalness: 0" shadow="receive: true"
+             static-body></a-box>
+      <a-box id="ceiling" position="0 3.04 -1.5" scale="8 0.08 5"
+             material="shader: standard; roughness: 0.7; metalness: 0" shadow="receive: true"
+             static-body></a-box>
+    </a-entity>
+
+    <!-- DECORATIVE MOULDING -->
+    <a-box id="baseboardBack" position="0 0.06 0.99" scale="7.9 0.1 0.02" material="color: #5c4a3a; roughness: 0.7"></a-box>
+    <a-box id="baseboardLeft" position="-3.99 0.06 -1.5" scale="0.02 0.1 4.9" material="color: #5c4a3a; roughness: 0.7"></a-box>
+    <a-box id="baseboardRight" position="3.99 0.06 -1.5" scale="0.02 0.1 4.9" material="color: #5c4a3a; roughness: 0.7"></a-box>
+
+    <!-- LOBBY CHANDELIER / CEILING FIXTURE -->
+    <a-ring position="0 2.98 -1.8" rotation="90 0 0" radius-inner="0.4" radius-outer="0.45" material="color: #c0a878; roughness: 0.4; metalness: 0.6"
+            animation="property: rotation; to: 90 360 0; dur: 30000; loop: true; easing: linear"></a-ring>
+    <a-entity light="type: point; color: #fef0d0; intensity: 0.6; distance: 5" position="0 2.95 -1.8"></a-entity>
+
+    <!-- WAITING AREA FURNITURE -->
+    <a-box id="sofaSeat" position="-2.5 0.22 -3" scale="1.4 0.35 0.6"
+           material="color: #3a3a4a; roughness: 0.85; metalness: 0"></a-box>
+    <a-box id="sofaBack" position="-2.5 0.55 -2.64" scale="1.4 0.65 0.12"
+           material="color: #3a3a4a; roughness: 0.85; metalness: 0"></a-box>
+    <a-box id="sofaArmL" position="-3.21 0.32 -3" scale="0.08 0.4 0.6"
+           material="color: #3a3a4a; roughness: 0.85; metalness: 0"></a-box>
+    <a-box id="sofaArmR" position="-1.79 0.32 -3" scale="0.08 0.4 0.6"
+           material="color: #3a3a4a; roughness: 0.85; metalness: 0"></a-box>
+    <a-box id="armchairSeat" position="2.5 0.22 -3" scale="0.8 0.35 0.6"
+           material="color: #3a4a3a; roughness: 0.85; metalness: 0"></a-box>
+    <a-box id="armchairBack" position="2.5 0.55 -2.64" scale="0.8 0.65 0.12"
+           material="color: #3a4a3a; roughness: 0.85; metalness: 0"></a-box>
+    <a-box id="armchairArmL" position="2.1 0.32 -3" scale="0.08 0.4 0.6"
+           material="color: #3a4a3a; roughness: 0.85; metalness: 0"></a-box>
+    <a-box id="armchairArmR" position="2.9 0.32 -3" scale="0.08 0.4 0.6"
+           material="color: #3a4a3a; roughness: 0.85; metalness: 0"></a-box>
+
+    <!-- COFFEE TABLE -->
+    <a-box id="tableTop" position="0 0.42 -3" scale="0.8 0.04 0.5"
+           material="color: #c0b8a8; roughness: 0.1; metalness: 0.3; transparent: true; opacity: 0.7"
+           shadow="receive: true"></a-box>
+    <a-box id="tableLegFL" position="-0.35 0.1 -3.2" scale="0.04 0.2 0.04"
+           material="color: #2a1a0a; roughness: 0.3; metalness: 0.7"></a-box>
+    <a-box id="tableLegFR" position="0.35 0.1 -3.2" scale="0.04 0.2 0.04"
+           material="color: #2a1a0a; roughness: 0.3; metalness: 0.7"></a-box>
+    <a-box id="tableLegBL" position="-0.35 0.1 -2.8" scale="0.04 0.2 0.04"
+           material="color: #2a1a0a; roughness: 0.3; metalness: 0.7"></a-box>
+    <a-box id="tableLegBR" position="0.35 0.1 -2.8" scale="0.04 0.2 0.04"
+           material="color: #2a1a0a; roughness: 0.3; metalness: 0.7"></a-box>
+
+    <!-- CARPET IN WAITING AREA -->
+    <a-plane id="carpet" position="0 0.005 -3" rotation="-90 0 0" width="3.5" height="2"
+             material="shader: standard; roughness: 0.9; metalness: 0; transparent: true; opacity: 0.85"
+             shadow="receive: true"></a-plane>
+
+    <!-- DECORATIVE PLANT -->
+    <a-cylinder id="plantPot" position="-2.5 0.15 -3.8" radius="0.18" height="0.3"
+                material="color: #6a4a2a; roughness: 0.8"></a-cylinder>
+    <a-sphere id="plantFoliage" position="-2.5 0.65 -3.8" radius="0.3"
+              material="color: #2a6a2a; roughness: 0.9; metalness: 0"></a-sphere>
+    <a-sphere id="plantFoliage2" position="-2.35 0.55 -3.95" radius="0.2"
+              material="color: #3a7a3a; roughness: 0.9; metalness: 0"></a-sphere>
+    <a-sphere id="plantFoliage3" position="-2.65 0.55 -3.65" radius="0.2"
+              material="color: #3a7a3a; roughness: 0.9; metalness: 0"></a-sphere>
+
+    <!-- FLOOR LAMP -->
+    <a-cylinder id="lampPole" position="2.5 1.3 -3.8" radius="0.02" height="2.5"
+                material="color: #1a1a1a; roughness: 0.3; metalness: 0.6"></a-cylinder>
+    <a-cylinder id="lampBase" position="2.5 0.04 -3.8" radius="0.15" height="0.04"
+                material="color: #1a1a1a; roughness: 0.3; metalness: 0.6"></a-cylinder>
+    <a-cylinder id="lampShade" position="2.5 2.5 -3.8" radius-top="0.08" radius-bottom="0.25" height="0.3"
+                material="color: #e8e0d0; roughness: 0.8; metalness: 0; transparent: true; opacity: 0.6"></a-cylinder>
+    <a-entity light="type: point; color: #fef0d0; intensity: 0.3; distance: 4" position="2.5 2.4 -3.8"></a-entity>
+
+    <!-- WALL ART & SIGNAGE -->
+    <a-plane id="wallArt" position="-3.99 1.6 -2" rotation="0 -90 0" width="0.6" height="0.8"
+             material="shader: standard; roughness: 0.4; metalness: 0"></a-plane>
+    <a-box id="artFrame" position="-3.99 1.6 -2" scale="0.64 0.84 0.02"
+           material="color: #2a1a0a; roughness: 0.5; metalness: 0.3"></a-box>
+    <a-text id="signageText" value="ROOMS →" position="3.99 2 -2.5" rotation="0 90 0"
+            font="fonts/Roboto-msdf.json" negate="false" color="#c0a878" align="center" width="8"></a-text>
+
+    <!-- RECEPTION TERMINAL -->
+    <a-box id="monitorStand" position="0.5 0.99 -0.55" scale="0.35 0.35 0.02"
+           material="color: #1a1a1a; roughness: 0.3; metalness: 0.5"></a-box>
+    <a-plane id="monitorScreen" position="0.5 1.02 -0.55" rotation="0 0 0" width="0.3" height="0.22"
+             material="shader: standard; color: #0a2a4a; roughness: 0.1; metalness: 0.6; emissive: #0a3a6a; emissiveIntensity: 0.3"></a-plane>
+    <a-box id="monitorBase" position="0.5 0.82 -0.55" scale="0.12 0.02 0.08"
+           material="color: #1a1a1a; roughness: 0.3; metalness: 0.5"></a-box>
+    <a-box id="keyboard" position="0.5 0.84 -0.48" scale="0.28 0.02 0.1"
+           material="color: #1a1a1a; roughness: 0.5; metalness: 0.1"></a-box>
+
+    <!-- RECEPTION PHONE -->
+    <a-box id="phoneBase" position="-0.55 1.0 -0.65" scale="0.08 0.02 0.12"
+           material="color: #1a1a2a; roughness: 0.3; metalness: 0.2"></a-box>
+    <a-box id="phoneHandset" position="-0.55 1.04 -0.65" scale="0.02 0.04 0.06"
+           material="color: #1a1a2a; roughness: 0.3; metalness: 0.2"></a-box>
+    <a-box id="phoneCable" position="-0.55 0.9 -0.6" scale="0.005 0.01 0.2"
+           material="color: #2a2a2a; roughness: 0.9"></a-box>
 
     <!-- THE AI CHARACTER (Floating & Rotating Metallic Cube) -->
     <a-box id="aiCube"
            class="clickable"
-           position="0 1.6 -1.8"
+           position="0 1.6 -2.2"
            rotation="0 45 45"
            width="0.38" height="0.38" depth="0.38"
            material="color: #6366f1; roughness: 0.05; metalness: 0.95; emissive: #312e81; emissiveIntensity: 1.2"
-           animation__bob="property: position; to: 0 1.75 -1.8; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine"
+           animation__bob="property: position; to: 0 1.75 -2.2; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine"
            animation__rotate="property: rotation; to: 360 405 45; dur: 9000; loop: true; easing: linear">
     </a-box>
 
     <!-- RECEPCIÓN DE HOTEL - MOSTRADOR -->
-    <a-box id="receptionDesk"
-           position="0 0.5 -0.9"
-           scale="2.0 1.0 0.6"
-           material="color: #1e293b; roughness: 0.7; metalness: 0.1"
-           shadow="cast: true; receive: true">
-    </a-box>
+    <a-box id="deskBody" position="0 0.52 -0.9" scale="2.0 0.84 0.56"
+           material="color: #3a2a1a; roughness: 0.7; metalness: 0"
+           shadow="receive: true"></a-box>
+    <a-box id="deskFront" position="0 0.52 -1.19" scale="2.0 0.84 0.04"
+           material="color: #5c4a3a; roughness: 0.6; metalness: 0"
+           shadow="cast: true"></a-box>
+    <a-box id="deskCountertop" position="0 0.97 -0.9" scale="2.2 0.06 0.7"
+           material="color: #e8ddd0; roughness: 0.2; metalness: 0.05"
+           shadow="cast: true; receive: true"></a-box>
+    <a-box id="deskTrim" position="0 0.02 -0.9" scale="2.1 0.04 0.62"
+           material="color: #2a1a0a; roughness: 0.3; metalness: 0.6"></a-box>
+    <a-box id="deskEdge" position="0 0.94 -0.9" scale="2.1 0.02 0.66"
+           material="color: #3a2a1a; roughness: 0.4; metalness: 0.5"
+           shadow="receive: true"></a-box>
 
-    <!-- CLIPBOARD INTERACTIVO (TABLA DE TAREAS) -->
+    <!-- CLIPBOARD INTERACTIVO (TABLA DE TAREAS) sobre el mostrador -->
     <a-plane id="clipboardPanel"
-             position="-0.5 1.05 -0.85"
-             rotation="-25 20 0"
-             width="0.75" height="0.95"
+             position="-0.65 1.40 -0.65"
+             rotation="-30 25 0"
+             width="0.65" height="0.80"
              material="shader: flat; color: #0d1527; opacity: 0.95; transparent: true"
              class="clickable">
       
       <!-- Bordes del clipboard -->
-      <a-plane position="0 0.46 0.005" width="0.75" height="0.03" material="color: #6366f1; shader: flat; emissive: #6366f1; emissiveIntensity: 1.0"></a-plane>
-      <a-plane position="0 -0.46 0.005" width="0.75" height="0.03" material="color: #312e81; shader: flat; emissive: #312e81; emissiveIntensity: 0.5"></a-plane>
+      <a-plane position="0 0.38 0.005" width="0.65" height="0.03" material="color: #6366f1; shader: flat; emissive: #6366f1; emissiveIntensity: 1.0"></a-plane>
+      <a-plane position="0 -0.38 0.005" width="0.65" height="0.03" material="color: #312e81; shader: flat; emissive: #312e81; emissiveIntensity: 0.5"></a-plane>
 
-      <a-text id="clipTitle" value="RECEPTIONIST CLIPBOARD" align="center" position="0 0.40 0.01" width="1.6" color="#38bdf8" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTitle" value="RECEPTIONIST CLIPBOARD" align="center" position="0 0.32 0.01" width="1.2" color="#38bdf8" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
 
       <!-- Checklist Items (Checkboxes) -->
-      <a-text id="clipTaskGreet" value="[ ] 1. Greet Guest" align="left" position="-0.32 0.28 0.01" width="1.4" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipTaskName" value="[ ] 2. Ask Name" align="left" position="-0.32 0.20 0.01" width="1.4" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipTaskCount" value="[ ] 3. Ask Guest Count" align="left" position="-0.32 0.12 0.01" width="1.4" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipTaskRoom" value="[ ] 4. Ask Room Type" align="left" position="-0.32 0.04 0.01" width="1.4" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipTaskNights" value="[ ] 5. Ask Nights Count" align="left" position="-0.32 -0.04 0.01" width="1.4" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipTaskConfirm" value="[ ] 6. Confirm Booking" align="left" position="-0.32 -0.12 0.01" width="1.4" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskGreet" value="[ ] 1. Greet Guest" align="left" position="-0.28 0.22 0.01" width="1.0" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskName" value="[ ] 2. Ask Name" align="left" position="-0.28 0.15 0.01" width="1.0" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskCount" value="[ ] 3. Ask Guest Count" align="left" position="-0.28 0.08 0.01" width="1.0" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskRoom" value="[ ] 4. Ask Room Type" align="left" position="-0.28 0.01 0.01" width="1.0" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskNights" value="[ ] 5. Ask Nights Count" align="left" position="-0.28 -0.06 0.01" width="1.0" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskConfirm" value="[ ] 6. Confirm Booking" align="left" position="-0.28 -0.13 0.01" width="1.0" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
 
       <!-- Seccion de Datos de Reserva -->
-      <a-plane position="0 -0.20 0.004" width="0.68" height="0.002" material="color: #374151; shader: flat"></a-plane>
+      <a-plane position="0 -0.18 0.004" width="0.58" height="0.002" material="color: #374151; shader: flat"></a-plane>
       
-      <a-text id="clipGuestLabel" value="Guest Info:" align="left" position="-0.32 -0.25 0.01" width="1.2" color="#9ca3af" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipGuestVal" value="Guest: TBD" align="left" position="-0.10 -0.25 0.01" width="1.3" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipGuestLabel" value="Guest Info:" align="left" position="-0.28 -0.22 0.01" width="0.9" color="#9ca3af" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipGuestVal" value="Guest: TBD" align="left" position="-0.08 -0.22 0.01" width="1.0" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
 
-      <a-text id="clipRoomLabel" value="Room Type:" align="left" position="-0.32 -0.30 0.01" width="1.2" color="#9ca3af" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipRoomVal" value="Type: TBD" align="left" position="-0.10 -0.30 0.01" width="1.3" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipRoomLabel" value="Room Type:" align="left" position="-0.28 -0.27 0.01" width="0.9" color="#9ca3af" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipRoomVal" value="Type: TBD" align="left" position="-0.08 -0.27 0.01" width="1.0" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
 
-      <a-text id="clipNightsLabel" value="Nights Count:" align="left" position="-0.32 -0.35 0.01" width="1.2" color="#9ca3af" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipNightsVal" value="Nights: TBD" align="left" position="-0.10 -0.35 0.01" width="1.3" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipNightsLabel" value="Nights Count:" align="left" position="-0.28 -0.32 0.01" width="0.9" color="#9ca3af" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipNightsVal" value="Nights: TBD" align="left" position="-0.08 -0.32 0.01" width="1.0" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
 
-      <a-text id="clipAssignedLabel" value="Room Assigned:" align="left" position="-0.32 -0.40 0.01" width="1.2" color="#9ca3af" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipAssignedVal" value="Room: TBD" align="left" position="-0.10 -0.40 0.01" width="1.3" color="#fbbf24" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipAssignedLabel" value="Room Assigned:" align="left" position="-0.28 -0.37 0.01" width="0.9" color="#9ca3af" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipAssignedVal" value="Room: TBD" align="left" position="-0.08 -0.37 0.01" width="1.0" color="#fbbf24" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
 
     </a-plane>
 
-    <!-- VR INTERACTION & DISPLAY PANEL (Holographic Screen) -->
+    <!-- VR INTERACTION & DISPLAY PANEL (Holographic Screen) centrado -->
     <a-plane id="uiPanel"
-             position="0.25 1.5 -1.4"
-             rotation="-15 -10 0"
-             width="1.8" height="1.1"
+             position="0 1.55 -1.1"
+             rotation="-10 0 0"
+             width="1.4" height="0.8"
              material="shader: flat; color: #080a14; opacity: 0.88; transparent: true; roughness: 1"
              class="clickable">
       
       <!-- Sub-frame borders -->
-      <a-plane position="0 0.53 0.005" width="1.8" height="0.03" material="color: #4f46e5; shader: flat; emissive: #4f46e5; emissiveIntensity: 1.5"></a-plane>
-      <a-plane position="0 -0.54 0.005" width="1.8" height="0.03" material="color: #312e81; shader: flat; emissive: #312e81; emissiveIntensity: 0.5"></a-plane>
+      <a-plane position="0 0.38 0.005" width="1.4" height="0.03" material="color: #4f46e5; shader: flat; emissive: #4f46e5; emissiveIntensity: 1.5"></a-plane>
+      <a-plane position="0 -0.39 0.005" width="1.4" height="0.03" material="color: #312e81; shader: flat; emissive: #312e81; emissiveIntensity: 0.5"></a-plane>
 
       <!-- Status indicator -->
       <a-text id="statusText"
               value="HOLD M TO SPEAK"
               align="center"
-              position="0 0.44 0.01"
-              width="2.8"
+              position="0 0.30 0.01"
+              width="2.4"
               color="#38bdf8"
               font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
               negate="false">
@@ -373,11 +487,11 @@
       <a-text id="userText"
               value="You: ..."
               align="center"
-              position="0 0.24 0.01"
-              width="1.9"
+              position="0 0.10 0.01"
+              width="1.5"
               color="#a5b4fc"
               font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
-              wrap-count="40"
+              wrap-count="35"
               negate="false">
       </a-text>
 
@@ -385,55 +499,55 @@
       <a-text id="aiText"
               value="Guest: (Checking in...) Say Hello to begin."
               align="center"
-              position="0 -0.10 0.01"
-              width="1.9"
+              position="0 -0.15 0.01"
+              width="1.5"
               color="#f472b6"
               font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
-              wrap-count="40"
+              wrap-count="35"
               negate="false">
       </a-text>
 
     </a-plane>
 
-    <!-- EVALUATION PANEL (visible after booking completion) -->
+    <!-- EVALUATION PANEL (visible after booking completion, misma posición que el panel de diálogo) -->
     <a-plane id="evaluationPanel"
-             position="0 1.55 -1.4"
+             position="0 1.55 -1.1"
              rotation="-10 0 0"
-             width="2.4" height="1.8"
+             width="1.8" height="1.3"
              material="shader: flat; color: #0a0320; opacity: 0.95; transparent: true; roughness: 1"
              class="clickable"
              visible="false">
       
       <!-- Borders -->
-      <a-plane position="0 0.88 0.005" width="2.4" height="0.03" material="color: #f472b6; shader: flat; emissive: #f472b6; emissiveIntensity: 1.5"></a-plane>
-      <a-plane position="0 -0.88 0.005" width="2.4" height="0.03" material="color: #831843; shader: flat; emissive: #831843; emissiveIntensity: 0.5"></a-plane>
+      <a-plane position="0 0.63 0.005" width="1.8" height="0.03" material="color: #f472b6; shader: flat; emissive: #f472b6; emissiveIntensity: 1.5"></a-plane>
+      <a-plane position="0 -0.64 0.005" width="1.8" height="0.03" material="color: #831843; shader: flat; emissive: #831843; emissiveIntensity: 0.5"></a-plane>
 
-      <a-text value="EVALUATION REPORT" align="center" position="0 0.80 0.01" width="3.5" color="#f472b6" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text value="EVALUATION REPORT" align="center" position="0 0.55 0.01" width="2.8" color="#f472b6" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
 
       <!-- Overall Score -->
-      <a-text id="evalScore" value="OVERALL: -- / 10" align="center" position="0 0.60 0.01" width="3.5" color="#fbbf24" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="evalScore" value="OVERALL: -- / 10" align="center" position="0 0.38 0.01" width="2.8" color="#fbbf24" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
 
       <!-- Criteria Left Column -->
-      <a-text id="evalCriteria1" value="Communication: -\nLogical Order: -\nProfessionalism: -" align="left" position="-0.85 0.15 0.01" width="1.6" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="evalCriteria1" value="Communication: -\nLogical Order: -\nProfessionalism: -" align="left" position="-0.80 0.10 0.01" width="1.4" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
 
       <!-- Criteria Right Column -->
-      <a-text id="evalCriteria2" value="Precision: -\nFluency: -" align="left" position="0.15 0.20 0.01" width="1.6" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="evalCriteria2" value="Precision: -\nFluency: -" align="left" position="0.10 0.13 0.01" width="1.4" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
 
       <!-- Summary / Recommendations -->
-      <a-text id="evalSummary" value="Summary: awaiting results..." align="center" position="0 -0.25 0.01" width="3.2" color="#e2e8f0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" wrap-count="55" negate="false"></a-text>
+      <a-text id="evalSummary" value="Summary: awaiting results..." align="center" position="0 -0.18 0.01" width="2.6" color="#e2e8f0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" wrap-count="40" negate="false"></a-text>
 
       <!-- Mistakes -->
-      <a-text id="evalMistakes" value="Mistakes: -" align="center" position="0 -0.55 0.01" width="3.2" color="#fca5a5" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" wrap-count="55" negate="false"></a-text>
+      <a-text id="evalMistakes" value="Mistakes: -" align="center" position="0 -0.38 0.01" width="2.6" color="#fca5a5" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" wrap-count="40" negate="false"></a-text>
 
       <!-- Recommendations -->
-      <a-text id="evalRecommendations" value="Recommendations: -" align="center" position="0 -0.78 0.01" width="3.2" color="#86efac" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" wrap-count="55" negate="false"></a-text>
+      <a-text id="evalRecommendations" value="Recommendations: -" align="center" position="0 -0.55 0.01" width="2.6" color="#86efac" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" wrap-count="40" negate="false"></a-text>
 
     </a-plane>
 
     <!-- PLAYER RIG (Camera & Hands) -->
-    <a-entity id="rig" position="0 0 0">
+    <a-entity id="rig" position="0 0 0" position-clamp>
       <!-- Camera with a gaze cursor for desktop fallback -->
-      <a-entity id="camera" camera look-controls wasd-controls position="0 1.6 0">
+      <a-entity id="camera" camera look-controls wasd-controls position="0 1.6 0.3">
         <a-cursor id="desktopCursor"
                   raycaster="objects: .clickable; far: 4"
                   material="color: #818cf8; shader: flat"
@@ -460,6 +574,18 @@
   <!-- APP LOGIC -->
   <script>
     // ==========================================
+    // POSITION CLAMP COMPONENT (wall colliders)
+    // ==========================================
+    AFRAME.registerComponent('position-clamp', {
+      tick: function () {
+        const p = this.el.getAttribute('position');
+        p.x = Math.max(-3.8, Math.min(3.8, p.x));
+        p.z = Math.max(-3.8, Math.min(0.8, p.z));
+        this.el.setAttribute('position', p);
+      }
+    });
+
+    // ==========================================
     // GLOBAL ERROR MONITORING
     // ==========================================
     window.onerror = function (message, source, lineno, colno, error) {
@@ -477,6 +603,259 @@
     // GEMINI CONFIGURATION
     // ==========================================
     const ENDPOINT = `/api/chat`;
+
+// ==========================================
+// PROCEDURAL TEXTURE SYSTEM (Canvas-based)
+// ==========================================
+function createProceduralTexture(type, params = {}) {
+  const s = params.size || 512;
+  const c = document.createElement('canvas');
+  c.width = s; c.height = s;
+  const ctx = c.getContext('2d');
+  const w = s, h = s;
+
+  ctx.fillStyle = params.bg || '#ffffff';
+  ctx.fillRect(0, 0, w, h);
+
+  if (type === 'marble') {
+    ctx.globalAlpha = 0.15;
+    for (let i = 0; i < 30; i++) {
+      ctx.strokeStyle = `hsl(0,0%,${45 + Math.random() * 30}%)`;
+      ctx.beginPath();
+      const x = Math.random() * w, y = Math.random() * h;
+      ctx.moveTo(x, y);
+      for (let j = 0; j < 8; j++) {
+        const cx = x + (j * w/8) + Math.sin(j * 0.7 + i) * 20;
+        const cy = y + Math.sin(j * 1.2 + i * 2) * 30 + j * 8;
+        ctx.lineTo(cx + Math.random() * 15, cy + Math.random() * 15);
+      }
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    return c;
+  }
+
+  if (type === 'wood') {
+    const base = params.base || '#8B6914';
+    const dark = params.dark || '#5C4A1E';
+    for (let y = 0; y < h; y++) {
+      const wave = Math.sin(y * 0.05) * 8 + Math.sin(y * 0.12) * 3;
+      const grain = (y % 12 < 2) ? 0.15 : 0;
+      const bright = 1 - (y / h) * 0.3 + Math.sin(y * 0.3) * 0.05;
+      const r = (parseInt(base.slice(1,3),16) * bright) | 0;
+      const g = (parseInt(base.slice(3,5),16) * bright) | 0;
+      const b = (parseInt(base.slice(5,7),16) * (bright - grain)) | 0;
+      ctx.fillStyle = `rgb(${r},${g},${b})`;
+      ctx.fillRect(0, y + wave, w, 1);
+    }
+    return c;
+  }
+
+  if (type === 'fabric') {
+    const base = params.base || '#4a4a5a';
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const weave = (Math.floor(x / 4) + Math.floor(y / 4)) % 2 === 0 ? 0 : 0.08;
+        const noise = (Math.random() - 0.5) * 0.04;
+        const val = 1 - weave + noise;
+        const r = parseInt(base.slice(1,3),16) * val;
+        const g = parseInt(base.slice(3,5),16) * val;
+        const b = parseInt(base.slice(5,7),16) * val;
+        ctx.fillStyle = `rgb(${r|0},${g|0},${b|0})`;
+        ctx.fillRect(x, y, 1, 1);
+      }
+    }
+    return c;
+  }
+
+  if (type === 'floorTile') {
+    const ts = params.tileSize || 64;
+    const gap = params.gap || 3;
+    const light = params.light || '#e8e0d0';
+    const dark = params.dark || '#c8c0b0';
+    for (let y = 0; y < h; y += ts) {
+      for (let x = 0; x < w; x += ts) {
+        const off = ((y / ts) % 2 === 0) ? 0 : ts / 2;
+        const v = (Math.sin(x * 0.1) * 0.5 + 0.5) * 20 + 60;
+        ctx.fillStyle = `hsl(40,${8}%,${v}%)`;
+        ctx.fillRect(x + off + gap, y + gap, ts - gap * 2, ts - gap * 2);
+        ctx.fillStyle = `hsl(40,5%,${v - 10}%)`;
+        ctx.fillRect(x + off, y, ts, gap);
+        ctx.fillRect(x + off, y + ts - gap, ts, gap);
+        ctx.fillRect(x + off, y, gap, ts);
+        ctx.fillRect(x + off + ts - gap, y, gap, ts);
+      }
+    }
+    return c;
+  }
+
+  if (type === 'carpet') {
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const speckle = Math.random() < 0.15 ? 15 : 0;
+        const v = 60 + speckle + Math.sin(x * 0.02) * 3 + Math.sin(y * 0.02) * 3;
+        ctx.fillStyle = `hsl(220,15%,${v}%)`;
+        ctx.fillRect(x, y, 1, 1);
+      }
+    }
+    return c;
+  }
+
+  if (type === 'wallPaint') {
+    const base = params.base || '#e8e4dc';
+    const r0 = parseInt(base.slice(1,3),16);
+    const g0 = parseInt(base.slice(3,5),16);
+    const b0 = parseInt(base.slice(5,7),16);
+    const imgData = ctx.createImageData(w, h);
+    for (let i = 0; i < imgData.data.length; i += 4) {
+      const noise = (Math.random() - 0.5) * 8;
+      imgData.data[i] = Math.max(0, Math.min(255, r0 + noise));
+      imgData.data[i+1] = Math.max(0, Math.min(255, g0 + noise));
+      imgData.data[i+2] = Math.max(0, Math.min(255, b0 + noise));
+      imgData.data[i+3] = 255;
+    }
+    ctx.putImageData(imgData, 0, 0);
+    return c;
+  }
+
+  if (type === 'ceilingTile') {
+    const ts = params.tileSize || 64;
+    const gap = params.gap || 2;
+    for (let y = 0; y < h; y += ts) {
+      for (let x = 0; x < w; x += ts) {
+        const v = 88 + Math.random() * 4;
+        ctx.fillStyle = `hsl(40,5%,${v}%)`;
+        ctx.fillRect(x + gap, y + gap, ts - gap * 2, ts - gap * 2);
+        ctx.fillStyle = 'rgba(0,0,0,0.08)';
+        ctx.fillRect(x, y, ts, gap);
+        ctx.fillRect(x, y, gap, ts);
+      }
+    }
+    return c;
+  }
+
+  if (type === 'abstractArt') {
+    const colors = params.colors || ['#c0392b','#2980b9','#f39c12','#27ae60','#8e44ad','#e67e22'];
+    for (let i = 0; i < 20; i++) {
+      ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+      const x = Math.random() * w, y = Math.random() * h;
+      const rw = 30 + Math.random() * 80, rh = 30 + Math.random() * 80;
+      ctx.globalAlpha = 0.7 + Math.random() * 0.3;
+      if (Math.random() > 0.5) {
+        ctx.fillRect(x, y, rw, rh);
+      } else {
+        ctx.beginPath();
+        ctx.arc(x, y, rw / 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = '#2a1a0a';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(2, 2, w - 4, h - 4);
+    return c;
+  }
+
+  return c;
+}
+
+function getThreeObject(entityId) {
+  const el = document.getElementById(entityId);
+  if (!el) return null;
+  if (el.object3D && el.object3D.children.length > 0) {
+    return el.object3D.children.find(c => c.isMesh) || el.object3D;
+  }
+  return el.object3D;
+}
+
+function setTexture(entityId, canvas, mapType = 'map', repeatX = 1, repeatY = 1) {
+  const el = document.getElementById(entityId);
+  if (!el) return;
+  const obj = getThreeObject(entityId);
+  if (!obj || !obj.material) {
+    el.setAttribute('material', 'src', canvas);
+    return;
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(repeatX, repeatY);
+  if (obj.material) {
+    obj.material[mapType] = tex;
+    obj.material.needsUpdate = true;
+  }
+}
+
+function buildEnvironment() {
+  const floorTex = createProceduralTexture('floorTile', { tileSize: 64, light: '#e8ddd0', dark: '#d0c5b5' });
+  const marbleTex = createProceduralTexture('marble', { bg: '#e8ddd0' });
+  const woodTex = createProceduralTexture('wood', { base: '#6a4a2a', dark: '#4a2a1a' });
+
+  setTexture('floor', floorTex, 'map', 8, 5);
+  setTexture('floor', createBumpFromBase(floorTex, 0.15), 'bumpMap', 8, 5);
+  setTexture('backWall', createProceduralTexture('wallPaint', { base: '#e4e0d8' }), 'map', 4, 2);
+  setTexture('leftWall', createProceduralTexture('wallPaint', { base: '#ddd9d0' }), 'map', 3, 2);
+  setTexture('rightWall', createProceduralTexture('wallPaint', { base: '#ddd9d0' }), 'map', 3, 2);
+  setTexture('ceiling', createProceduralTexture('ceilingTile', { tileSize: 64 }), 'map', 6, 4);
+  setTexture('deskCountertop', marbleTex, 'map', 2, 1);
+  setTexture('deskCountertop', createBumpFromBase(marbleTex, 0.3), 'bumpMap', 2, 1);
+  setTexture('deskFront', woodTex, 'map', 4, 2);
+  setTexture('deskFront', createBumpFromBase(woodTex, 0.4), 'bumpMap', 4, 2);
+  setTexture('carpet', createProceduralTexture('carpet'), 'map', 4, 3);
+  setTexture('sofaSeat', createProceduralTexture('fabric', { base: '#3a3a4a' }), 'map', 2, 1);
+  setTexture('sofaBack', createProceduralTexture('fabric', { base: '#3a3a4a' }), 'map', 2, 1);
+  setTexture('sofaArmL', createProceduralTexture('fabric', { base: '#3a3a4a' }), 'map', 1, 1);
+  setTexture('sofaArmR', createProceduralTexture('fabric', { base: '#3a3a4a' }), 'map', 1, 1);
+  setTexture('armchairSeat', createProceduralTexture('fabric', { base: '#3a4a3a' }), 'map', 1, 1);
+  setTexture('armchairBack', createProceduralTexture('fabric', { base: '#3a4a3a' }), 'map', 1, 1);
+  setTexture('armchairArmL', createProceduralTexture('fabric', { base: '#3a4a3a' }), 'map', 1, 1);
+  setTexture('armchairArmR', createProceduralTexture('fabric', { base: '#3a4a3a' }), 'map', 1, 1);
+  setTexture('wallArt', createProceduralTexture('abstractArt'), 'map', 1, 1);
+
+  const envMap = createEnvMap();
+  const cubeObj = getThreeObject('aiCube');
+  if (cubeObj && cubeObj.material) {
+    cubeObj.material.envMap = envMap;
+    cubeObj.material.envMapIntensity = 1.8;
+    cubeObj.material.needsUpdate = true;
+  }
+}
+
+function createBumpFromBase(canvas, strength = 1) {
+  const s = canvas.width;
+  const out = document.createElement('canvas');
+  out.width = s; out.height = s;
+  const ctx = out.getContext('2d');
+  ctx.drawImage(canvas, 0, 0);
+  const imgData = ctx.getImageData(0, 0, s, s);
+  for (let i = 0; i < imgData.data.length; i += 4) {
+    const gray = (imgData.data[i] + imgData.data[i+1] + imgData.data[i+2]) / 3;
+    const val = Math.max(0, Math.min(255, Math.round(gray * strength)));
+    imgData.data[i] = val;
+    imgData.data[i+1] = val;
+    imgData.data[i+2] = val;
+    imgData.data[i+3] = 255;
+  }
+  ctx.putImageData(imgData, 0, 0);
+  return out;
+}
+
+function createEnvMap() {
+  const size = 32;
+  const faces = [];
+  for (let i = 0; i < 6; i++) {
+    const c = document.createElement('canvas');
+    c.width = size; c.height = size;
+    const ctx = c.getContext('2d');
+    const grad = ctx.createLinearGradient(0, 0, size, size);
+    grad.addColorStop(0, '#f0e8d8');
+    grad.addColorStop(0.5, '#d0c0a8');
+    grad.addColorStop(1, '#a09078');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, size, size);
+    faces.push(c);
+  }
+  return new THREE.CubeTexture(faces);
+}
 
 // ==========================================
      // SPEECH RECOGNITION & SYNTHESIS SETUP
@@ -684,6 +1063,8 @@ loadTtsVoices();
     function initApp() {
       console.log("App ready.");
       
+      buildEnvironment();
+      
       // Select random guest profile for role reversal
       selectRandomGuestProfile();
       update3DClipboard();
@@ -784,8 +1165,10 @@ async function startRecording() {
          return; // Permission denied, warning already shown
        }
 
-       // Update UI button visual state
-       const talkBtn = document.getElementById('talkButton');
+        initAmbientAudio();
+
+        // Update UI button visual state
+        const talkBtn = document.getElementById('talkButton');
        if (talkBtn) {
          talkBtn.classList.add('listening');
          talkBtn.textContent = 'Hold to Speak (Listening…)';
@@ -804,9 +1187,9 @@ async function startRecording() {
        const cubeEl = document.getElementById('aiCube');
        if (cubeEl) {
          cubeEl.removeAttribute('animation__move_room');
-          cubeEl.setAttribute('position', '0 1.6 -1.8');
+          cubeEl.setAttribute('position', '0 1.6 -2.2');
          if (!cubeEl.hasAttribute('animation__bob')) {
-            cubeEl.setAttribute('animation__bob', 'property: position; to: 0 1.75 -1.8; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine');
+            cubeEl.setAttribute('animation__bob', 'property: position; to: 0 1.75 -2.2; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine');
          }
        }
 
@@ -1045,6 +1428,63 @@ async function startRecording() {
         console.warn("Could not play success sound:", err);
       }
     }
+
+let ambientAudioCtx = null;
+
+function initAmbientAudio() {
+  if (ambientAudioCtx) return;
+  try {
+    ambientAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    const bufferSize = ambientAudioCtx.sampleRate * 2;
+    const buffer = ambientAudioCtx.createBuffer(1, bufferSize, ambientAudioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * (1 - Math.random() * 0.5);
+    }
+    const hvacSource = ambientAudioCtx.createBufferSource();
+    hvacSource.buffer = buffer;
+    hvacSource.loop = true;
+    const hvacFilter = ambientAudioCtx.createBiquadFilter();
+    hvacFilter.type = 'lowpass';
+    hvacFilter.frequency.setValueAtTime(350, ambientAudioCtx.currentTime);
+    hvacFilter.Q.setValueAtTime(0.5, ambientAudioCtx.currentTime);
+    const hvacGain = ambientAudioCtx.createGain();
+    hvacGain.gain.setValueAtTime(0.012, ambientAudioCtx.currentTime);
+    hvacSource.connect(hvacFilter);
+    hvacFilter.connect(hvacGain);
+    hvacGain.connect(ambientAudioCtx.destination);
+    hvacSource.start();
+
+    function scheduleFootstep() {
+      if (!ambientAudioCtx) return;
+      const delay = 6000 + Math.random() * 12000;
+      setTimeout(() => {
+        if (!ambientAudioCtx) return;
+        const fb = ambientAudioCtx.createBuffer(1, ambientAudioCtx.sampleRate * 0.08, ambientAudioCtx.sampleRate);
+        const fd = fb.getChannelData(0);
+        for (let i = 0; i < fd.length; i++) {
+          fd[i] = (Math.random() * 2 - 1) * (1 - i / fd.length) * 0.025;
+        }
+        const fs = ambientAudioCtx.createBufferSource();
+        fs.buffer = fb;
+        const fg = ambientAudioCtx.createGain();
+        fg.gain.setValueAtTime(0.006, ambientAudioCtx.currentTime);
+        const ff = ambientAudioCtx.createBiquadFilter();
+        ff.type = 'lowpass';
+        ff.frequency.setValueAtTime(800, ambientAudioCtx.currentTime);
+        fs.connect(ff);
+        ff.connect(fg);
+        fg.connect(ambientAudioCtx.destination);
+        fs.start();
+        scheduleFootstep();
+      }, delay);
+    }
+    scheduleFootstep();
+  } catch (e) {
+    console.warn('Ambient audio unavailable:', e);
+  }
+}
 
     function updateMissionsAndUI(detectedMissions, currentValues) {
       if (!detectedMissions || !currentValues) return;
