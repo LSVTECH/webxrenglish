@@ -67,6 +67,12 @@
       "skillPath": "skills/threejs-materials/SKILL.md",
       "computedHash": "4d181db0b35213b772bf20eff5fe6f72f1c84bdc03294db96d1f712dd9047443"
     },
+    "threejs-postprocessing": {
+      "source": "cloudai-x/threejs-skills",
+      "sourceType": "github",
+      "skillPath": "skills/threejs-postprocessing/SKILL.md",
+      "computedHash": "95c3952afb0f1164253e013cce0c1cb1c290b17e3cbdc3583379bd4c66ca2870"
+    },
     "threejs-shaders": {
       "source": "cloudai-x/threejs-skills",
       "sourceType": "github",

@@ -234,10 +234,11 @@
 
       <!-- Text input fallback for Pico 4 / browsers without mic -->
       <div id="textInputFallback" style="display: none; margin-top: 10px;">
+        <div style="font-size: 0.75rem; color: #fbbf24; margin-bottom: 6px; font-weight: 600;">⌨️ Mic not available — type your message below:</div>
         <div style="display: flex; gap: 8px;">
-          <input id="textInput" type="text" placeholder="Type your message..."
-                 style="flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(99,102,241,0.3); background: rgba(0,0,0,0.4); color: #e2e8f0; font-size: 0.9rem; outline: none;">
-          <button id="textSendBtn" class="talk-btn" style="padding: 10px 20px; white-space: nowrap;">Send</button>
+          <input id="textInput" type="text" placeholder="Type your message to the guest..."
+                 style="flex: 1; padding: 12px 16px; border-radius: 10px; border: 2px solid rgba(251,191,36,0.4); background: rgba(0,0,0,0.6); color: #e2e8f0; font-size: 1.1rem; outline: none;">
+          <button id="textSendBtn" class="talk-btn" style="padding: 12px 24px; white-space: nowrap; font-size: 1rem;">Send ➤</button>
         </div>
       </div>
 
@@ -261,9 +262,9 @@
 </div>
 
       <div class="mic-instruction">
-        👉 <strong>Inside VR:</strong> Hold the controller Trigger to speak.<br>
-        👉 <strong>On Keyboard:</strong> Hold key <span class="key-cap">M</span> to speak.<br>
-        👉 <strong>On Screen:</strong> Hold the button above or Click directly on the floating cube.
+        👉 <strong>Inside VR:</strong> Hold the controller Trigger to speak (or press thumbstick to turn).<br>
+        👉 <strong>On Keyboard:</strong> Press & hold <span class="key-cap">M</span> to speak.<br>
+        👉 <strong>On Screen:</strong> Hold the button above or click the floating cube.
       </div>
 
       <div id="micWarning" class="mic-warning"></div>
@@ -271,41 +272,135 @@
   </div>
 
   <div id="quick-guide">
-    💡 Localhost or HTTPS is required for mic & WebXR.<br>
-    🔒 Allow mic permissions in your browser when prompted.
+    💡 Localhost or HTTPS required for mic & WebXR.<br>
+    🔒 Pico 4 / VR: If mic doesn't respond, use the text input that appears.
   </div>
 
   <!-- A-FRAME VR SCENE -->
-  <a-scene fog="type: exponential; color: #1a1628; density: 0.035" shadow="type: pcfsoft" renderer="antialias: true; colorManagement: true;">
+  <a-scene fog="type: linear; color: #e8e0d0; near: 8; far: 18" shadow="type: pcfsoft" renderer="antialias: true; colorManagement: true;">
     
-    <!-- CUSTOM LIGHTING SYSTEM -->
-    <a-entity light="type: ambient; color: #c4b5a0; intensity: 0.25"></a-entity>
-    <a-entity light="type: hemisphere; skyColor: #f0e8d8; groundColor: #7a6a5a; intensity: 0.4"></a-entity>
-    <a-entity light="type: directional; color: #fef5e0; intensity: 0.7; castShadow: true" position="3 7 4"></a-entity>
-    <a-entity id="cubeLight" light="type: point; color: #818cf8; intensity: 1.5; distance: 6; castShadow: true" position="-0.5 1.6 -0.5"></a-entity>
+    <!-- CUSTOM LIGHTING SYSTEM (Warm beige tones) -->
+    <a-entity light="type: ambient; color: #f5ede0; intensity: 0.35"></a-entity>
+    <a-entity light="type: hemisphere; skyColor: #fff8e6; groundColor: #c8b8a8; intensity: 0.45"></a-entity>
+    <a-entity light="type: directional; color: #fff0d8; intensity: 0.8; castShadow: true" position="4 8 3"></a-entity>
+    <a-entity id="cubeLight" light="type: point; color: #818cf8; intensity: 1.5; distance: 6; castShadow: true" position="-0.4 1.6 -1.8"></a-entity>
 
     <!-- CEILING RECESSED LIGHTS -->
     <a-entity light="type: point; color: #fef5e0; intensity: 0.35; distance: 4" position="-1.5 2.95 -0.5"></a-entity>
     <a-entity light="type: point; color: #fef5e0; intensity: 0.35; distance: 4" position="1.5 2.95 -0.5"></a-entity>
     <a-entity light="type: point; color: #fef5e0; intensity: 0.3; distance: 4" position="0 2.95 -2.8"></a-entity>
 
-    <!-- ESCENA PRINCIPAL (modelo GLB del hotel) -->
-    <a-entity gltf-model="url(Models/TODOprueba.glb)"
-              position="5.16 0 10.23"
-              scale="1 1 1">
-    </a-entity>
+    <!-- ROOM STRUCTURE -->
+    <!-- FLOOR (marble beige) -->
+    <a-plane id="floor" position="0 0.01 -1.5" rotation="-90 0 0" width="16" height="12"
+             material="shader: standard; color: #f0e8d8; roughness: 0.2; metalness: 0.05"
+             shadow="receive: true"></a-plane>
 
-    <!-- LOBBY CHANDELIER LIGHT (solo luz, no geometría - el GLB tiene su propia lámpara) -->
-    <a-entity light="type: point; color: #fef0d0; intensity: 0.6; distance: 5" position="0 2.95 -1.8"></a-entity>
+    <!-- BACK WALL (beige) -->
+    <a-plane id="backWall" position="0 2.3 2.0" rotation="0 0 0" width="16" height="4.6"
+             material="shader: standard; color: #e8e0d0; roughness: 0.8; metalness: 0"></a-plane>
+
+    <!-- LEFT WALL -->
+    <a-plane id="leftWall" position="-6.0 2.3 -1.5" rotation="0 90 0" width="12" height="4.6"
+             material="shader: standard; color: #e8e0d0; roughness: 0.8; metalness: 0"></a-plane>
+
+    <!-- RIGHT WALL -->
+    <a-plane id="rightWall" position="6.0 2.3 -1.5" rotation="0 -90 0" width="12" height="4.6"
+             material="shader: standard; color: #e8e0d0; roughness: 0.8; metalness: 0"></a-plane>
+
+    <!-- CEILING (panel) -->
+    <a-plane id="ceiling" position="0 4.6 -1.5" rotation="90 0 0" width="12" height="16"
+             material="shader: standard; color: #fff8f0; roughness: 0.9; metalness: 0; transparent: true; opacity: 0.95"
+             shadow="receive: true"></a-plane>
+
+    <!-- WOODEN PILLARS (4x framing the lobby) -->
+    <!-- Back-left pillar -->
+    <a-cylinder id="pillarBL" position="-2.8 2.3 0.5" radius="0.2" height="4.6"
+                material="color: #8b5e3c; roughness: 0.5; metalness: 0.1"
+                shadow="cast: true; receive: true"></a-cylinder>
+    <!-- Back-right pillar -->
+    <a-cylinder id="pillarBR" position="2.8 2.3 0.5" radius="0.2" height="4.6"
+                material="color: #8b5e3c; roughness: 0.5; metalness: 0.1"
+                shadow="cast: true; receive: true"></a-cylinder>
+    <!-- Front-left pillar -->
+    <a-cylinder id="pillarFL" position="-2.8 2.3 -3.5" radius="0.2" height="4.6"
+                material="color: #8b5e3c; roughness: 0.5; metalness: 0.1"
+                shadow="cast: true; receive: true"></a-cylinder>
+    <!-- Front-right pillar -->
+    <a-cylinder id="pillarFR" position="2.8 2.3 -3.5" radius="0.2" height="4.6"
+                material="color: #8b5e3c; roughness: 0.5; metalness: 0.1"
+                shadow="cast: true; receive: true"></a-cylinder>
+
+    <!-- BASEBOARDS (elegant wall trim) -->
+    <a-box id="baseboardBack" position="0 0.08 2.0" scale="14.0 0.14 0.08"
+           material="color: #6b4a2e; roughness: 0.5; metalness: 0.1"></a-box>
+    <a-box id="baseboardLeft" position="-6.0 0.08 -1.5" scale="0.08 0.14 10.0"
+           material="color: #6b4a2e; roughness: 0.5; metalness: 0.1"></a-box>
+    <a-box id="baseboardRight" position="6.0 0.08 -1.5" scale="0.08 0.14 10.0"
+           material="color: #6b4a2e; roughness: 0.5; metalness: 0.1"></a-box>
+
+    <!-- CROWN MOLDING -->
+    <a-box id="crownBack" position="0 4.52 2.0" scale="14.0 0.08 0.10"
+           material="color: #8b6a4e; roughness: 0.4; metalness: 0.1"></a-box>
+    <a-box id="crownLeft" position="-6.0 4.52 -1.5" scale="0.10 0.08 10.0"
+           material="color: #8b6a4e; roughness: 0.4; metalness: 0.1"></a-box>
+    <a-box id="crownRight" position="6.0 4.52 -1.5" scale="0.10 0.08 10.0"
+           material="color: #8b6a4e; roughness: 0.4; metalness: 0.1"></a-box>
+
+    <!-- CHANDELIER GEOMETRY -->
+    <a-ring id="chandelierRing" position="0 3.7 -1.8" rotation="-90 0 0" radius-inner="0.4" radius-outer="0.55"
+            material="color: #c8a870; roughness: 0.2; metalness: 0.7"></a-ring>
+    <a-cylinder id="chandelierRod" position="0 4.15 -1.8" radius="0.03" height="0.5"
+                material="color: #c8a870; roughness: 0.2; metalness: 0.7"></a-cylinder>
+    <!-- Chandelier pendant lights -->
+    <a-sphere id="chandelierBulb1" position="-0.35 3.6 -1.8" radius="0.04"
+              material="color: #fef0d0; emissive: #fef0d0; emissiveIntensity: 0.8"></a-sphere>
+    <a-sphere id="chandelierBulb2" position="0.35 3.6 -1.8" radius="0.04"
+              material="color: #fef0d0; emissive: #fef0d0; emissiveIntensity: 0.8"></a-sphere>
+    <a-sphere id="chandelierBulb3" position="0 3.6 -2.15" radius="0.04"
+              material="color: #fef0d0; emissive: #fef0d0; emissiveIntensity: 0.8"></a-sphere>
+    <a-sphere id="chandelierBulb4" position="0 3.6 -1.45" radius="0.04"
+              material="color: #fef0d0; emissive: #fef0d0; emissiveIntensity: 0.8"></a-sphere>
+    <!-- LOBBY CHANDELIER LIGHT -->
+    <a-entity light="type: point; color: #fef0d0; intensity: 0.6; distance: 6" position="0 3.8 -1.8"></a-entity>
+
+    <!-- ELEGANT RECEPTION DESK -->
+    <!-- Desk body (wood base) -->
+    <a-box id="deskBody" position="0 0.52 -0.9" scale="2.0 0.84 0.56"
+           material="color: #5c3a1e; roughness: 0.7; metalness: 0"
+           shadow="receive: true"></a-box>
+    <!-- Desk front (wood panel) -->
+    <a-box id="deskFront" position="0 0.52 -1.19" scale="2.0 0.84 0.04"
+           material="color: #4a2a10; roughness: 0.5; metalness: 0.1"
+           shadow="cast: true"></a-box>
+    <!-- Desk countertop (polished marble) -->
+    <a-box id="deskCountertop" position="0 0.97 -0.9" scale="2.2 0.06 0.7"
+           material="color: #f0e6d8; roughness: 0.1; metalness: 0.05"
+           shadow="cast: true; receive: true"></a-box>
+    <!-- Desk trim (dark wood edge) -->
+    <a-box id="deskTrim" position="0 0.02 -0.9" scale="2.1 0.04 0.62"
+           material="color: #3a2010; roughness: 0.4; metalness: 0.5"></a-box>
+    <!-- Desk edge (wood lip) -->
+    <a-box id="deskEdge" position="0 0.94 -0.9" scale="2.1 0.02 0.66"
+           material="color: #4a2a10; roughness: 0.4; metalness: 0.3"
+           shadow="receive: true"></a-box>
+
+    <!-- WELCOME RUG (in front of desk) -->
+    <a-plane id="welcomeRug" position="0 0.012 -0.5" rotation="-90 0 0" width="1.8" height="1.2"
+             material="shader: standard; color: #4a3a2a; roughness: 0.9; metalness: 0"
+             shadow="receive: true"></a-plane>
+    <!-- Rug border -->
+    <a-plane id="rugBorder" position="0 0.013 -0.5" rotation="-90 0 0" width="1.92" height="1.32"
+             material="shader: standard; color: #6b4a2e; roughness: 0.8; metalness: 0; transparent: true; opacity: 0.4"></a-plane>
 
     <!-- THE AI CHARACTER (Floating & Rotating Metallic Cube) -->
     <a-box id="aiCube"
            class="clickable"
-           position="-0.5 1.6 -0.5"
+           position="-0.4 1.6 -1.8"
            rotation="0 45 45"
-           width="0.38" height="0.38" depth="0.38"
+           width="0.42" height="0.42" depth="0.42"
            material="color: #6366f1; roughness: 0.05; metalness: 0.95; emissive: #312e81; emissiveIntensity: 1.2"
-           animation__bob="property: position; to: -0.5 1.75 -0.5; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine"
+           animation__bob="property: position; to: -0.4 1.75 -1.8; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine"
            animation__rotate="property: rotation; to: 360 405 45; dur: 9000; loop: true; easing: linear">
     </a-box>
 
@@ -436,7 +531,7 @@
       <!-- Camera with a gaze cursor for desktop fallback -->
       <a-entity id="camera" camera look-controls position="0 1.6 0.3">
         <a-cursor id="desktopCursor"
-                  raycaster="objects: .clickable; far: 4"
+                  raycaster="objects: .clickable; far: 6"
                   material="color: #818cf8; shader: flat"
                   position="0 0 -1"
                   geometry="primitive: ring; radiusInner: 0.008; radiusOuter: 0.015">
@@ -446,13 +541,13 @@
       <!-- VR Laser Controllers -->
       <a-entity id="leftController"
                 laser-controls="hand: left"
-                raycaster="objects: .clickable; far: 10"
-                line="color: #06b6d4; opacity: 0.8; width: 2">
+                raycaster="objects: .clickable; far: 12"
+                line="color: #06b6d4; opacity: 0.9; width: 4">
       </a-entity>
       <a-entity id="rightController"
                 laser-controls="hand: right"
-                raycaster="objects: .clickable; far: 10"
-                line="color: #ec4899; opacity: 0.8; width: 2">
+                raycaster="objects: .clickable; far: 12"
+                line="color: #ec4899; opacity: 0.9; width: 4">
       </a-entity>
     </a-entity>
 
@@ -466,8 +561,8 @@
     AFRAME.registerComponent('position-clamp', {
       tick: function () {
         const p = this.el.getAttribute('position');
-        p.x = Math.max(-1.5, Math.min(8.5, p.x));
-        p.z = Math.max(-1.2, Math.min(3.0, p.z));
+        p.x = Math.max(-3.5, Math.min(3.5, p.x));
+        p.z = Math.max(-1.5, Math.min(1.5, p.z));
         this.el.setAttribute('position', p);
       }
     });
@@ -477,14 +572,31 @@
       init: function () {
         this.moveX = 0;
         this.moveZ = 0;
+        this.snapAngle = 0;
+        this.lastSnapTime = 0;
+        this.deadZone = 0.12;
+        this.speed = 0.06;
         const bindController = (id) => {
           const el = document.getElementById(id);
           if (!el) return;
           el.addEventListener('axismove', (e) => {
             const ax = e.detail.axis;
             if (!ax) return;
-            this.moveX = Math.abs(ax[0]) > 0.1 ? ax[0] : 0;
-            this.moveZ = Math.abs(ax[1]) > 0.1 ? ax[1] : 0;
+            this.moveX = Math.abs(ax[0]) > this.deadZone ? ax[0] : 0;
+            this.moveZ = Math.abs(ax[1]) > this.deadZone ? ax[1] : 0;
+          });
+          // Snap turn on thumbstick press
+          el.addEventListener('thumbstickdown', () => {
+            const now = Date.now();
+            if (now - this.lastSnapTime < 400) return;
+            this.lastSnapTime = now;
+            const rig = document.getElementById('rig');
+            if (!rig) return;
+            const r = rig.getAttribute('rotation') || { x: 0, y: 0, z: 0 };
+            r.y += 30;
+            rig.setAttribute('rotation', r);
+            this.snapAngle = 30;
+            setTimeout(() => { this.snapAngle = 0; }, 150);
           });
         };
         bindController('leftController');
@@ -497,8 +609,8 @@
         const yaw = THREE.MathUtils.degToRad(cam.getAttribute('rotation')?.y || 0);
         const s = Math.sin(yaw), c = Math.cos(yaw);
         const p = this.el.getAttribute('position');
-        p.x += (this.moveX * c - this.moveZ * s) * 0.05;
-        p.z += (this.moveX * s + this.moveZ * c) * 0.05;
+        p.x += (this.moveX * c - this.moveZ * s) * this.speed;
+        p.z += (this.moveX * s + this.moveZ * c) * this.speed;
         this.el.setAttribute('position', p);
       }
     });
@@ -1065,19 +1177,28 @@ controllerEl.addEventListener('triggerdown', () => {
     // RECORDING CONTROL FLOW
     // ==========================================
 async function startRecording() {
-       if (!recognition) {
-         showTextInputFallback();
-         return;
-       }
-       if (isRecording) return;
+        if (!recognition) {
+          showTextInputFallback();
+          return;
+        }
+        if (isRecording) return;
 
-       // Request microphone permission if needed
-       const hasPermission = await requestMicPermissionIfNeeded();
-       if (!hasPermission) {
-         return; // Permission denied, warning already shown
-       }
+        // Detect browser for platform-specific handling
+        const browser = detectBrowser();
 
-         initAmbientAudio();
+        // Pico 4 Ultra: try mic but fallback aggressively
+        if (browser === 'pico') {
+          showMicWarning("Pico 4 detected: mic may not work. If no speech detected, use the text input below.");
+        }
+
+        // Request microphone permission if needed
+        const hasPermission = await requestMicPermissionIfNeeded();
+        if (!hasPermission) {
+          showMicWarning("Using text input instead of microphone.");
+          return; // Permission denied, warning already shown
+        }
+
+        initAmbientAudio();
 
         // Initialize TTS AudioContext during user gesture (required by Safari)
         if (!ttsAudioCtx) {
@@ -1088,7 +1209,6 @@ async function startRecording() {
         }
 
         // Safari: prime SpeechSynthesis engine during user gesture
-        const browser = detectBrowser();
         if (browser === 'safari' && window.speechSynthesis) {
           window.speechSynthesis.getVoices();
           const warmup = new SpeechSynthesisUtterance(' ');
@@ -1100,27 +1220,27 @@ async function startRecording() {
         const talkBtn = document.getElementById('talkButton');
        if (talkBtn) {
          talkBtn.classList.add('listening');
-         talkBtn.textContent = 'Hold to Speak (Listening…)';
+         talkBtn.textContent = browser === 'pico' ? 'Hold to Speak (with Pico mic…) (or type below)' : 'Hold to Speak (Listening…)';
        }
 
-       // Reset text
-       recognizedText = "";
+        // Reset text
+        recognizedText = "";
 
-       // Interrupt TTS
-       if (window.speechSynthesis) {
-         window.speechSynthesis.cancel();
-       }
-       stopSpeakingAnimation();
+        // Interrupt TTS
+        if (window.speechSynthesis) {
+          window.speechSynthesis.cancel();
+        }
+        stopSpeakingAnimation();
 
-       // Reset cube position and restore bob animation if it flew away
-       const cubeEl = document.getElementById('aiCube');
-       if (cubeEl) {
-         cubeEl.removeAttribute('animation__move_room');
-          cubeEl.setAttribute('position', '0 1.6 -2.2');
-         if (!cubeEl.hasAttribute('animation__bob')) {
-            cubeEl.setAttribute('animation__bob', 'property: position; to: 0 1.75 -2.2; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine');
-         }
-       }
+        // Reset cube position and restore bob animation if it flew away
+        const cubeEl = document.getElementById('aiCube');
+        if (cubeEl) {
+          cubeEl.removeAttribute('animation__move_room');
+           cubeEl.setAttribute('position', '-0.4 1.6 -1.8');
+          if (!cubeEl.hasAttribute('animation__bob')) {
+             cubeEl.setAttribute('animation__bob', 'property: position; to: -0.4 1.75 -1.8; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine');
+          }
+        }
 
        isRecording = true;
        updateUIState("Listening...");
@@ -1131,11 +1251,25 @@ async function startRecording() {
        try {
          recognition.lang = currentLang;
          recognition.start();
+
+         // Pico 4: more aggressive fallback — if no result in 6s, show text input
+         if (browser === 'pico') {
+           setTimeout(() => {
+             if (isRecording && !recognizedText) {
+               console.warn("Pico mic timeout — showing text fallback");
+               showTextInputFallback();
+               try { recognition.stop(); } catch (_) {}
+             }
+           }, 6000);
+         }
        } catch (err) {
          console.error("Failed to start speech recognition:", err);
          isRecording = false;
          updateUIState("HOLD M TO SPEAK");
          setCubeState("idle");
+         if (browser === 'pico') {
+           showTextInputFallback();
+         }
        }
      }
 
@@ -2093,8 +2227,13 @@ async function speakText(textToSpeak) {
     function showTextInputFallback() {
       const container = document.getElementById('textInputFallback');
       const talkBtn = document.getElementById('talkButton');
-      if (container) container.style.display = 'flex';
+      if (container) {
+        container.style.display = 'block';
+        const input = document.getElementById('textInput');
+        if (input) setTimeout(() => input.focus(), 100);
+      }
       if (talkBtn) talkBtn.style.display = 'none';
+      updateUIState("TYPE YOUR MESSAGE");
     }
 
     function showTextResponse(text) {

@@ -75,36 +75,42 @@ Renderer on 3D panel (`#evaluationPanel`) and injected into 2D HUD. Reset button
 
 Mic permission is requested on user interaction (button/key/trigger press), not on page load. Error messages are browser-specific (Firefox, Safari, Chrome/Edge).
 
-## Environment
+## Environment (Manually Built)
 
-Scene is a hotel lobby loaded from `Models/TODOprueba.glb` (~112MB, 161 nodes, 135 meshes) offset to `(5.16, 0, 10.23)` — places the L-shaped reception desk at `(0, 0.04, -0.9)` (same world position as the old procedural desk, keeping UI element positions valid).
-
-`buildEnvironment()` now only generates the cube-map envMap for AI cube reflections (all textures come from the GLB).
+Hotel lobby reception built entirely with A-Frame primitives (no GLB, no external 3D models). Design: beige tones, wooden pillars, marble floors, elegant finish.
 
 ## VR scene layout
 
-Room is the full GLB hotel lobby. Key A-Frame elements:
+Room dimensions: 12m × 16m × 4.6m (w × d × h). Centered at `(0, 0, -1.5)`. Key A-Frame elements:
 
 | Element | Position | Notes |
 |---------|----------|-------|
-| Rig (player) | `-0.5 0 -1.0` | Behind L-shaped desk (receptionist area). Camera local `(0 1.6 0.3)` = eye `(-0.5 1.6 -0.7)`. position-clamp keeps X in `[-1.5, 8.5]`, Z in `[-1.2, 3.0]` |
-| GLB scene | `5.16 0 10.23` | Offset so desk lands at original world Z=-0.9 |
+| Rig (player) | `-0.5 0 -1.0` | Behind desk. Camera local `(0 1.6 0.3)` = eye `(-0.5 1.6 -0.7)`. position-clamp: X `[-3.5, 3.5]`, Z `[-1.5, 1.5]` |
+| Floor (marble) | `0 0.01 -1.5` | 16×12m, beige `#f0e8d8`, roughness 0.2, receives shadows |
+| Back wall (beige) | `0 2.3 2.0` | 16×4.6m, color `#e8e0d0` |
+| Left/Right walls | `±6.0 2.3 -1.5` | 12×4.6m, same beige color |
+| Ceiling | `0 4.6 -1.5` | 12×16m, off-white `#fff8f0`, transparent 0.95 |
+| 4 wooden pillars | `±2.8` × `{0.5, -3.5}` | 0.2m radius, 4.6m tall, wood `#8b5e3c`, frame the lobby |
+| Baseboards | along walls at y=0.08 | Wood trim `#6b4a2e` |
+| Crown molding | along walls at y=4.52 | Wood trim `#8b6a4e` |
+| Reception desk | `0 0.52 -0.9` | 5-part: marble top (`#f0e6d8`), wood front/body/trim/edge |
+| Welcome rug | `0 0.012 -0.5` | 1.8×1.2m, dark brown `#4a3a2a` with border |
+| Chandelier | `0 3.7 -1.8` | Gold ring + rod + 4 emissive bulbs |
 | Clipboard (tasks) | `-0.65 1.40 -0.65` | Tilted -30° X, 25° Y |
 | Holographic panel | `0 1.55 -1.1` | Tilted -10° X, 0° Y |
-| AI cube (guest) | `-0.5 1.6 -0.5` | In front of desk (guest side), envMap reflections, bob/rotate anims |
+| AI cube (guest) | `-0.4 1.6 -1.8` | Behind dialog panel (guest side), envMap ref., bob/rotate |
 | Evaluation panel | `0 1.55 -1.1` | Hidden until booking confirmed, same pos as holographic panel |
 
 ## Lighting
 
 | Type | Color | Intensity | Notes |
 |------|-------|-----------|-------|
-| Ambient | `#c4b5a0` | 0.25 | Base fill |
-| Hemisphere | `#f0e8d8` / `#7a6a5a` | 0.4 | Sky-ground gradient |
-| Directional | `#fef5e0` | 0.7 | Main sun, casts shadows |
+| Ambient | `#f5ede0` | 0.35 | Warm fill |
+| Hemisphere | `#fff8e6` / `#c8b8a8` | 0.45 | Warm sky-ground |
+| Directional | `#fff0d8` | 0.8 | Main sun at (4,8,3), casts shadows |
 | 3 recessed points | `#fef5e0` | 0.3–0.35 | Ceiling downlights |
-| Chandelier point | `#fef0d0` | 0.6 | Above waiting area |
-| Floor lamp point | `#fef0d0` | 0.3 | Next to armchair (in GLB) |
-| Cube light (dynamic) | `#818cf8` | 1.5 | Changes color with AI state |
+| Chandelier point | `#fef0d0` | 0.6 | Above waiting area at (0,3.8,-1.8) |
+| Cube light (dynamic) | `#818cf8` | 1.5 | Tracks AI cube at (-0.4,1.6,-1.8) |
 
 ## Ambient audio
 
