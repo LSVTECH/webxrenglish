@@ -283,7 +283,7 @@
     <a-entity light="type: ambient; color: #f5ede0; intensity: 0.35"></a-entity>
     <a-entity light="type: hemisphere; skyColor: #fff8e6; groundColor: #c8b8a8; intensity: 0.45"></a-entity>
     <a-entity light="type: directional; color: #fff0d8; intensity: 0.8; castShadow: true" position="4 8 3"></a-entity>
-    <a-entity id="cubeLight" light="type: point; color: #818cf8; intensity: 1.5; distance: 6; castShadow: true" position="-0.4 1.6 -1.8"></a-entity>
+    <a-entity id="cubeLight" light="type: point; color: #818cf8; intensity: 1.5; distance: 6; castShadow: true" position="0 1.6 -1.5"></a-entity>
 
     <!-- CEILING RECESSED LIGHTS -->
     <a-entity light="type: point; color: #fef5e0; intensity: 0.35; distance: 4" position="-1.5 2.95 -0.5"></a-entity>
@@ -366,48 +366,48 @@
 
     <!-- ELEGANT RECEPTION DESK -->
     <!-- Desk body (wood base) -->
-    <a-box id="deskBody" position="0 0.52 -0.9" scale="2.0 0.84 0.56"
+    <a-box id="deskBody" position="0 0.52 0.0" scale="2.0 0.84 0.56"
            material="color: #5c3a1e; roughness: 0.7; metalness: 0"
            shadow="receive: true"></a-box>
     <!-- Desk front (wood panel) -->
-    <a-box id="deskFront" position="0 0.52 -1.19" scale="2.0 0.84 0.04"
+    <a-box id="deskFront" position="0 0.52 -0.29" scale="2.0 0.84 0.04"
            material="color: #4a2a10; roughness: 0.5; metalness: 0.1"
            shadow="cast: true"></a-box>
     <!-- Desk countertop (polished marble) -->
-    <a-box id="deskCountertop" position="0 0.97 -0.9" scale="2.2 0.06 0.7"
+    <a-box id="deskCountertop" position="0 0.97 0.0" scale="2.2 0.06 0.7"
            material="color: #f0e6d8; roughness: 0.1; metalness: 0.05"
            shadow="cast: true; receive: true"></a-box>
     <!-- Desk trim (dark wood edge) -->
-    <a-box id="deskTrim" position="0 0.02 -0.9" scale="2.1 0.04 0.62"
+    <a-box id="deskTrim" position="0 0.02 0.0" scale="2.1 0.04 0.62"
            material="color: #3a2010; roughness: 0.4; metalness: 0.5"></a-box>
     <!-- Desk edge (wood lip) -->
-    <a-box id="deskEdge" position="0 0.94 -0.9" scale="2.1 0.02 0.66"
+    <a-box id="deskEdge" position="0 0.94 0.0" scale="2.1 0.02 0.66"
            material="color: #4a2a10; roughness: 0.4; metalness: 0.3"
            shadow="receive: true"></a-box>
 
     <!-- WELCOME RUG (in front of desk) -->
-    <a-plane id="welcomeRug" position="0 0.012 -0.5" rotation="-90 0 0" width="1.8" height="1.2"
+    <a-plane id="welcomeRug" position="0 0.012 -1.2" rotation="-90 0 0" width="1.8" height="1.2"
              material="shader: standard; color: #4a3a2a; roughness: 0.9; metalness: 0"
              shadow="receive: true"></a-plane>
     <!-- Rug border -->
-    <a-plane id="rugBorder" position="0 0.013 -0.5" rotation="-90 0 0" width="1.92" height="1.32"
+    <a-plane id="rugBorder" position="0 0.013 -1.2" rotation="-90 0 0" width="1.92" height="1.32"
              material="shader: standard; color: #6b4a2e; roughness: 0.8; metalness: 0; transparent: true; opacity: 0.4"></a-plane>
 
     <!-- THE AI CHARACTER (Floating & Rotating Metallic Cube) -->
     <a-box id="aiCube"
            class="clickable"
-           position="-0.4 1.6 -1.8"
+           position="0 1.6 -1.5"
            rotation="0 45 45"
            width="0.42" height="0.42" depth="0.42"
            material="color: #6366f1; roughness: 0.05; metalness: 0.95; emissive: #312e81; emissiveIntensity: 1.2"
-           animation__bob="property: position; to: -0.4 1.75 -1.8; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine"
+           animation__bob="property: position; to: 0 1.75 -1.5; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine"
            animation__rotate="property: rotation; to: 360 405 45; dur: 9000; loop: true; easing: linear">
     </a-box>
 
     <!-- CLIPBOARD INTERACTIVO (TABLA DE TAREAS) sobre el mostrador -->
     <a-plane id="clipboardPanel"
-             position="-0.65 1.40 -0.65"
-             rotation="-30 25 0"
+             position="-1.2 1.35 0.2"
+             rotation="-25 45 0"
              width="0.65" height="0.80"
              material="shader: flat; color: #0d1527; opacity: 0.95; transparent: true"
              class="clickable">
@@ -445,7 +445,7 @@
 
     <!-- VR INTERACTION & DISPLAY PANEL (Holographic Screen) centrado -->
     <a-plane id="uiPanel"
-             position="0 1.55 -1.1"
+             position="0 1.55 -0.3"
              rotation="-10 0 0"
              width="1.4" height="0.8"
              material="shader: flat; color: #080a14; opacity: 0.88; transparent: true; roughness: 1"
@@ -494,7 +494,7 @@
 
     <!-- EVALUATION PANEL (visible after booking completion, misma posición que el panel de diálogo) -->
     <a-plane id="evaluationPanel"
-             position="0 1.55 -1.1"
+             position="0 1.55 -0.3"
              rotation="-10 0 0"
              width="1.8" height="1.3"
              material="shader: flat; color: #0a0320; opacity: 0.95; transparent: true; roughness: 1"
@@ -527,9 +527,9 @@
     </a-plane>
 
     <!-- PLAYER RIG (Camera & Hands) -->
-    <a-entity id="rig" position="-0.5 0 -1.0" position-clamp wasd-controls thumbstick-locomotion>
+    <a-entity id="rig" position="0 0 1.5" position-clamp wasd-controls thumbstick-locomotion>
       <!-- Camera with a gaze cursor for desktop fallback -->
-      <a-entity id="camera" camera look-controls position="0 1.6 0.3">
+      <a-entity id="camera" camera look-controls position="0 1.6 0">
         <a-cursor id="desktopCursor"
                   raycaster="objects: .clickable; far: 6"
                   material="color: #818cf8; shader: flat"
@@ -561,8 +561,8 @@
     AFRAME.registerComponent('position-clamp', {
       tick: function () {
         const p = this.el.getAttribute('position');
-        p.x = Math.max(-3.5, Math.min(3.5, p.x));
-        p.z = Math.max(-1.5, Math.min(1.5, p.z));
+        p.x = Math.max(-4.0, Math.min(4.0, p.x));
+        p.z = Math.max(0.4, Math.min(3.5, p.z));
         this.el.setAttribute('position', p);
       }
     });
@@ -572,46 +572,48 @@
       init: function () {
         this.moveX = 0;
         this.moveZ = 0;
-        this.snapAngle = 0;
-        this.lastSnapTime = 0;
-        this.deadZone = 0.12;
-        this.speed = 0.06;
-        const bindController = (id) => {
-          const el = document.getElementById(id);
-          if (!el) return;
-          el.addEventListener('axismove', (e) => {
+        this.rotateY = 0;
+        this.deadZone = 0.15;
+        this.speed = 0.04;
+        const leftEl = document.getElementById('leftController');
+        if (leftEl) {
+          leftEl.addEventListener('axismove', (e) => {
             const ax = e.detail.axis;
-            if (!ax) return;
-            this.moveX = Math.abs(ax[0]) > this.deadZone ? ax[0] : 0;
-            this.moveZ = Math.abs(ax[1]) > this.deadZone ? ax[1] : 0;
+            if (ax) {
+              this.moveX = Math.abs(ax[0]) > this.deadZone ? ax[0] : 0;
+              this.moveZ = Math.abs(ax[1]) > this.deadZone ? ax[1] : 0;
+            }
           });
-          // Snap turn on thumbstick press
-          el.addEventListener('thumbstickdown', () => {
-            const now = Date.now();
-            if (now - this.lastSnapTime < 400) return;
-            this.lastSnapTime = now;
-            const rig = document.getElementById('rig');
-            if (!rig) return;
-            const r = rig.getAttribute('rotation') || { x: 0, y: 0, z: 0 };
-            r.y += 30;
-            rig.setAttribute('rotation', r);
-            this.snapAngle = 30;
-            setTimeout(() => { this.snapAngle = 0; }, 150);
+        }
+        const rightEl = document.getElementById('rightController');
+        if (rightEl) {
+          rightEl.addEventListener('axismove', (e) => {
+            const ax = e.detail.axis;
+            if (ax) {
+              this.rotateY = Math.abs(ax[0]) > this.deadZone ? ax[0] : 0;
+            }
           });
-        };
-        bindController('leftController');
-        bindController('rightController');
+        }
       },
       tick: function () {
-        if (this.moveX === 0 && this.moveZ === 0) return;
-        const cam = document.getElementById('camera');
-        if (!cam) return;
-        const yaw = THREE.MathUtils.degToRad(cam.getAttribute('rotation')?.y || 0);
-        const s = Math.sin(yaw), c = Math.cos(yaw);
-        const p = this.el.getAttribute('position');
-        p.x += (this.moveX * c - this.moveZ * s) * this.speed;
-        p.z += (this.moveX * s + this.moveZ * c) * this.speed;
-        this.el.setAttribute('position', p);
+        if (this.rotateY !== 0) {
+          const r = this.el.getAttribute('rotation') || { x: 0, y: 0, z: 0 };
+          r.y -= this.rotateY * 1.5;
+          this.el.setAttribute('rotation', r);
+        }
+        if (this.moveX !== 0 || this.moveZ !== 0) {
+          const cam = document.getElementById('camera');
+          if (cam) {
+            const rigRot = this.el.getAttribute('rotation') || { x: 0, y: 0, z: 0 };
+            const camRot = cam.getAttribute('rotation') || { x: 0, y: 0, z: 0 };
+            const yaw = THREE.MathUtils.degToRad((rigRot.y || 0) + (camRot.y || 0));
+            const s = Math.sin(yaw), c = Math.cos(yaw);
+            const p = this.el.getAttribute('position');
+            p.x += (this.moveX * c - this.moveZ * s) * this.speed;
+            p.z += (this.moveX * s + this.moveZ * c) * this.speed;
+            this.el.setAttribute('position', p);
+          }
+        }
       }
     });
 
@@ -863,17 +865,72 @@ function createEnvMap() {
      // Cross-browser compatibility improvements applied
      // ==========================================
 // Cross-browser SpeechRecognition detection with fallbacks
+class PicoAudioRecorder {
+  constructor() {
+    this.mediaRecorder = null;
+    this.audioChunks = [];
+    this.stream = null;
+  }
+  async start() {
+    this.audioChunks = [];
+    if (!this.stream) {
+      this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    }
+    let options = {};
+    if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+      options.mimeType = 'audio/webm;codecs=opus';
+    } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+      options.mimeType = 'audio/webm';
+    }
+    this.mediaRecorder = new MediaRecorder(this.stream, options);
+    this.mediaRecorder.ondataavailable = (event) => {
+      if (event.data && event.data.size > 0) {
+        this.audioChunks.push(event.data);
+      }
+    };
+    this.mediaRecorder.start();
+  }
+  async stop() {
+    return new Promise((resolve) => {
+      if (!this.mediaRecorder || this.mediaRecorder.state === 'inactive') {
+        resolve(null);
+        return;
+      }
+      this.mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(this.audioChunks, { type: this.mediaRecorder.mimeType });
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64data = reader.result.split(',')[1];
+          resolve(base64data);
+        };
+        reader.readAsDataURL(audioBlob);
+      };
+      this.mediaRecorder.stop();
+    });
+  }
+}
+const picoRecorder = new PicoAudioRecorder();
+function detectBrowser() {
+  const ua = navigator.userAgent.toLowerCase();
+  if (ua.includes('pico') || ua.includes('picovr')) return 'pico';
+  if (ua.includes('firefox')) return 'firefox';
+  if (ua.includes('samsungbrowser')) return 'samsung';
+  if (ua.includes('edg/') || ua.includes('edge/')) return 'edge';
+  if (ua.includes('opr/') || ua.includes('opera')) return 'opera';
+  if (ua.includes('chrome') || ua.includes('chromium')) return 'chrome';
+  if (ua.includes('safari')) return 'safari';
+  return 'unknown';
+}
 const SpeechRecognition = window.SpeechRecognition 
                         || window.webkitSpeechRecognition 
                         || window.mozSpeechRecognition 
                         || window.msSpeechRecognition;
+const usePicoRecorder = (detectBrowser() === 'pico' || !SpeechRecognition);
 let recognition = null;
 
 // Initialize SpeechRecognition if supported
 function initializeSpeechRecognition() {
   if (!SpeechRecognition) {
-    console.warn("SpeechRecognition not supported in this browser.");
-    showMicWarning("Speech recognition is NOT supported in this browser. Please use Chrome, Edge, or Safari.");
     return false;
   }
   
@@ -958,20 +1015,6 @@ function initializeSpeechRecognition() {
     let chatHistory = [];
     let recognitionStarted = false;
 
-// ==========================================
-// BROWSER DETECTION
-// ==========================================
-function detectBrowser() {
-  const ua = navigator.userAgent.toLowerCase();
-  if (ua.includes('pico') || ua.includes('picovr')) return 'pico';
-  if (ua.includes('firefox')) return 'firefox';
-  if (ua.includes('samsungbrowser')) return 'samsung';
-  if (ua.includes('edg/') || ua.includes('edge/')) return 'edge';
-  if (ua.includes('opr/') || ua.includes('opera')) return 'opera';
-  if (ua.includes('chrome') || ua.includes('chromium')) return 'chrome';
-  if (ua.includes('safari')) return 'safari';
-  return 'unknown';
-}
 
 // ==========================================
 // TTS VOICE LOADING (cross-browser)
@@ -1131,7 +1174,7 @@ talkBtn.addEventListener('mousedown', async () => { await startRecording(); });
       // C. Click on AI Cube Hook (Toggles voice)
       const cubeEl = document.getElementById('aiCube');
       if (cubeEl) {
-cubeEl.addEventListener('click', async () => {
+        cubeEl.addEventListener('click', async () => {
            if (isRecording) {
              stopRecording();
            } else {
@@ -1139,36 +1182,49 @@ cubeEl.addEventListener('click', async () => {
            }
          });
       }
-
-      // D. VR Controller Trigger Hooks
+      
       const bindControllerEvents = (controllerId) => {
         const controllerEl = document.getElementById(controllerId);
         if (!controllerEl) return;
-
-controllerEl.addEventListener('triggerdown', () => {
-           console.log(`VR Controller Trigger start: ${controllerId}`);
-           startRecording(); // Note: Not awaiting for simplicity in event handler
-         });
-
-        controllerEl.addEventListener('triggerup', () => {
-          console.log(`VR Controller Trigger stop: ${controllerId}`);
+        const onStart = () => {
+          console.log(`VR Controller start: ${controllerId}`);
+          startRecording();
+        };
+        const onEnd = () => {
+          console.log(`VR Controller stop: ${controllerId}`);
           stopRecording();
+        };
+        controllerEl.addEventListener('triggerdown', onStart);
+        controllerEl.addEventListener('selectstart', onStart);
+        controllerEl.addEventListener('triggerup', onEnd);
+        controllerEl.addEventListener('selectend', onEnd);
+        controllerEl.addEventListener('controllerconnected', (e) => {
+          console.log(`Controller connected: ${controllerId}`, e.detail);
         });
       };
 
       bindControllerEvents('leftController');
       bindControllerEvents('rightController');
 
-      // E. Clean up desktop camera cursor when entering VR mode
       const sceneEl = document.querySelector('a-scene');
       sceneEl.addEventListener('enter-vr', () => {
         const cursor = document.getElementById('desktopCursor');
         if (cursor) cursor.setAttribute('visible', 'false');
+        const hud = document.getElementById('hud-overlay');
+        if (hud) hud.style.display = 'none';
       });
       sceneEl.addEventListener('exit-vr', () => {
         const cursor = document.getElementById('desktopCursor');
         if (cursor) cursor.setAttribute('visible', 'true');
+        const hud = document.getElementById('hud-overlay');
+        if (hud) hud.style.display = 'block';
       });
+
+      window.addEventListener('click', async (e) => {
+        if (e.target && (e.target.classList.contains('a-enter-vr-button') || e.target.closest('.a-enter-vr-button'))) {
+          await requestMicPermissionIfNeeded();
+        }
+      }, true);
 
       // Unlock Audio Context on chrome on first user click - removed to avoid WebSocket voice extraction error
     }
@@ -1177,124 +1233,137 @@ controllerEl.addEventListener('triggerdown', () => {
     // RECORDING CONTROL FLOW
     // ==========================================
 async function startRecording() {
-        if (!recognition) {
-          showTextInputFallback();
-          return;
-        }
-        if (isRecording) return;
-
-        // Detect browser for platform-specific handling
-        const browser = detectBrowser();
-
-        // Pico 4 Ultra: try mic but fallback aggressively
-        if (browser === 'pico') {
-          showMicWarning("Pico 4 detected: mic may not work. If no speech detected, use the text input below.");
-        }
-
-        // Request microphone permission if needed
-        const hasPermission = await requestMicPermissionIfNeeded();
-        if (!hasPermission) {
-          showMicWarning("Using text input instead of microphone.");
-          return; // Permission denied, warning already shown
-        }
-
-        initAmbientAudio();
-
-        // Initialize TTS AudioContext during user gesture (required by Safari)
-        if (!ttsAudioCtx) {
-          ttsAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (ttsAudioCtx.state === 'suspended') {
-          ttsAudioCtx.resume();
-        }
-
-        // Safari: prime SpeechSynthesis engine during user gesture
-        if (browser === 'safari' && window.speechSynthesis) {
-          window.speechSynthesis.getVoices();
-          const warmup = new SpeechSynthesisUtterance(' ');
-          warmup.volume = 0;
-          window.speechSynthesis.speak(warmup);
-        }
-
-        // Update UI button visual state
-        const talkBtn = document.getElementById('talkButton');
-       if (talkBtn) {
-         talkBtn.classList.add('listening');
-         talkBtn.textContent = browser === 'pico' ? 'Hold to Speak (with Pico mic…) (or type below)' : 'Hold to Speak (Listening…)';
-       }
-
-        // Reset text
-        recognizedText = "";
-
-        // Interrupt TTS
-        if (window.speechSynthesis) {
-          window.speechSynthesis.cancel();
-        }
-        stopSpeakingAnimation();
-
-        // Reset cube position and restore bob animation if it flew away
-        const cubeEl = document.getElementById('aiCube');
-        if (cubeEl) {
-          cubeEl.removeAttribute('animation__move_room');
-           cubeEl.setAttribute('position', '-0.4 1.6 -1.8');
-          if (!cubeEl.hasAttribute('animation__bob')) {
-             cubeEl.setAttribute('animation__bob', 'property: position; to: -0.4 1.75 -1.8; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine');
-          }
-        }
-
-       isRecording = true;
-       updateUIState("Listening...");
-       setCubeState("listening");
-       document.getElementById('userText').setAttribute('value', "You: [Listening...]");
-       
-       recognitionStarted = false;
-       try {
-         recognition.lang = currentLang;
-         recognition.start();
-
-         // Pico 4: more aggressive fallback — if no result in 6s, show text input
-         if (browser === 'pico') {
-           setTimeout(() => {
-             if (isRecording && !recognizedText) {
-               console.warn("Pico mic timeout — showing text fallback");
-               showTextInputFallback();
-               try { recognition.stop(); } catch (_) {}
-             }
-           }, 6000);
-         }
-       } catch (err) {
-         console.error("Failed to start speech recognition:", err);
-         isRecording = false;
-         updateUIState("HOLD M TO SPEAK");
-         setCubeState("idle");
-         if (browser === 'pico') {
-           showTextInputFallback();
-         }
-       }
-     }
-
-    function stopRecording() {
-      if (!isRecording || !recognition) return;
-      if (!recognitionStarted) {
-        isRecording = false;
-        return;
-      }
-      
-      try {
-        recognition.stop();
-      } catch (err) {
-        console.error("Failed to stop speech recognition:", err);
-      }
-
-      // Safety fallback: VR browsers sometimes fail to fire the onend event.
-      clearTimeout(recognitionFallbackTimeout);
-      recognitionFallbackTimeout = setTimeout(() => {
-        if (isRecording) {
-          console.warn("Safety fallback: onend did not fire. Forcing reset.");
-          recognition.onend();
-        }
-      }, 3000);
+  if (!recognition && !usePicoRecorder) {
+    showTextInputFallback();
+    return;
+  }
+  if (isRecording) return;
+  const browser = detectBrowser();
+  const hasPermission = await requestMicPermissionIfNeeded();
+  if (!hasPermission) {
+    showTextInputFallback();
+    return;
+  }
+  initAmbientAudio();
+  if (!ttsAudioCtx) {
+    ttsAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (ttsAudioCtx.state === 'suspended') {
+    ttsAudioCtx.resume();
+  }
+  if (browser === 'safari' && window.speechSynthesis) {
+    window.speechSynthesis.getVoices();
+    const warmup = new SpeechSynthesisUtterance(' ');
+    warmup.volume = 0;
+    window.speechSynthesis.speak(warmup);
+  }
+  const talkBtn = document.getElementById('talkButton');
+  if (talkBtn) {
+    talkBtn.classList.add('listening');
+    talkBtn.textContent = usePicoRecorder ? 'Hold to Speak (Recording...)' : 'Hold to Speak (Listening...)';
+  }
+  recognizedText = "";
+  if (window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+  }
+  stopSpeakingAnimation();
+  const cubeEl = document.getElementById('aiCube');
+  if (cubeEl) {
+    cubeEl.removeAttribute('animation__move_room');
+    cubeEl.setAttribute('position', '0 1.6 -1.5');
+    if (!cubeEl.hasAttribute('animation__bob')) {
+      cubeEl.setAttribute('animation__bob', 'property: position; to: 0 1.75 -1.5; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine');
     }
+  }
+  isRecording = true;
+  updateUIState("Listening...");
+  setCubeState("listening");
+  document.getElementById('userText').setAttribute('value', "You: [Listening...]");
+  if (usePicoRecorder) {
+    try {
+      await picoRecorder.start();
+    } catch (err) {
+      console.error(err);
+      isRecording = false;
+      updateUIState("HOLD M TO SPEAK");
+      setCubeState("idle");
+      showTextInputFallback();
+    }
+  } else {
+    recognitionStarted = false;
+    try {
+      recognition.lang = currentLang;
+      recognition.start();
+    } catch (err) {
+      console.error(err);
+      isRecording = false;
+      updateUIState("HOLD M TO SPEAK");
+      setCubeState("idle");
+    }
+  }
+}
+
+async function stopRecording() {
+  if (!isRecording) return;
+  if (usePicoRecorder) {
+    isRecording = false;
+    updateUIState("Transcribing...");
+    document.getElementById('userText').setAttribute('value', "You: [Transcribing...]");
+    const talkBtn = document.getElementById('talkButton');
+    if (talkBtn) {
+      talkBtn.classList.remove('listening');
+      talkBtn.textContent = 'Hold to Speak';
+    }
+    try {
+      const base64Audio = await picoRecorder.stop();
+      if (base64Audio) {
+        const res = await fetch('/api/transcribe', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            audio: {
+              content: base64Audio
+            }
+          })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          recognizedText = data.transcript || '';
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+    if (recognizedText) {
+      updateUIState("Thinking...");
+      setCubeState("thinking");
+      sendToGemini(recognizedText);
+    } else {
+      updateUIState("HOLD M TO SPEAK");
+      setCubeState("idle");
+      document.getElementById('userText').setAttribute('value', 'You: ...');
+    }
+  } else {
+    if (!recognition) return;
+    if (!recognitionStarted) {
+      isRecording = false;
+      return;
+    }
+    try {
+      recognition.stop();
+    } catch (err) {
+      console.error(err);
+    }
+    clearTimeout(recognitionFallbackTimeout);
+    recognitionFallbackTimeout = setTimeout(() => {
+      if (isRecording) {
+        recognition.onend();
+      }
+    }, 3000);
+  }
+}
 
     // ==========================================
     // DYNAMIC VISUAL STATES & ANIMATIONS
