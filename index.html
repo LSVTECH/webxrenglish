@@ -7,10 +7,6 @@
   
   <!-- A-Frame VR Library -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-  <!-- A-Frame Environment Component (For beautiful sky, ground, and grid) -->
-  <script src="https://unpkg.com/aframe-environment-component@1.3.3/dist/aframe-environment-component.min.js"></script>
-  <!-- A-Frame Physics System for wall colliders -->
-  <script src="https://cdn.jsdelivr.net/npm/aframe-physics-system@1.4.1/dist/aframe-physics-system.min.js"></script>
   
   <!-- Google Fonts for Modern 2D Desktop UI -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -271,7 +267,7 @@
   </div>
 
   <!-- A-FRAME VR SCENE -->
-  <a-scene physics="gravity: 0" fog="type: exponential; color: #1a1628; density: 0.035" shadow="type: pcfsoft" renderer="antialias: true; colorManagement: true;">
+  <a-scene fog="type: exponential; color: #1a1628; density: 0.035" shadow="type: pcfsoft" renderer="antialias: true; colorManagement: true;">
     
     <!-- CUSTOM LIGHTING SYSTEM -->
     <a-entity light="type: ambient; color: #c4b5a0; intensity: 0.25"></a-entity>
@@ -284,23 +280,18 @@
     <a-entity light="type: point; color: #fef5e0; intensity: 0.35; distance: 4" position="1.5 2.95 -0.5"></a-entity>
     <a-entity light="type: point; color: #fef5e0; intensity: 0.3; distance: 4" position="0 2.95 -2.8"></a-entity>
 
-    <!-- INTERIOR ARCHITECTURE (cajas con static-body para colliders) -->
+    <!-- INTERIOR ARCHITECTURE (boxes) -->
     <a-entity id="room">
       <a-box id="floor" position="0 -0.04 -1.5" scale="8 0.08 5"
-             material="shader: standard; roughness: 0.6; metalness: 0.1" shadow="receive: true"
-             static-body></a-box>
+             material="shader: standard; roughness: 0.6; metalness: 0.1" shadow="receive: true"></a-box>
       <a-box id="backWall" position="0 1.5 0.96" scale="8 3 0.08"
-             material="shader: standard; roughness: 0.9; metalness: 0" shadow="receive: true"
-             static-body></a-box>
+             material="shader: standard; roughness: 0.9; metalness: 0" shadow="receive: true"></a-box>
       <a-box id="leftWall" position="-3.96 1.5 -1.5" scale="0.08 3 5"
-             material="shader: standard; roughness: 0.9; metalness: 0" shadow="receive: true"
-             static-body></a-box>
+             material="shader: standard; roughness: 0.9; metalness: 0" shadow="receive: true"></a-box>
       <a-box id="rightWall" position="3.96 1.5 -1.5" scale="0.08 3 5"
-             material="shader: standard; roughness: 0.9; metalness: 0" shadow="receive: true"
-             static-body></a-box>
+             material="shader: standard; roughness: 0.9; metalness: 0" shadow="receive: true"></a-box>
       <a-box id="ceiling" position="0 3.04 -1.5" scale="8 0.08 5"
-             material="shader: standard; roughness: 0.7; metalness: 0" shadow="receive: true"
-             static-body></a-box>
+             material="shader: standard; roughness: 0.7; metalness: 0" shadow="receive: true"></a-box>
     </a-entity>
 
     <!-- DECORATIVE MOULDING -->
@@ -515,7 +506,6 @@
              rotation="-10 0 0"
              width="1.8" height="1.3"
              material="shader: flat; color: #0a0320; opacity: 0.95; transparent: true; roughness: 1"
-             class="clickable"
              visible="false">
       
       <!-- Borders -->
@@ -545,9 +535,9 @@
     </a-plane>
 
     <!-- PLAYER RIG (Camera & Hands) -->
-    <a-entity id="rig" position="0 0 0" position-clamp>
+    <a-entity id="rig" position="0 1.6 0.3" position-clamp wasd-controls>
       <!-- Camera with a gaze cursor for desktop fallback -->
-      <a-entity id="camera" camera look-controls wasd-controls position="0 1.6 0.3">
+      <a-entity id="camera" camera look-controls position="0 0 0">
         <a-cursor id="desktopCursor"
                   raycaster="objects: .clickable; far: 4"
                   material="color: #818cf8; shader: flat"
@@ -589,12 +579,8 @@
     // GLOBAL ERROR MONITORING
     // ==========================================
     window.onerror = function (message, source, lineno, colno, error) {
-      const errMsg = `Error: ${message} (Line ${lineno})`;
-      console.error(errMsg, error);
-      
-      const aiText = document.getElementById('aiText');
-      if (aiText) aiText.setAttribute('value', errMsg);
-      
+      if (message === 'Script error.') return true;
+      console.error(`Error: ${message} (Line ${lineno})`, error);
       showMicWarning(`JS Runtime Error: ${message} (Line ${lineno})`);
       return false;
     };
@@ -1393,37 +1379,37 @@ async function startRecording() {
 
     let evaluationComplete = false;
 
-    // Native feedback chime using Web Audio API (cross-browser compatible)
+    let successAudioCtx = null;
+
     function playSuccessSound() {
       try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (!successAudioCtx) {
+          successAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
         
-        // First note (C5)
-        const osc1 = audioCtx.createOscillator();
-        const gain1 = audioCtx.createGain();
+        const now = successAudioCtx.currentTime;
+        
+        const osc1 = successAudioCtx.createOscillator();
+        const gain1 = successAudioCtx.createGain();
         osc1.type = "sine";
-        osc1.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
-        gain1.gain.setValueAtTime(0.12, audioCtx.currentTime);
-        gain1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+        osc1.frequency.setValueAtTime(523.25, now);
+        gain1.gain.setValueAtTime(0.12, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
         osc1.connect(gain1);
-        gain1.connect(audioCtx.destination);
-        osc1.start();
-        osc1.stop(audioCtx.currentTime + 0.15);
+        gain1.connect(successAudioCtx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.15);
         
-        // Second note (E5) after 0.08 seconds
-        setTimeout(() => {
-          const osc2 = audioCtx.createOscillator();
-          const gain2 = audioCtx.createGain();
-          osc2.type = "sine";
-          osc2.frequency.setValueAtTime(659.25, audioCtx.currentTime); // E5
-          gain2.gain.setValueAtTime(0.12, audioCtx.currentTime);
-          gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
-          osc2.connect(gain2);
-          gain2.connect(audioCtx.destination);
-          osc2.start();
-          osc2.stop(audioCtx.currentTime + 0.25);
-        }, 80);
-        
+        const osc2 = successAudioCtx.createOscillator();
+        const gain2 = successAudioCtx.createGain();
+        osc2.type = "sine";
+        osc2.frequency.setValueAtTime(659.25, now + 0.08);
+        gain2.gain.setValueAtTime(0.12, now + 0.08);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.33);
+        osc2.connect(gain2);
+        gain2.connect(successAudioCtx.destination);
+        osc2.start(now + 0.08);
+        osc2.stop(now + 0.33);
       } catch (err) {
         console.warn("Could not play success sound:", err);
       }
@@ -1969,7 +1955,7 @@ Always output ONLY valid JSON. Speak only in English in guestResponse.`;
 
         // If booking is confirmed, options for evaluation trigger
         if (currentValues.roomNumberAssigned && detectedMissions.bookingConfirmed === true) {
-          // Will trigger evaluation after brief delay
+          triggerGoToRoomAnimation();
           setTimeout(() => {
             if (missions.bookingConfirmed && !evaluationComplete) {
               triggerEvaluation();

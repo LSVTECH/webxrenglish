@@ -6,7 +6,7 @@ Single-page VR English practice app: `index.html` is the entire frontend (A-Fram
 
 ## Architecture
 
-- **Frontend:** `index.html` — no build step, no npm, no framework. A-Frame 1.5.0 from CDN, inline `<script>` logic.
+- **Frontend:** `index.html` — no build step, no npm, no framework. A-Frame 1.5.0 from CDN, inline `<script>` logic. No physics engine — wall collision uses custom `position-clamp` component on the rig.
 - **Backend:** `api/chat.js` — Vercel serverless function (ES module). Proxies POST requests to `gemini-2.5-flash-lite` model.
 - **Deployment:** Vercel. `vercel.json` routes `/api/chat` → `api/chat.js`. `cleanUrls: true`.
 - **No test suite, no typecheck, no lint.**
@@ -92,16 +92,16 @@ Room dimensions: 8m × 5m × 3m (w × d × h). Textures applied procedurally in 
 
 | Element | Position | Notes |
 |---------|----------|-------|
-| Camera (user) | `0 1.6 0.3` | Behind reception desk |
+| Rig (player) | `0 1.6 0.3` | wasd-controls + position-clamp (wall collision) |
 | Floor (marble tile) | `0 0.01 -1.5` | 8×5m, bump map, receives shadows |
 | Back wall | `0 1.5 1` | 8×3m |
 | Left/Right walls | `±4 1.5 -1.5` | 5×3m |
 | Ceiling (panel) | `0 3 -1.5` | 8×5m, recessed lights |
 | Reception desk | `0 0.52 -0.9` | 5-part: countertop (marble), front (wood), body, trim, edge |
-| Clipboard (tasks) | `-0.5 1.05 -0.85` | Tilted -25° X, 20° Y |
-| Holographic panel | `0.25 1.5 -1.4` | Tilted -15° X, -10° Y |
-| AI cube (guest) | `0 1.6 -1.8` | envMap reflections, bob/rotate anims |
-| Evaluation panel | `0 1.55 -1.4` | Hidden until booking confirmed |
+| Clipboard (tasks) | `-0.65 1.40 -0.65` | Tilted -30° X, 25° Y |
+| Holographic panel | `0 1.55 -1.1` | Tilted -10° X, 0° Y |
+| AI cube (guest) | `0 1.6 -2.2` | envMap reflections, bob/rotate anims |
+| Evaluation panel | `0 1.55 -1.1` | Hidden until booking confirmed, same pos as holographic panel |
 | Sofa (2-seat) | `-2.5 0.22 -3` | Fabric texture, 4-box construction |
 | Armchair | `2.5 0.22 -3` | Fabric texture, 4-box construction |
 | Coffee table | `0 0.42 -3` | Glass top + metal legs |

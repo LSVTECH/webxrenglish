@@ -1,5 +1,4 @@
 {
     "$schema": "https://opencode.ai/config.json",
-    "plugin": ["@warp-dot-dev/opencode-warp"],
-    "plugin": ["opencode-gemini-auth@latest"]
+    "plugin": ["@warp-dot-dev/opencode-warp", "opencode-gemini-auth@latest"]
 }
