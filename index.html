@@ -873,9 +873,12 @@ class PicoAudioRecorder {
   }
   async start() {
     this.audioChunks = [];
-    if (!this.stream) {
-      this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    let stream = window.globalMicStream;
+    if (!stream) {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      window.globalMicStream = stream;
     }
+    this.stream = stream;
     let options = {};
     if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
       options.mimeType = 'audio/webm;codecs=opus';
@@ -925,7 +928,7 @@ const SpeechRecognition = window.SpeechRecognition
                         || window.webkitSpeechRecognition 
                         || window.mozSpeechRecognition 
                         || window.msSpeechRecognition;
-const usePicoRecorder = (detectBrowser() === 'pico' || !SpeechRecognition);
+let usePicoRecorder = (detectBrowser() === 'pico' || !SpeechRecognition);
 let recognition = null;
 
 // Initialize SpeechRecognition if supported
@@ -1077,14 +1080,16 @@ loadTtsVoices();
       showTextInputFallback();
       return false;
     }
-
+    if (window.globalMicStream) {
+      return true;
+    }
     try {
       const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000));
       const stream = await Promise.race([
         navigator.mediaDevices.getUserMedia({ audio: true }),
         timeout
       ]);
-      stream.getTracks().forEach(track => track.stop());
+      window.globalMicStream = stream;
       console.log("Microphone permission verified.");
       return true;
     } catch (err) {
@@ -1212,12 +1217,14 @@ talkBtn.addEventListener('mousedown', async () => { await startRecording(); });
         if (cursor) cursor.setAttribute('visible', 'false');
         const hud = document.getElementById('hud-overlay');
         if (hud) hud.style.display = 'none';
+        usePicoRecorder = true;
       });
       sceneEl.addEventListener('exit-vr', () => {
         const cursor = document.getElementById('desktopCursor');
         if (cursor) cursor.setAttribute('visible', 'true');
         const hud = document.getElementById('hud-overlay');
         if (hud) hud.style.display = 'block';
+        usePicoRecorder = (detectBrowser() === 'pico' || !SpeechRecognition);
       });
 
       window.addEventListener('click', async (e) => {
