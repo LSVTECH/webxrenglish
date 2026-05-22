@@ -943,53 +943,63 @@ function initializeSpeechRecognition() {
     let chatHistory = [];
     let recognitionStarted = false;
 
-// Preload TTS voices once globally with proper async handling
+// ==========================================
+// BROWSER DETECTION
+// ==========================================
+function detectBrowser() {
+  const ua = navigator.userAgent.toLowerCase();
+  if (ua.includes('pico') || ua.includes('picovr')) return 'pico';
+  if (ua.includes('firefox')) return 'firefox';
+  if (ua.includes('samsungbrowser')) return 'samsung';
+  if (ua.includes('edg/') || ua.includes('edge/')) return 'edge';
+  if (ua.includes('chrome') || ua.includes('chromium')) return 'chrome';
+  if (ua.includes('safari')) return 'safari';
+  return 'unknown';
+}
+
+// ==========================================
+// TTS VOICE LOADING (cross-browser)
+// ==========================================
 let ttsVoiceList = [];
 let ttsVoicesLoaded = false;
 
 function loadTtsVoices() {
-  if (!window.speechSynthesis) return;
-  
-  // Get initial voices
-  ttsVoiceList = window.speechSynthesis.getVoices();
-  
-  // If voices aren't loaded yet, wait for the onvoiceschanged event
-  if (ttsVoiceList.length === 0) {
-    window.speechSynthesis.onvoiceschanged = () => {
-      ttsVoiceList = window.speechSynthesis.getVoices();
-      ttsVoicesLoaded = true;
-      console.log(`TTS voices loaded: ${ttsVoiceList.length} voices available`);
-    };
-  } else {
+  if (!window.speechSynthesis) {
     ttsVoicesLoaded = true;
-    console.log(`TTS voices loaded: ${ttsVoiceList.length} voices available`);
+    console.warn('SpeechSynthesis not supported');
+    return;
+  }
+
+  const poll = () => {
+    ttsVoiceList = window.speechSynthesis.getVoices();
+    if (ttsVoiceList.length > 0) {
+      ttsVoicesLoaded = true;
+      console.log(`TTS voices loaded: ${ttsVoiceList.length} voices`);
+      return true;
+    }
+    return false;
+  };
+
+  if (!poll()) {
+    window.speechSynthesis.onvoiceschanged = () => { poll(); };
+    let attempts = 0;
+    const interval = setInterval(() => {
+      attempts++;
+      if (poll() || attempts > 15) {
+        clearInterval(interval);
+        ttsVoicesLoaded = true;
+      }
+    }, 200);
   }
 }
 
-// Wait for voices to load before attempting to use them
-function ensureTtsVoicesLoaded() {
-  return new Promise((resolve) => {
-    if (ttsVoicesLoaded) {
-      resolve();
-    } else {
-      // Check periodically if voices have loaded
-      const checkInterval = setInterval(() => {
-        if (ttsVoicesLoaded || ttsVoiceList.length > 0) {
-          clearInterval(checkInterval);
-          resolve();
-        }
-      }, 100);
-      
-      // Timeout after 5 seconds
-      setTimeout(() => {
-        clearInterval(checkInterval);
-        resolve(); // Resolve anyway to prevent hanging
-      }, 5000);
-    }
-  });
+function refreshTtsVoices() {
+  if (window.speechSynthesis) {
+    ttsVoiceList = window.speechSynthesis.getVoices();
+    if (ttsVoiceList.length > 0) ttsVoicesLoaded = true;
+  }
 }
 
-// Initialize voice loading
 loadTtsVoices();
     
 // Hardcode practice language to English (US) as we are practicing English
@@ -1988,40 +1998,119 @@ const fallbackText = "Sorry, our booking system is currently down. Let's try aga
       }
     }
 
+// ==========================================
+// AUDIO-BASED TTS FALLBACK (Google Translate)
+// Works in ALL browsers including Pico 4
+// ==========================================
+function speakViaAudio(text) {
+  return new Promise((resolve) => {
+    const safeText = text.substring(0, 200);
+    const audio = new Audio();
+    audio.src = 'https://translate.google.com/translate_tts?ie=UTF-8&q='
+      + encodeURIComponent(safeText) + '&tl=en&client=tw-ob';
+
+    audio.onended = () => {
+      updateUIState("HOLD M TO SPEAK");
+      setCubeState("idle");
+      resolve();
+    };
+
+    audio.onerror = () => {
+      console.warn('Audio TTS fallback failed');
+      updateUIState("HOLD M TO SPEAK");
+      setCubeState("idle");
+      resolve();
+    };
+
+    audio.play().catch(() => {
+      updateUIState("HOLD M TO SPEAK");
+      setCubeState("idle");
+      resolve();
+    });
+  });
+}
+
+// ==========================================
+// MAIN SPEAK FUNCTION (cross-browser)
+// ==========================================
 async function speakText(textToSpeak) {
-       if (!window.speechSynthesis) return;
+  const browser = detectBrowser();
+  refreshTtsVoices();
 
-       // Ensure TTS voices are loaded before attempting to use them
-       await ensureTtsVoicesLoaded();
+  // Pico 4 / Android WebView or no voices — skip straight to audio fallback
+  if (browser === 'pico' || ttsVoiceList.length === 0 || !window.speechSynthesis) {
+    await speakViaAudio(textToSpeak);
+    return;
+  }
 
-       window.speechSynthesis.cancel(); // clear queue
+  return new Promise((resolve) => {
+    let synthesisStarted = false;
+    let audioFallbackActive = false;
 
-       const utterance = new SpeechSynthesisUtterance(textToSpeak);
-       utterance.lang = currentLang;
+    const fallbackTimer = setTimeout(() => {
+      if (!synthesisStarted && !audioFallbackActive) {
+        audioFallbackActive = true;
+        console.warn('SpeechSynthesis timeout, falling back to audio TTS');
+        if (window.speechSynthesis) window.speechSynthesis.cancel();
+        speakViaAudio(textToSpeak).then(resolve);
+      }
+    }, 2000);
 
-       // Find compatible voice using preloaded list (Task 3.2 fix)
-       const voices = ttsVoiceList.length > 0 ? ttsVoiceList : window.speechSynthesis.getVoices();
-       const preferredVoice = voices.find(v => v.lang.startsWith(currentLang.substring(0, 2)) && (v.name.includes('Google') || v.name.includes('Natural'))) ||
-     voices.find(v => v.lang.startsWith(currentLang.substring(0, 2))) ||
-     voices[0];
-       
-       if (preferredVoice) {
-         utterance.voice = preferredVoice;
-       }
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.lang = currentLang;
+    utterance.volume = 1;
+    utterance.rate = 1;
+    utterance.pitch = 1;
 
-       utterance.onend = () => {
-         updateUIState("HOLD M TO SPEAK");
-         setCubeState("idle");
-       };
+    // Per-browser voice selection
+    if (browser === 'chrome' || browser === 'edge') {
+      const preferredVoice = ttsVoiceList.find(v =>
+        v.lang.startsWith('en')
+        && (v.name.includes('Google') || v.name.includes('Microsoft') || v.name.includes('Natural'))
+      ) || ttsVoiceList.find(v => v.lang.startsWith('en')) || null;
+      if (preferredVoice) utterance.voice = preferredVoice;
+    } else if (browser === 'firefox') {
+      const enVoice = ttsVoiceList.find(v => v.lang.startsWith('en'));
+      if (enVoice) utterance.voice = enVoice;
+    }
 
-       utterance.onerror = (err) => {
-         console.error("SpeechSynthesis speak Error:", err);
-         updateUIState("HOLD M TO SPEAK");
-         setCubeState("idle");
-       };
+    utterance.onstart = () => {
+      synthesisStarted = true;
+      clearTimeout(fallbackTimer);
+    };
 
-       window.speechSynthesis.speak(utterance);
-     }
+    utterance.onend = () => {
+      clearTimeout(fallbackTimer);
+      updateUIState("HOLD M TO SPEAK");
+      setCubeState("idle");
+      resolve();
+    };
+
+    utterance.onerror = (err) => {
+      clearTimeout(fallbackTimer);
+      console.error('SpeechSynthesis error:', err);
+      if (err.error === 'voice-unavailable' || err.error === 'not-allowed') {
+        if (!audioFallbackActive) {
+          audioFallbackActive = true;
+          speakViaAudio(textToSpeak).then(resolve);
+          return;
+        }
+      }
+      updateUIState("HOLD M TO SPEAK");
+      setCubeState("idle");
+      resolve();
+    };
+
+    // Chrome/Edge bug: cancel() + immediate speak() drops utterance
+    if (browser === 'chrome' || browser === 'edge') {
+      if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
+      setTimeout(() => { window.speechSynthesis.speak(utterance); }, 50);
+    } else {
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utterance);
+    }
+  });
+}
 
     // Helper alerts
     function showMicWarning(msg) {
