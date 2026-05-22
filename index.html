@@ -232,6 +232,15 @@
       <!-- Desktop Click/Touch talk button -->
       <button id="talkButton" class="talk-btn">Hold to Speak</button>
 
+      <!-- Text input fallback for Pico 4 / browsers without mic -->
+      <div id="textInputFallback" style="display: none; margin-top: 10px;">
+        <div style="display: flex; gap: 8px;">
+          <input id="textInput" type="text" placeholder="Type your message..."
+                 style="flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(99,102,241,0.3); background: rgba(0,0,0,0.4); color: #e2e8f0; font-size: 0.9rem; outline: none;">
+          <button id="textSendBtn" class="talk-btn" style="padding: 10px 20px; white-space: nowrap;">Send</button>
+        </div>
+      </div>
+
 <!-- 2D Scoreboard for booking details -->
 <div id="hudScores" class="hud-scores">
   <div style="font-size: 0.85rem; color: #9ca3af; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Receptionist Checklist:</div>
@@ -273,140 +282,32 @@
     <a-entity light="type: ambient; color: #c4b5a0; intensity: 0.25"></a-entity>
     <a-entity light="type: hemisphere; skyColor: #f0e8d8; groundColor: #7a6a5a; intensity: 0.4"></a-entity>
     <a-entity light="type: directional; color: #fef5e0; intensity: 0.7; castShadow: true" position="3 7 4"></a-entity>
-    <a-entity id="cubeLight" light="type: point; color: #818cf8; intensity: 1.5; distance: 6; castShadow: true" position="0 1.6 -2.2"></a-entity>
+    <a-entity id="cubeLight" light="type: point; color: #818cf8; intensity: 1.5; distance: 6; castShadow: true" position="-0.5 1.6 -0.5"></a-entity>
 
     <!-- CEILING RECESSED LIGHTS -->
     <a-entity light="type: point; color: #fef5e0; intensity: 0.35; distance: 4" position="-1.5 2.95 -0.5"></a-entity>
     <a-entity light="type: point; color: #fef5e0; intensity: 0.35; distance: 4" position="1.5 2.95 -0.5"></a-entity>
     <a-entity light="type: point; color: #fef5e0; intensity: 0.3; distance: 4" position="0 2.95 -2.8"></a-entity>
 
-    <!-- INTERIOR ARCHITECTURE (boxes) -->
-    <a-entity id="room">
-      <a-box id="floor" position="0 -0.04 -1.5" scale="8 0.08 5"
-             material="shader: standard; roughness: 0.6; metalness: 0.1" shadow="receive: true"></a-box>
-      <a-box id="backWall" position="0 1.5 0.96" scale="8 3 0.08"
-             material="shader: standard; roughness: 0.9; metalness: 0" shadow="receive: true"></a-box>
-      <a-box id="leftWall" position="-3.96 1.5 -1.5" scale="0.08 3 5"
-             material="shader: standard; roughness: 0.9; metalness: 0" shadow="receive: true"></a-box>
-      <a-box id="rightWall" position="3.96 1.5 -1.5" scale="0.08 3 5"
-             material="shader: standard; roughness: 0.9; metalness: 0" shadow="receive: true"></a-box>
-      <a-box id="ceiling" position="0 3.04 -1.5" scale="8 0.08 5"
-             material="shader: standard; roughness: 0.7; metalness: 0" shadow="receive: true"></a-box>
+    <!-- ESCENA PRINCIPAL (modelo GLB del hotel) -->
+    <a-entity gltf-model="url(Models/TODOprueba.glb)"
+              position="5.16 0 10.23"
+              scale="1 1 1">
     </a-entity>
 
-    <!-- DECORATIVE MOULDING -->
-    <a-box id="baseboardBack" position="0 0.06 0.99" scale="7.9 0.1 0.02" material="color: #5c4a3a; roughness: 0.7"></a-box>
-    <a-box id="baseboardLeft" position="-3.99 0.06 -1.5" scale="0.02 0.1 4.9" material="color: #5c4a3a; roughness: 0.7"></a-box>
-    <a-box id="baseboardRight" position="3.99 0.06 -1.5" scale="0.02 0.1 4.9" material="color: #5c4a3a; roughness: 0.7"></a-box>
-
-    <!-- LOBBY CHANDELIER / CEILING FIXTURE -->
-    <a-ring position="0 2.98 -1.8" rotation="90 0 0" radius-inner="0.4" radius-outer="0.45" material="color: #c0a878; roughness: 0.4; metalness: 0.6"
-            animation="property: rotation; to: 90 360 0; dur: 30000; loop: true; easing: linear"></a-ring>
+    <!-- LOBBY CHANDELIER LIGHT (solo luz, no geometría - el GLB tiene su propia lámpara) -->
     <a-entity light="type: point; color: #fef0d0; intensity: 0.6; distance: 5" position="0 2.95 -1.8"></a-entity>
-
-    <!-- WAITING AREA FURNITURE -->
-    <a-box id="sofaSeat" position="-2.5 0.22 -3" scale="1.4 0.35 0.6"
-           material="color: #3a3a4a; roughness: 0.85; metalness: 0"></a-box>
-    <a-box id="sofaBack" position="-2.5 0.55 -2.64" scale="1.4 0.65 0.12"
-           material="color: #3a3a4a; roughness: 0.85; metalness: 0"></a-box>
-    <a-box id="sofaArmL" position="-3.21 0.32 -3" scale="0.08 0.4 0.6"
-           material="color: #3a3a4a; roughness: 0.85; metalness: 0"></a-box>
-    <a-box id="sofaArmR" position="-1.79 0.32 -3" scale="0.08 0.4 0.6"
-           material="color: #3a3a4a; roughness: 0.85; metalness: 0"></a-box>
-    <a-box id="armchairSeat" position="2.5 0.22 -3" scale="0.8 0.35 0.6"
-           material="color: #3a4a3a; roughness: 0.85; metalness: 0"></a-box>
-    <a-box id="armchairBack" position="2.5 0.55 -2.64" scale="0.8 0.65 0.12"
-           material="color: #3a4a3a; roughness: 0.85; metalness: 0"></a-box>
-    <a-box id="armchairArmL" position="2.1 0.32 -3" scale="0.08 0.4 0.6"
-           material="color: #3a4a3a; roughness: 0.85; metalness: 0"></a-box>
-    <a-box id="armchairArmR" position="2.9 0.32 -3" scale="0.08 0.4 0.6"
-           material="color: #3a4a3a; roughness: 0.85; metalness: 0"></a-box>
-
-    <!-- COFFEE TABLE -->
-    <a-box id="tableTop" position="0 0.42 -3" scale="0.8 0.04 0.5"
-           material="color: #c0b8a8; roughness: 0.1; metalness: 0.3; transparent: true; opacity: 0.7"
-           shadow="receive: true"></a-box>
-    <a-box id="tableLegFL" position="-0.35 0.1 -3.2" scale="0.04 0.2 0.04"
-           material="color: #2a1a0a; roughness: 0.3; metalness: 0.7"></a-box>
-    <a-box id="tableLegFR" position="0.35 0.1 -3.2" scale="0.04 0.2 0.04"
-           material="color: #2a1a0a; roughness: 0.3; metalness: 0.7"></a-box>
-    <a-box id="tableLegBL" position="-0.35 0.1 -2.8" scale="0.04 0.2 0.04"
-           material="color: #2a1a0a; roughness: 0.3; metalness: 0.7"></a-box>
-    <a-box id="tableLegBR" position="0.35 0.1 -2.8" scale="0.04 0.2 0.04"
-           material="color: #2a1a0a; roughness: 0.3; metalness: 0.7"></a-box>
-
-    <!-- CARPET IN WAITING AREA -->
-    <a-plane id="carpet" position="0 0.005 -3" rotation="-90 0 0" width="3.5" height="2"
-             material="shader: standard; roughness: 0.9; metalness: 0; transparent: true; opacity: 0.85"
-             shadow="receive: true"></a-plane>
-
-    <!-- DECORATIVE PLANT (GLB) -->
-    <a-entity gltf-model="url(Models/Planta.glb)"
-              position="-2.5 0 -3.8"
-              scale="0.6 0.6 0.6">
-    </a-entity>
-
-    <!-- FLOOR LAMP -->
-    <a-cylinder id="lampPole" position="2.5 1.3 -3.8" radius="0.02" height="2.5"
-                material="color: #1a1a1a; roughness: 0.3; metalness: 0.6"></a-cylinder>
-    <a-cylinder id="lampBase" position="2.5 0.04 -3.8" radius="0.15" height="0.04"
-                material="color: #1a1a1a; roughness: 0.3; metalness: 0.6"></a-cylinder>
-    <a-cylinder id="lampShade" position="2.5 2.5 -3.8" radius-top="0.08" radius-bottom="0.25" height="0.3"
-                material="color: #e8e0d0; roughness: 0.8; metalness: 0; transparent: true; opacity: 0.6"></a-cylinder>
-    <a-entity light="type: point; color: #fef0d0; intensity: 0.3; distance: 4" position="2.5 2.4 -3.8"></a-entity>
-
-    <!-- WALL ART & SIGNAGE -->
-    <a-plane id="wallArt" position="-3.99 1.6 -2" rotation="0 -90 0" width="0.6" height="0.8"
-             material="shader: standard; roughness: 0.4; metalness: 0"></a-plane>
-    <a-box id="artFrame" position="-3.99 1.6 -2" scale="0.64 0.84 0.02"
-           material="color: #2a1a0a; roughness: 0.5; metalness: 0.3"></a-box>
-    <a-text id="signageText" value="ROOMS →" position="3.99 2 -2.5" rotation="0 90 0"
-            font="fonts/Roboto-msdf.json" negate="false" color="#c0a878" align="center" width="8"></a-text>
-
-    <!-- RECEPTION TERMINAL -->
-    <a-box id="monitorStand" position="0.5 0.99 -0.55" scale="0.35 0.35 0.02"
-           material="color: #1a1a1a; roughness: 0.3; metalness: 0.5"></a-box>
-    <a-plane id="monitorScreen" position="0.5 1.02 -0.55" rotation="0 0 0" width="0.3" height="0.22"
-             material="shader: standard; color: #0a2a4a; roughness: 0.1; metalness: 0.6; emissive: #0a3a6a; emissiveIntensity: 0.3"></a-plane>
-    <a-box id="monitorBase" position="0.5 0.82 -0.55" scale="0.12 0.02 0.08"
-           material="color: #1a1a1a; roughness: 0.3; metalness: 0.5"></a-box>
-    <a-box id="keyboard" position="0.5 0.84 -0.48" scale="0.28 0.02 0.1"
-           material="color: #1a1a1a; roughness: 0.5; metalness: 0.1"></a-box>
-
-    <!-- RECEPTION PHONE -->
-    <a-box id="phoneBase" position="-0.55 1.0 -0.65" scale="0.08 0.02 0.12"
-           material="color: #1a1a2a; roughness: 0.3; metalness: 0.2"></a-box>
-    <a-box id="phoneHandset" position="-0.55 1.04 -0.65" scale="0.02 0.04 0.06"
-           material="color: #1a1a2a; roughness: 0.3; metalness: 0.2"></a-box>
-    <a-box id="phoneCable" position="-0.55 0.9 -0.6" scale="0.005 0.01 0.2"
-           material="color: #2a2a2a; roughness: 0.9"></a-box>
 
     <!-- THE AI CHARACTER (Floating & Rotating Metallic Cube) -->
     <a-box id="aiCube"
            class="clickable"
-           position="0 1.6 -2.2"
+           position="-0.5 1.6 -0.5"
            rotation="0 45 45"
            width="0.38" height="0.38" depth="0.38"
            material="color: #6366f1; roughness: 0.05; metalness: 0.95; emissive: #312e81; emissiveIntensity: 1.2"
-           animation__bob="property: position; to: 0 1.75 -2.2; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine"
+           animation__bob="property: position; to: -0.5 1.75 -0.5; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine"
            animation__rotate="property: rotation; to: 360 405 45; dur: 9000; loop: true; easing: linear">
     </a-box>
-
-    <!-- RECEPCIÓN DE HOTEL - MOSTRADOR -->
-    <a-box id="deskBody" position="0 0.52 -0.9" scale="2.0 0.84 0.56"
-           material="color: #3a2a1a; roughness: 0.7; metalness: 0"
-           shadow="receive: true"></a-box>
-    <a-box id="deskFront" position="0 0.52 -1.19" scale="2.0 0.84 0.04"
-           material="color: #5c4a3a; roughness: 0.6; metalness: 0"
-           shadow="cast: true"></a-box>
-    <a-box id="deskCountertop" position="0 0.97 -0.9" scale="2.2 0.06 0.7"
-           material="color: #e8ddd0; roughness: 0.2; metalness: 0.05"
-           shadow="cast: true; receive: true"></a-box>
-    <a-box id="deskTrim" position="0 0.02 -0.9" scale="2.1 0.04 0.62"
-           material="color: #2a1a0a; roughness: 0.3; metalness: 0.6"></a-box>
-    <a-box id="deskEdge" position="0 0.94 -0.9" scale="2.1 0.02 0.66"
-           material="color: #3a2a1a; roughness: 0.4; metalness: 0.5"
-           shadow="receive: true"></a-box>
 
     <!-- CLIPBOARD INTERACTIVO (TABLA DE TAREAS) sobre el mostrador -->
     <a-plane id="clipboardPanel"
@@ -531,9 +432,9 @@
     </a-plane>
 
     <!-- PLAYER RIG (Camera & Hands) -->
-    <a-entity id="rig" position="0 1.6 0.3" position-clamp wasd-controls>
+    <a-entity id="rig" position="-0.5 0 -1.0" position-clamp wasd-controls thumbstick-locomotion>
       <!-- Camera with a gaze cursor for desktop fallback -->
-      <a-entity id="camera" camera look-controls position="0 0 0">
+      <a-entity id="camera" camera look-controls position="0 1.6 0.3">
         <a-cursor id="desktopCursor"
                   raycaster="objects: .clickable; far: 4"
                   material="color: #818cf8; shader: flat"
@@ -565,8 +466,39 @@
     AFRAME.registerComponent('position-clamp', {
       tick: function () {
         const p = this.el.getAttribute('position');
-        p.x = Math.max(-3.8, Math.min(3.8, p.x));
-        p.z = Math.max(-3.8, Math.min(0.8, p.z));
+        p.x = Math.max(-1.5, Math.min(8.5, p.x));
+        p.z = Math.max(-1.2, Math.min(3.0, p.z));
+        this.el.setAttribute('position', p);
+      }
+    });
+
+    // VR thumbstick locomotion for Pico 4 / standalone headsets
+    AFRAME.registerComponent('thumbstick-locomotion', {
+      init: function () {
+        this.moveX = 0;
+        this.moveZ = 0;
+        const bindController = (id) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          el.addEventListener('axismove', (e) => {
+            const ax = e.detail.axis;
+            if (!ax) return;
+            this.moveX = Math.abs(ax[0]) > 0.1 ? ax[0] : 0;
+            this.moveZ = Math.abs(ax[1]) > 0.1 ? ax[1] : 0;
+          });
+        };
+        bindController('leftController');
+        bindController('rightController');
+      },
+      tick: function () {
+        if (this.moveX === 0 && this.moveZ === 0) return;
+        const cam = document.getElementById('camera');
+        if (!cam) return;
+        const yaw = THREE.MathUtils.degToRad(cam.getAttribute('rotation')?.y || 0);
+        const s = Math.sin(yaw), c = Math.cos(yaw);
+        const p = this.el.getAttribute('position');
+        p.x += (this.moveX * c - this.moveZ * s) * 0.05;
+        p.z += (this.moveX * s + this.moveZ * c) * 0.05;
         this.el.setAttribute('position', p);
       }
     });
@@ -768,31 +700,6 @@ function setTexture(entityId, canvas, mapType = 'map', repeatX = 1, repeatY = 1)
 }
 
 function buildEnvironment() {
-  const floorTex = createProceduralTexture('floorTile', { tileSize: 64, light: '#e8ddd0', dark: '#d0c5b5' });
-  const marbleTex = createProceduralTexture('marble', { bg: '#e8ddd0' });
-  const woodTex = createProceduralTexture('wood', { base: '#6a4a2a', dark: '#4a2a1a' });
-
-  setTexture('floor', floorTex, 'map', 8, 5);
-  setTexture('floor', createBumpFromBase(floorTex, 0.15), 'bumpMap', 8, 5);
-  setTexture('backWall', createProceduralTexture('wallPaint', { base: '#e4e0d8' }), 'map', 4, 2);
-  setTexture('leftWall', createProceduralTexture('wallPaint', { base: '#ddd9d0' }), 'map', 3, 2);
-  setTexture('rightWall', createProceduralTexture('wallPaint', { base: '#ddd9d0' }), 'map', 3, 2);
-  setTexture('ceiling', createProceduralTexture('ceilingTile', { tileSize: 64 }), 'map', 6, 4);
-  setTexture('deskCountertop', marbleTex, 'map', 2, 1);
-  setTexture('deskCountertop', createBumpFromBase(marbleTex, 0.3), 'bumpMap', 2, 1);
-  setTexture('deskFront', woodTex, 'map', 4, 2);
-  setTexture('deskFront', createBumpFromBase(woodTex, 0.4), 'bumpMap', 4, 2);
-  setTexture('carpet', createProceduralTexture('carpet'), 'map', 4, 3);
-  setTexture('sofaSeat', createProceduralTexture('fabric', { base: '#3a3a4a' }), 'map', 2, 1);
-  setTexture('sofaBack', createProceduralTexture('fabric', { base: '#3a3a4a' }), 'map', 2, 1);
-  setTexture('sofaArmL', createProceduralTexture('fabric', { base: '#3a3a4a' }), 'map', 1, 1);
-  setTexture('sofaArmR', createProceduralTexture('fabric', { base: '#3a3a4a' }), 'map', 1, 1);
-  setTexture('armchairSeat', createProceduralTexture('fabric', { base: '#3a4a3a' }), 'map', 1, 1);
-  setTexture('armchairBack', createProceduralTexture('fabric', { base: '#3a4a3a' }), 'map', 1, 1);
-  setTexture('armchairArmL', createProceduralTexture('fabric', { base: '#3a4a3a' }), 'map', 1, 1);
-  setTexture('armchairArmR', createProceduralTexture('fabric', { base: '#3a4a3a' }), 'map', 1, 1);
-  setTexture('wallArt', createProceduralTexture('abstractArt'), 'map', 1, 1);
-
   const envMap = createEnvMap();
   const cubeObj = getThreeObject('aiCube');
   if (cubeObj && cubeObj.material) {
@@ -1008,39 +915,29 @@ loadTtsVoices();
    // Initialization failed, warning already shown in function
  }
 
- // Function to request microphone permission when needed (not on page load)
- async function requestMicPermissionIfNeeded() {
-   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-     showMicWarning("Your browser does not support microphone access. Please use a modern browser like Chrome, Firefox, or Safari.");
-     return false;
-   }
+  // Function to request microphone permission when needed (not on page load)
+  async function requestMicPermissionIfNeeded() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      showMicWarning("Your browser does not support microphone access. Please use a modern browser like Chrome, Firefox, or Safari.");
+      showTextInputFallback();
+      return false;
+    }
 
-   try {
-     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-     // Permission granted, immediately release the resources
-     stream.getTracks().forEach(track => track.stop());
-     console.log("Microphone permission verified.");
-     return true;
-   } catch (err) {
-     console.warn("Microphone access permission prompt failed or denied:", err);
-     // Provide browser-specific guidance
-     let browserGuidance = "";
-     const userAgent = navigator.userAgent;
-     
-     if (userAgent.includes("Firefox")) {
-       browserGuidance = " In Firefox, click the microphone icon in the address bar and select 'Allow Audio Capture'.";
-     } else if (userAgent.includes("Safari")) {
-       browserGuidance = " In Safari, go to Settings > Websites > Microphone and ensure this site is set to 'Allow'.";
-     } else if (userAgent.includes("Chrome") || userAgent.includes("Edge")) {
-       browserGuidance = " Click the microphone icon in the address bar and select 'Allow'.";
-     } else {
-       browserGuidance = " Please check your browser's microphone permissions settings.";
-     }
-     
-     showMicWarning("Microphone access is blocked." + browserGuidance + " Please allow microphone permissions and refresh the page.");
-     return false;
-   }
- }
+    try {
+      const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000));
+      const stream = await Promise.race([
+        navigator.mediaDevices.getUserMedia({ audio: true }),
+        timeout
+      ]);
+      stream.getTracks().forEach(track => track.stop());
+      console.log("Microphone permission verified.");
+      return true;
+    } catch (err) {
+      console.warn("Microphone access failed:", err);
+      showTextInputFallback();
+      return false;
+    }
+  }
 
     // ==========================================
     // INITIALIZATION & USER INPUTS
@@ -1080,7 +977,7 @@ window.addEventListener('keydown', async (e) => {
         }
       });
 
-      // B. 2D Button Hook (Desktop/Mobile overlay)
+       // B. 2D Button Hook (Desktop/Mobile overlay)
       const talkBtn = document.getElementById('talkButton');
       if (talkBtn) {
 talkBtn.addEventListener('mousedown', async () => { await startRecording(); });
@@ -1096,6 +993,27 @@ talkBtn.addEventListener('mousedown', async () => { await startRecording(); });
            e.preventDefault();
            stopRecording();
          });
+      }
+
+      // Text input fallback for Pico 4 / browsers without mic
+      const textInput = document.getElementById('textInput');
+      const textSendBtn = document.getElementById('textSendBtn');
+      const sendTextMessage = () => {
+        if (!textInput) return;
+        const msg = textInput.value.trim();
+        if (!msg) return;
+        textInput.value = '';
+        document.getElementById('userText').setAttribute('value', `You: "${msg}"`);
+        recognizedText = msg;
+        updateUIState("Thinking...");
+        setCubeState("thinking");
+        sendToGemini(msg);
+      };
+      if (textInput) {
+        textInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendTextMessage(); });
+      }
+      if (textSendBtn) {
+        textSendBtn.addEventListener('click', sendTextMessage);
       }
 
       // C. Click on AI Cube Hook (Toggles voice)
@@ -1148,7 +1066,7 @@ controllerEl.addEventListener('triggerdown', () => {
     // ==========================================
 async function startRecording() {
        if (!recognition) {
-         showMicWarning("Speech recognition is not available in this browser.");
+         showTextInputFallback();
          return;
        }
        if (isRecording) return;
@@ -2033,23 +1951,24 @@ function speakViaAudio(text) {
     const audio = new Audio();
     audio.src = url;
 
-    // Route through pre-gesture AudioContext (helps Safari)
     if (ttsAudioCtx && ttsAudioCtx.state !== 'closed') {
       try {
         const source = ttsAudioCtx.createMediaElementSource(audio);
         source.connect(ttsAudioCtx.destination);
-      } catch (e) {
-        // CORS blocked, will play directly instead
-      }
+      } catch (e) {}
     }
 
     audio.onended = done;
-    audio.onerror = done;
+    audio.onerror = () => {
+      showTextResponse(text);
+      done();
+    };
 
     try {
       await audio.play();
     } catch (e) {
       console.warn('Audio TTS play failed:', e);
+      showTextResponse(text);
       done();
     }
   });
@@ -2171,6 +2090,20 @@ async function speakText(textToSpeak) {
 }
 
     // Helper alerts
+    function showTextInputFallback() {
+      const container = document.getElementById('textInputFallback');
+      const talkBtn = document.getElementById('talkButton');
+      if (container) container.style.display = 'flex';
+      if (talkBtn) talkBtn.style.display = 'none';
+    }
+
+    function showTextResponse(text) {
+      const hudTip = document.getElementById('hudTip');
+      if (hudTip) {
+        hudTip.innerHTML = `<strong>Guest said:</strong> "${text}"`;
+      }
+    }
+
     function showMicWarning(msg) {
       const warningEl = document.getElementById('micWarning');
       if (warningEl) {

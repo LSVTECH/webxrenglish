@@ -75,42 +75,24 @@ Renderer on 3D panel (`#evaluationPanel`) and injected into 2D HUD. Reset button
 
 Mic permission is requested on user interaction (button/key/trigger press), not on page load. Error messages are browser-specific (Firefox, Safari, Chrome/Edge).
 
-## Procedural texture system
+## Environment
 
-All textures are Canvas-generated at runtime (no external image files). Defined in `buildEnvironment()`:
-- `createProceduralTexture(type, params)` — generates a 512×512 canvas for: `marble`, `wood`, `fabric`, `floorTile` (grid), `carpet`, `wallPaint`, `ceilingTile`, `abstractArt`
-- `setTexture(entityId, canvas, mapType, repeatX, repeatY)` — applies canvas as Three.js `CanvasTexture` with repeating
-- `createBumpFromBase(canvas, strength)` — converts any texture to a grayscale bump map
-- `createEnvMap()` — generates a 6-face CubeTexture for reflections (used on AI cube)
-- `getThreeObject(entityId)` — retrieves the underlying Three.js mesh from an A-Frame entity
+Scene is a hotel lobby loaded from `Models/TODOprueba.glb` (~112MB, 161 nodes, 135 meshes) offset to `(5.16, 0, 10.23)` — places the L-shaped reception desk at `(0, 0.04, -0.9)` (same world position as the old procedural desk, keeping UI element positions valid).
 
-PBR enhancements (bump maps, envMap) are applied in `buildEnvironment()` on scene load. No images are downloaded.
+`buildEnvironment()` now only generates the cube-map envMap for AI cube reflections (all textures come from the GLB).
 
 ## VR scene layout
 
-Room dimensions: 8m × 5m × 3m (w × d × h). Textures applied procedurally in `buildEnvironment()`.
+Room is the full GLB hotel lobby. Key A-Frame elements:
 
 | Element | Position | Notes |
 |---------|----------|-------|
-| Rig (player) | `0 1.6 0.3` | wasd-controls + position-clamp (wall collision) |
-| Floor (marble tile) | `0 0.01 -1.5` | 8×5m, bump map, receives shadows |
-| Back wall | `0 1.5 1` | 8×3m |
-| Left/Right walls | `±4 1.5 -1.5` | 5×3m |
-| Ceiling (panel) | `0 3 -1.5` | 8×5m, recessed lights |
-| Reception desk | `0 0.52 -0.9` | 5-part: countertop (marble), front (wood), body, trim, edge |
+| Rig (player) | `-0.5 0 -1.0` | Behind L-shaped desk (receptionist area). Camera local `(0 1.6 0.3)` = eye `(-0.5 1.6 -0.7)`. position-clamp keeps X in `[-1.5, 8.5]`, Z in `[-1.2, 3.0]` |
+| GLB scene | `5.16 0 10.23` | Offset so desk lands at original world Z=-0.9 |
 | Clipboard (tasks) | `-0.65 1.40 -0.65` | Tilted -30° X, 25° Y |
 | Holographic panel | `0 1.55 -1.1` | Tilted -10° X, 0° Y |
-| AI cube (guest) | `0 1.6 -2.2` | envMap reflections, bob/rotate anims |
+| AI cube (guest) | `-0.5 1.6 -0.5` | In front of desk (guest side), envMap reflections, bob/rotate anims |
 | Evaluation panel | `0 1.55 -1.1` | Hidden until booking confirmed, same pos as holographic panel |
-| Sofa (2-seat) | `-2.5 0.22 -3` | Fabric texture, 4-box construction |
-| Armchair | `2.5 0.22 -3` | Fabric texture, 4-box construction |
-| Coffee table | `0 0.42 -3` | Glass top + metal legs |
-| Carpet | `0 0.005 -3` | 3.5×2m, speckled pattern |
-| Decorative plant | `-2.5 0.65 -3.8` | Pot + spheres |
-| Floor lamp | `2.5 1.3 -3.8` | With point light |
-| Wall art | `-3.99 1.6 -2` | Abstract painting + frame |
-| Reception terminal | `0.5 0.99 -0.55` | Monitor + keyboard |
-| Phone | `-0.55 1.0 -0.65` | Base + handset |
 
 ## Lighting
 
@@ -121,7 +103,7 @@ Room dimensions: 8m × 5m × 3m (w × d × h). Textures applied procedurally in 
 | Directional | `#fef5e0` | 0.7 | Main sun, casts shadows |
 | 3 recessed points | `#fef5e0` | 0.3–0.35 | Ceiling downlights |
 | Chandelier point | `#fef0d0` | 0.6 | Above waiting area |
-| Floor lamp point | `#fef0d0` | 0.3 | Next to armchair |
+| Floor lamp point | `#fef0d0` | 0.3 | Next to armchair (in GLB) |
 | Cube light (dynamic) | `#818cf8` | 1.5 | Changes color with AI state |
 
 ## Ambient audio
