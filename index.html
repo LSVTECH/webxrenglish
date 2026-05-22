@@ -340,15 +340,11 @@
              material="shader: standard; roughness: 0.9; metalness: 0; transparent: true; opacity: 0.85"
              shadow="receive: true"></a-plane>
 
-    <!-- DECORATIVE PLANT -->
-    <a-cylinder id="plantPot" position="-2.5 0.15 -3.8" radius="0.18" height="0.3"
-                material="color: #6a4a2a; roughness: 0.8"></a-cylinder>
-    <a-sphere id="plantFoliage" position="-2.5 0.65 -3.8" radius="0.3"
-              material="color: #2a6a2a; roughness: 0.9; metalness: 0"></a-sphere>
-    <a-sphere id="plantFoliage2" position="-2.35 0.55 -3.95" radius="0.2"
-              material="color: #3a7a3a; roughness: 0.9; metalness: 0"></a-sphere>
-    <a-sphere id="plantFoliage3" position="-2.65 0.55 -3.65" radius="0.2"
-              material="color: #3a7a3a; roughness: 0.9; metalness: 0"></a-sphere>
+    <!-- DECORATIVE PLANT (GLB) -->
+    <a-entity gltf-model="url(Models/Planta.glb)"
+              position="-2.5 0 -3.8"
+              scale="0.6 0.6 0.6">
+    </a-entity>
 
     <!-- FLOOR LAMP -->
     <a-cylinder id="lampPole" position="2.5 1.3 -3.8" radius="0.02" height="2.5"
@@ -952,6 +948,7 @@ function detectBrowser() {
   if (ua.includes('firefox')) return 'firefox';
   if (ua.includes('samsungbrowser')) return 'samsung';
   if (ua.includes('edg/') || ua.includes('edge/')) return 'edge';
+  if (ua.includes('opr/') || ua.includes('opera')) return 'opera';
   if (ua.includes('chrome') || ua.includes('chromium')) return 'chrome';
   if (ua.includes('safari')) return 'safari';
   return 'unknown';
@@ -962,6 +959,7 @@ function detectBrowser() {
 // ==========================================
 let ttsVoiceList = [];
 let ttsVoicesLoaded = false;
+let ttsAudioCtx = null;
 
 function loadTtsVoices() {
   if (!window.speechSynthesis) {
@@ -1161,7 +1159,24 @@ async function startRecording() {
          return; // Permission denied, warning already shown
        }
 
-        initAmbientAudio();
+         initAmbientAudio();
+
+        // Initialize TTS AudioContext during user gesture (required by Safari)
+        if (!ttsAudioCtx) {
+          ttsAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (ttsAudioCtx.state === 'suspended') {
+          ttsAudioCtx.resume();
+        }
+
+        // Safari: prime SpeechSynthesis engine during user gesture
+        const browser = detectBrowser();
+        if (browser === 'safari' && window.speechSynthesis) {
+          window.speechSynthesis.getVoices();
+          const warmup = new SpeechSynthesisUtterance(' ');
+          warmup.volume = 0;
+          window.speechSynthesis.speak(warmup);
+        }
 
         // Update UI button visual state
         const talkBtn = document.getElementById('talkButton');
@@ -2001,32 +2016,42 @@ const fallbackText = "Sorry, our booking system is currently down. Let's try aga
 // ==========================================
 // AUDIO-BASED TTS FALLBACK (Google Translate)
 // Works in ALL browsers including Pico 4
+// Uses Web Audio API when available (created during user gesture for Safari)
 // ==========================================
 function speakViaAudio(text) {
-  return new Promise((resolve) => {
+  return new Promise(async (resolve) => {
     const safeText = text.substring(0, 200);
-    const audio = new Audio();
-    audio.src = 'https://translate.google.com/translate_tts?ie=UTF-8&q='
+    const url = 'https://translate.google.com/translate_tts?ie=UTF-8&q='
       + encodeURIComponent(safeText) + '&tl=en&client=tw-ob';
 
-    audio.onended = () => {
+    const done = () => {
       updateUIState("HOLD M TO SPEAK");
       setCubeState("idle");
       resolve();
     };
 
-    audio.onerror = () => {
-      console.warn('Audio TTS fallback failed');
-      updateUIState("HOLD M TO SPEAK");
-      setCubeState("idle");
-      resolve();
-    };
+    const audio = new Audio();
+    audio.src = url;
 
-    audio.play().catch(() => {
-      updateUIState("HOLD M TO SPEAK");
-      setCubeState("idle");
-      resolve();
-    });
+    // Route through pre-gesture AudioContext (helps Safari)
+    if (ttsAudioCtx && ttsAudioCtx.state !== 'closed') {
+      try {
+        const source = ttsAudioCtx.createMediaElementSource(audio);
+        source.connect(ttsAudioCtx.destination);
+      } catch (e) {
+        // CORS blocked, will play directly instead
+      }
+    }
+
+    audio.onended = done;
+    audio.onerror = done;
+
+    try {
+      await audio.play();
+    } catch (e) {
+      console.warn('Audio TTS play failed:', e);
+      done();
+    }
   });
 }
 
@@ -2041,6 +2066,28 @@ async function speakText(textToSpeak) {
   if (browser === 'pico' || ttsVoiceList.length === 0 || !window.speechSynthesis) {
     await speakViaAudio(textToSpeak);
     return;
+  }
+
+  // Safari: use primed SpeechSynthesis directly (no fallback timer, voice = null)
+  if (browser === 'safari') {
+    return new Promise((resolve) => {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.lang = currentLang;
+      utterance.voice = null;
+      utterance.onend = () => {
+        updateUIState("HOLD M TO SPEAK");
+        setCubeState("idle");
+        resolve();
+      };
+      utterance.onerror = (err) => {
+        console.error('Safari SpeechSynthesis error:', err);
+        updateUIState("HOLD M TO SPEAK");
+        setCubeState("idle");
+        resolve();
+      };
+      window.speechSynthesis.speak(utterance);
+    });
   }
 
   return new Promise((resolve) => {
@@ -2063,10 +2110,21 @@ async function speakText(textToSpeak) {
     utterance.pitch = 1;
 
     // Per-browser voice selection
-    if (browser === 'chrome' || browser === 'edge') {
+    if (browser === 'chrome' || browser === 'edge' || browser === 'opera') {
+      // Prefer female voices
       const preferredVoice = ttsVoiceList.find(v =>
-        v.lang.startsWith('en')
-        && (v.name.includes('Google') || v.name.includes('Microsoft') || v.name.includes('Natural'))
+        v.lang.startsWith('en') && (
+          v.name.includes('Google US English') ||
+          v.name.includes('Google UK English Female') ||
+          v.name.includes('Zira') ||
+          v.name.includes('Natural')
+        )
+      ) || ttsVoiceList.find(v =>
+        v.lang.startsWith('en') && (
+          v.name.includes('Google') ||
+          v.name.includes('Microsoft') ||
+          v.name.includes('Natural')
+        )
       ) || ttsVoiceList.find(v => v.lang.startsWith('en')) || null;
       if (preferredVoice) utterance.voice = preferredVoice;
     } else if (browser === 'firefox') {
@@ -2102,7 +2160,7 @@ async function speakText(textToSpeak) {
     };
 
     // Chrome/Edge bug: cancel() + immediate speak() drops utterance
-    if (browser === 'chrome' || browser === 'edge') {
+    if (browser === 'chrome' || browser === 'edge' || browser === 'opera') {
       if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
       setTimeout(() => { window.speechSynthesis.speak(utterance); }, 50);
     } else {
