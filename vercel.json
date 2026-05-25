@@ -20,6 +20,10 @@
     {
       "src": "/api/transcribe",
       "dest": "/api/transcribe.js"
+    },
+    {
+      "src": "/api/synthesize",
+      "dest": "/api/synthesize.js"
     }
   ]
 }

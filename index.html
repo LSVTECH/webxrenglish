@@ -2141,40 +2141,66 @@ const fallbackText = "Sorry, our booking system is currently down. Let's try aga
       }
     }
 
-// ==========================================
-// AUDIO-BASED TTS FALLBACK (Google Translate)
-// Works in ALL browsers including Pico 4
-// Uses Web Audio API when available (created during user gesture for Safari)
-// ==========================================
+function getGuestVoiceConfig() {
+  if (!currentGuestProfile) {
+    return { voiceName: 'en-US-Neural2-D', ssmlGender: 'MALE' };
+  }
+  const name = currentGuestProfile.name;
+  if (name === 'Sophia Vance') return { voiceName: 'en-US-Neural2-F', ssmlGender: 'FEMALE' };
+  if (name === 'David Kim') return { voiceName: 'en-US-Neural2-J', ssmlGender: 'MALE' };
+  if (name === 'Elena Rostova') return { voiceName: 'en-US-Neural2-H', ssmlGender: 'FEMALE' };
+  return { voiceName: 'en-US-Neural2-D', ssmlGender: 'MALE' };
+}
+
 function speakViaAudio(text) {
   return new Promise(async (resolve) => {
-    const safeText = text.substring(0, 200);
-    const url = 'https://translate.google.com/translate_tts?ie=UTF-8&q='
-      + encodeURIComponent(safeText) + '&tl=en&client=tw-ob';
-
     const done = () => {
       updateUIState("HOLD M TO SPEAK");
       setCubeState("idle");
       resolve();
     };
 
-    const audio = new Audio();
-    audio.src = url;
-
-    if (ttsAudioCtx && ttsAudioCtx.state !== 'closed') {
-      try {
-        const source = ttsAudioCtx.createMediaElementSource(audio);
-        source.connect(ttsAudioCtx.destination);
-      } catch (e) {}
-    }
-
-    audio.onended = done;
-    audio.onerror = () => {
-      showTextResponse(text);
-      done();
-    };
-
     try {
+      const voiceConfig = getGuestVoiceConfig();
+      const res = await fetch('/api/synthesize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: text,
+          voiceName: voiceConfig.voiceName,
+          ssmlGender: voiceConfig.ssmlGender
+        })
+      });
+
+      if (!res.ok) {
+        showTextResponse(text);
+        done();
+        return;
+      }
+
+      const data = await res.json();
+      if (!data.audioContent) {
+        showTextResponse(text);
+        done();
+        return;
+      }
+
+      const audio = new Audio();
+      audio.src = 'data:audio/mp3;base64,' + data.audioContent;
+
+      if (ttsAudioCtx && ttsAudioCtx.state !== 'closed') {
+        try {
+          const source = ttsAudioCtx.createMediaElementSource(audio);
+          source.connect(ttsAudioCtx.destination);
+        } catch (e) {}
+      }
+
+      audio.onended = done;
+      audio.onerror = () => {
+        showTextResponse(text);
+        done();
+      };
+
       await audio.play();
     } catch (e) {
       console.warn('Audio TTS play failed:', e);
