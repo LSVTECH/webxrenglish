@@ -9,6 +9,7 @@ Single-page VR English practice app: `index.html` is the entire frontend (A-Fram
 - **Frontend:** `index.html` — no build step, no npm, no framework. A-Frame 1.5.0 from CDN, inline `<script>` logic. No physics engine — wall collision uses custom `position-clamp` component on the rig.
 - **Backend:** `api/chat.js` — Vercel serverless function (ES module). Proxies POST requests to `gemini-2.5-flash-lite` model.
 - **Deployment:** Vercel. `vercel.json` routes `/api/chat` → `api/chat.js`. `cleanUrls: true`.
+- **GLB models on Vercel:** Do NOT use Git LFS for `.glb` files committed to the repo — Vercel cannot fetch LFS objects during build, causing silent 404s. Commit raw binary files directly. `vercel.json` headers set `Content-Type: model/gltf-binary` and routes ensure proper serving under `cleanUrls: true`.
 - **No test suite, no typecheck, no lint.**
 
 ## API key
