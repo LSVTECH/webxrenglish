@@ -755,8 +755,15 @@ let ttsAudioCtx = null;
     function initApp() {
       console.log("App ready.");
 
-      document.querySelector('[src="#hotelModel"]').addEventListener('model-error', (e) => console.error('Hotel model error:', e.detail));
-      document.querySelector('[src="#npcModel"]').addEventListener('model-error', (e) => console.error('NPC model error:', e.detail));
+      const hotelModel = document.querySelector('a-gltf-model[src="Models/HotelModel.glb"]');
+      if (hotelModel) {
+        hotelModel.addEventListener('model-error', (e) => console.error('Hotel model error:', e.detail));
+      }
+
+      const npcModel = document.getElementById('aiNPC');
+      if (npcModel) {
+        npcModel.addEventListener('model-error', (e) => console.error('NPC model error:', e.detail));
+      }
       
       // Select random guest profile for role reversal
       selectRandomGuestProfile();
