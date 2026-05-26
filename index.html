@@ -35,14 +35,13 @@
     }
 
     .glass-card {
-      background: rgba(10, 11, 28, 0.85);
+      background: rgba(26, 24, 20, 0.88);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.06);
       border-radius: 20px;
       padding: 24px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 
-                  0 0 40px rgba(99, 102, 241, 0.1);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
       pointer-events: auto;
       transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
@@ -52,7 +51,7 @@
       font-family: 'Space Grotesk', sans-serif;
       font-size: 1.6rem;
       font-weight: 700;
-      background: linear-gradient(135deg, #818cf8, #c084fc, #f472b6);
+      background: linear-gradient(135deg, #c8b88a, #d4ccc0, #e8e0d0);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       letter-spacing: -0.02em;
@@ -77,69 +76,66 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      background: rgba(99, 102, 241, 0.12);
-      border: 1px solid rgba(99, 102, 241, 0.25);
-      color: #a5b4fc;
+      background: rgba(200, 184, 138, 0.10);
+      border: 1px solid rgba(200, 184, 138, 0.20);
+      color: #c8b88a;
       transition: all 0.3s ease;
     }
 
     .status-badge.listening {
-      background: rgba(6, 182, 212, 0.15);
-      border: 1px solid rgba(6, 182, 212, 0.4);
-      color: #22d3ee;
-      box-shadow: 0 0 20px rgba(6, 182, 212, 0.25);
+      background: rgba(200, 184, 138, 0.14);
+      border: 1px solid rgba(200, 184, 138, 0.25);
+      color: #d4ccc0;
     }
 
     .status-badge.thinking {
-      background: rgba(245, 158, 11, 0.15);
-      border: 1px solid rgba(245, 158, 11, 0.4);
-      color: #fbbf24;
-      box-shadow: 0 0 20px rgba(245, 158, 11, 0.25);
+      background: rgba(200, 184, 138, 0.14);
+      border: 1px solid rgba(200, 184, 138, 0.25);
+      color: #d4ccc0;
     }
 
     .status-badge.speaking {
-      background: rgba(236, 72, 153, 0.15);
-      border: 1px solid rgba(236, 72, 153, 0.4);
-      color: #f472b6;
-      box-shadow: 0 0 20px rgba(236, 72, 153, 0.25);
+      background: rgba(200, 184, 138, 0.14);
+      border: 1px solid rgba(200, 184, 138, 0.25);
+      color: #d4ccc0;
     }
 
     .talk-btn {
       margin-top: 15px;
       width: 100%;
       padding: 14px;
-      background: linear-gradient(135deg, #6366f1, #ec4899);
+      background: linear-gradient(135deg, #c8b88a, #a89070);
       border: none;
       border-radius: 12px;
-      color: white;
+      color: #1a1814;
       font-family: 'Space Grotesk', sans-serif;
       font-size: 1rem;
       font-weight: 700;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
       transition: all 0.2s ease, background 0.5s ease;
       pointer-events: auto;
       user-select: none;
       -webkit-user-select: none;
     }
     .talk-btn:hover {
-      background: linear-gradient(135deg, #4f46e5, #db2777);
+      background: linear-gradient(135deg, #d4c4a0, #b8a080);
     }
     .talk-btn.listening {
-      background: linear-gradient(135deg, #06b6d4, #22d3ee);
-      box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
+      background: linear-gradient(135deg, #c8b88a, #d4ccc0);
+      box-shadow: 0 0 16px rgba(200, 184, 138, 0.25);
     }
 
     .talk-btn:active {
       transform: scale(0.97);
-      background: linear-gradient(135deg, #4f46e5, #db2777);
+      background: linear-gradient(135deg, #b8a880, #a89070);
     }
 
     /* 2D Scoreboard styling */
     .hud-scores {
       margin-top: 20px;
       padding-top: 15px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
       display: block;
     }
 
@@ -157,7 +153,7 @@
     }
 
     .stars-display {
-      color: #374151;
+      color: #6b6358;
       font-size: 1.25rem;
       letter-spacing: 2px;
     }
@@ -165,11 +161,11 @@
     .tip-box {
       margin-top: 12px;
       padding: 10px 14px;
-      background: rgba(99, 102, 241, 0.08);
-      border-left: 3px solid #818cf8;
+      background: rgba(200, 184, 138, 0.06);
+      border-left: 3px solid #c8b88a;
       border-radius: 4px;
       font-size: 0.8rem;
-      color: #c7d2fe;
+      color: #d4ccc0;
       line-height: 1.4;
     }
 
@@ -187,7 +183,7 @@
       padding: 2px 6px;
       font-family: 'Space Grotesk', monospace;
       font-weight: 700;
-      color: #ffffff;
+      color: #e8e0d0;
       box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
     }
 
@@ -197,9 +193,9 @@
       border-radius: 12px;
       font-size: 0.8rem;
       line-height: 1.4;
-      background: rgba(239, 68, 68, 0.12);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #fca5a5;
+      background: rgba(180, 120, 100, 0.12);
+      border: 1px solid rgba(180, 120, 100, 0.25);
+      color: #d4bcb0;
       display: none;
       pointer-events: auto;
     }
@@ -211,7 +207,7 @@
       z-index: 10;
       pointer-events: none;
       font-size: 0.75rem;
-      color: #6b7280;
+      color: #6b6358;
       line-height: 1.5;
     }
   </style>
@@ -226,7 +222,7 @@
       
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <span id="hudStatusBadge" class="status-badge">Idle</span>
-        <span id="langDisplay" style="font-size: 0.75rem; color: #818cf8; font-weight: bold;">Language: English</span>
+        <span id="langDisplay" style="font-size: 0.75rem; color: #c8b88a; font-weight: bold;">Language: English</span>
       </div>
 
       <!-- Desktop Click/Touch talk button -->
@@ -234,10 +230,10 @@
 
       <!-- Text input fallback for Pico 4 / browsers without mic -->
       <div id="textInputFallback" style="display: none; margin-top: 10px;">
-        <div style="font-size: 0.75rem; color: #fbbf24; margin-bottom: 6px; font-weight: 600;">⌨️ Mic not available — type your message below:</div>
+        <div style="font-size: 0.75rem; color: #c8b88a; margin-bottom: 6px; font-weight: 600;">⌨️ Mic not available — type your message below:</div>
         <div style="display: flex; gap: 8px;">
           <input id="textInput" type="text" placeholder="Type your message to the guest..."
-                 style="flex: 1; padding: 12px 16px; border-radius: 10px; border: 2px solid rgba(251,191,36,0.4); background: rgba(0,0,0,0.6); color: #e2e8f0; font-size: 1.1rem; outline: none;">
+                 style="flex: 1; padding: 12px 16px; border-radius: 10px; border: 2px solid rgba(200,184,138,0.3); background: rgba(0,0,0,0.6); color: #e8e0d0; font-size: 1.1rem; outline: none;">
           <button id="textSendBtn" class="talk-btn" style="padding: 12px 24px; white-space: nowrap; font-size: 1rem;">Send ➤</button>
         </div>
       </div>
@@ -253,10 +249,10 @@
   <div class="score-row"><span class="score-label" id="taskConfirm">⬜ 6. Confirm the booking</span></div>
   
   <div style="margin-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 10px;">
-    <div class="score-row"><span class="score-label">Guest:</span><span id="guestName2D" style="color: #a5b4fc; font-weight: bold;">TBD</span></div>
-    <div class="score-row"><span class="score-label">Room Type:</span><span id="roomDetails2D" style="color: #a5b4fc; font-weight: bold;">Not Selected</span></div>
-    <div class="score-row"><span class="score-label">Nights:</span><span id="nights2D" style="color: #a5b4fc; font-weight: bold;">TBD</span></div>
-    <div class="score-row"><span class="score-label">Assigned Room:</span><span id="bookingStatus2D" style="color: #fbbf24; font-weight: bold;">TBD</span></div>
+    <div class="score-row"><span class="score-label">Guest:</span><span id="guestName2D" style="color: #c8b88a; font-weight: bold;">TBD</span></div>
+    <div class="score-row"><span class="score-label">Room Type:</span><span id="roomDetails2D" style="color: #c8b88a; font-weight: bold;">Not Selected</span></div>
+    <div class="score-row"><span class="score-label">Nights:</span><span id="nights2D" style="color: #c8b88a; font-weight: bold;">TBD</span></div>
+    <div class="score-row"><span class="score-label">Assigned Room:</span><span id="bookingStatus2D" style="color: #c8b88a; font-weight: bold;">TBD</span></div>
   </div>
   <div id="hudTip" class="tip-box">Welcome! A guest has arrived at your reception desk. Say "Hello!" or "Welcome to our hotel!" to start the check-in process.</div>
 </div>
@@ -277,277 +273,139 @@
   </div>
 
   <!-- A-FRAME VR SCENE -->
-  <a-scene fog="type: linear; color: #e8e0d0; near: 8; far: 18" shadow="type: pcfsoft" renderer="antialias: true; colorManagement: true;">
-    
-    <!-- CUSTOM LIGHTING SYSTEM (Warm beige tones) -->
-    <a-entity light="type: ambient; color: #f5ede0; intensity: 0.35"></a-entity>
-    <a-entity light="type: hemisphere; skyColor: #fff8e6; groundColor: #c8b8a8; intensity: 0.45"></a-entity>
-    <a-entity light="type: directional; color: #fff0d8; intensity: 0.8; castShadow: true" position="4 8 3"></a-entity>
-    <a-entity id="cubeLight" light="type: point; color: #818cf8; intensity: 1.5; distance: 6; castShadow: true" position="0 1.6 -1.5"></a-entity>
+  <a-scene shadow="type: pcfsoft" renderer="antialias: true; colorManagement: true; physicallyCorrectLights: true">
 
-    <!-- CEILING RECESSED LIGHTS -->
-    <a-entity light="type: point; color: #fef5e0; intensity: 0.35; distance: 4" position="-1.5 2.95 -0.5"></a-entity>
-    <a-entity light="type: point; color: #fef5e0; intensity: 0.35; distance: 4" position="1.5 2.95 -0.5"></a-entity>
-    <a-entity light="type: point; color: #fef5e0; intensity: 0.3; distance: 4" position="0 2.95 -2.8"></a-entity>
+    <a-assets>
+      <a-asset-item id="hotelModel" src="Models/HotelModel.glb"></a-asset-item>
+      <a-asset-item id="npcModel" src="Models/NPC.glb"></a-asset-item>
+    </a-assets>
 
-    <!-- ROOM STRUCTURE -->
-    <!-- FLOOR (marble beige) -->
-    <a-plane id="floor" position="0 0.01 -1.5" rotation="-90 0 0" width="16" height="12"
-             material="shader: standard; color: #f0e8d8; roughness: 0.2; metalness: 0.05"
-             shadow="receive: true"></a-plane>
+    <a-gltf-model src="#hotelModel" position="-3.5 0 5" rotation="0 0 0" scale="1.25 1.25 1.25"></a-gltf-model>
 
-    <!-- BACK WALL (beige) -->
-    <a-plane id="backWall" position="0 2.3 2.0" rotation="0 0 0" width="16" height="4.6"
-             material="shader: standard; color: #e8e0d0; roughness: 0.8; metalness: 0"></a-plane>
+    <a-light type="ambient" color="#f5ede0" intensity="0.6"></a-light>
+    <a-light type="point" color="#fef0d0" intensity="1.2" distance="10" decay="2" position="1 3.5 -9.5"></a-light>
+    <a-light type="point" color="#fef0d0" intensity="1.0" distance="12" decay="2" position="-3.5 3.5 -3"></a-light>
+    <a-light type="point" color="#fef0d0" intensity="0.8" distance="10" decay="2" position="-6 3.5 2"></a-light>
+    <a-light type="point" color="#fef0d0" intensity="0.6" distance="8" decay="2" position="2 2.5 -0.5"></a-light>
+    <a-light type="point" color="#fef0d0" intensity="0.5" distance="8" decay="2" position="-1 3 6"></a-light>
+    <a-entity id="cubeLight" light="type: point; color: #c8b88a; intensity: 1.2; distance: 8" position="-8.52 3.2 -8.93"></a-entity>
 
-    <!-- LEFT WALL -->
-    <a-plane id="leftWall" position="-6.0 2.3 -1.5" rotation="0 90 0" width="12" height="4.6"
-             material="shader: standard; color: #e8e0d0; roughness: 0.8; metalness: 0"></a-plane>
+    <a-gltf-model id="aiNPC"
+                  class="clickable"
+                  src="#npcModel"
+                  position="-8.52 0.05 -8.93"
+                  rotation="0 270 0"
+                  npc-controller>
+    </a-gltf-model>
 
-    <!-- RIGHT WALL -->
-    <a-plane id="rightWall" position="6.0 2.3 -1.5" rotation="0 -90 0" width="12" height="4.6"
-             material="shader: standard; color: #e8e0d0; roughness: 0.8; metalness: 0"></a-plane>
-
-    <!-- CEILING (panel) -->
-    <a-plane id="ceiling" position="0 4.6 -1.5" rotation="90 0 0" width="12" height="16"
-             material="shader: standard; color: #fff8f0; roughness: 0.9; metalness: 0; transparent: true; opacity: 0.95"
-             shadow="receive: true"></a-plane>
-
-    <!-- WOODEN PILLARS (4x framing the lobby) -->
-    <!-- Back-left pillar -->
-    <a-cylinder id="pillarBL" position="-2.8 2.3 0.5" radius="0.2" height="4.6"
-                material="color: #8b5e3c; roughness: 0.5; metalness: 0.1"
-                shadow="cast: true; receive: true"></a-cylinder>
-    <!-- Back-right pillar -->
-    <a-cylinder id="pillarBR" position="2.8 2.3 0.5" radius="0.2" height="4.6"
-                material="color: #8b5e3c; roughness: 0.5; metalness: 0.1"
-                shadow="cast: true; receive: true"></a-cylinder>
-    <!-- Front-left pillar -->
-    <a-cylinder id="pillarFL" position="-2.8 2.3 -3.5" radius="0.2" height="4.6"
-                material="color: #8b5e3c; roughness: 0.5; metalness: 0.1"
-                shadow="cast: true; receive: true"></a-cylinder>
-    <!-- Front-right pillar -->
-    <a-cylinder id="pillarFR" position="2.8 2.3 -3.5" radius="0.2" height="4.6"
-                material="color: #8b5e3c; roughness: 0.5; metalness: 0.1"
-                shadow="cast: true; receive: true"></a-cylinder>
-
-    <!-- BASEBOARDS (elegant wall trim) -->
-    <a-box id="baseboardBack" position="0 0.08 2.0" scale="14.0 0.14 0.08"
-           material="color: #6b4a2e; roughness: 0.5; metalness: 0.1"></a-box>
-    <a-box id="baseboardLeft" position="-6.0 0.08 -1.5" scale="0.08 0.14 10.0"
-           material="color: #6b4a2e; roughness: 0.5; metalness: 0.1"></a-box>
-    <a-box id="baseboardRight" position="6.0 0.08 -1.5" scale="0.08 0.14 10.0"
-           material="color: #6b4a2e; roughness: 0.5; metalness: 0.1"></a-box>
-
-    <!-- CROWN MOLDING -->
-    <a-box id="crownBack" position="0 4.52 2.0" scale="14.0 0.08 0.10"
-           material="color: #8b6a4e; roughness: 0.4; metalness: 0.1"></a-box>
-    <a-box id="crownLeft" position="-6.0 4.52 -1.5" scale="0.10 0.08 10.0"
-           material="color: #8b6a4e; roughness: 0.4; metalness: 0.1"></a-box>
-    <a-box id="crownRight" position="6.0 4.52 -1.5" scale="0.10 0.08 10.0"
-           material="color: #8b6a4e; roughness: 0.4; metalness: 0.1"></a-box>
-
-    <!-- CHANDELIER GEOMETRY -->
-    <a-ring id="chandelierRing" position="0 3.7 -1.8" rotation="-90 0 0" radius-inner="0.4" radius-outer="0.55"
-            material="color: #c8a870; roughness: 0.2; metalness: 0.7"></a-ring>
-    <a-cylinder id="chandelierRod" position="0 4.15 -1.8" radius="0.03" height="0.5"
-                material="color: #c8a870; roughness: 0.2; metalness: 0.7"></a-cylinder>
-    <!-- Chandelier pendant lights -->
-    <a-sphere id="chandelierBulb1" position="-0.35 3.6 -1.8" radius="0.04"
-              material="color: #fef0d0; emissive: #fef0d0; emissiveIntensity: 0.8"></a-sphere>
-    <a-sphere id="chandelierBulb2" position="0.35 3.6 -1.8" radius="0.04"
-              material="color: #fef0d0; emissive: #fef0d0; emissiveIntensity: 0.8"></a-sphere>
-    <a-sphere id="chandelierBulb3" position="0 3.6 -2.15" radius="0.04"
-              material="color: #fef0d0; emissive: #fef0d0; emissiveIntensity: 0.8"></a-sphere>
-    <a-sphere id="chandelierBulb4" position="0 3.6 -1.45" radius="0.04"
-              material="color: #fef0d0; emissive: #fef0d0; emissiveIntensity: 0.8"></a-sphere>
-    <!-- LOBBY CHANDELIER LIGHT -->
-    <a-entity light="type: point; color: #fef0d0; intensity: 0.6; distance: 6" position="0 3.8 -1.8"></a-entity>
-
-    <!-- ELEGANT RECEPTION DESK -->
-    <!-- Desk body (wood base) -->
-    <a-box id="deskBody" position="0 0.52 0.0" scale="2.0 0.84 0.56"
-           material="color: #5c3a1e; roughness: 0.7; metalness: 0"
-           shadow="receive: true"></a-box>
-    <!-- Desk front (wood panel) -->
-    <a-box id="deskFront" position="0 0.52 -0.29" scale="2.0 0.84 0.04"
-           material="color: #4a2a10; roughness: 0.5; metalness: 0.1"
-           shadow="cast: true"></a-box>
-    <!-- Desk countertop (polished marble) -->
-    <a-box id="deskCountertop" position="0 0.97 0.0" scale="2.2 0.06 0.7"
-           material="color: #f0e6d8; roughness: 0.1; metalness: 0.05"
-           shadow="cast: true; receive: true"></a-box>
-    <!-- Desk trim (dark wood edge) -->
-    <a-box id="deskTrim" position="0 0.02 0.0" scale="2.1 0.04 0.62"
-           material="color: #3a2010; roughness: 0.4; metalness: 0.5"></a-box>
-    <!-- Desk edge (wood lip) -->
-    <a-box id="deskEdge" position="0 0.94 0.0" scale="2.1 0.02 0.66"
-           material="color: #4a2a10; roughness: 0.4; metalness: 0.3"
-           shadow="receive: true"></a-box>
-
-    <!-- WELCOME RUG (in front of desk) -->
-    <a-plane id="welcomeRug" position="0 0.012 -1.2" rotation="-90 0 0" width="1.8" height="1.2"
-             material="shader: standard; color: #4a3a2a; roughness: 0.9; metalness: 0"
-             shadow="receive: true"></a-plane>
-    <!-- Rug border -->
-    <a-plane id="rugBorder" position="0 0.013 -1.2" rotation="-90 0 0" width="1.92" height="1.32"
-             material="shader: standard; color: #6b4a2e; roughness: 0.8; metalness: 0; transparent: true; opacity: 0.4"></a-plane>
-
-    <!-- THE AI CHARACTER (Floating & Rotating Metallic Cube) -->
-    <a-box id="aiCube"
-           class="clickable"
-           position="0 1.6 -1.5"
-           rotation="0 45 45"
-           width="0.42" height="0.42" depth="0.42"
-           material="color: #6366f1; roughness: 0.05; metalness: 0.95; emissive: #312e81; emissiveIntensity: 1.2"
-           animation__bob="property: position; to: 0 1.75 -1.5; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine"
-           animation__rotate="property: rotation; to: 360 405 45; dur: 9000; loop: true; easing: linear">
-    </a-box>
-
-    <!-- CLIPBOARD INTERACTIVO (TABLA DE TAREAS) sobre el mostrador -->
-    <a-plane id="clipboardPanel"
-             position="-1.2 1.35 0.2"
-             rotation="-25 45 0"
-             width="0.65" height="0.80"
-             material="shader: flat; color: #0d1527; opacity: 0.95; transparent: true"
-             class="clickable">
-      
-      <!-- Bordes del clipboard -->
-      <a-plane position="0 0.38 0.005" width="0.65" height="0.03" material="color: #6366f1; shader: flat; emissive: #6366f1; emissiveIntensity: 1.0"></a-plane>
-      <a-plane position="0 -0.38 0.005" width="0.65" height="0.03" material="color: #312e81; shader: flat; emissive: #312e81; emissiveIntensity: 0.5"></a-plane>
-
-      <a-text id="clipTitle" value="RECEPTIONIST CLIPBOARD" align="center" position="0 0.32 0.01" width="1.2" color="#38bdf8" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-
-      <!-- Checklist Items (Checkboxes) -->
-      <a-text id="clipTaskGreet" value="[ ] 1. Greet Guest" align="left" position="-0.28 0.22 0.01" width="1.0" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipTaskName" value="[ ] 2. Ask Name" align="left" position="-0.28 0.15 0.01" width="1.0" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipTaskCount" value="[ ] 3. Ask Guest Count" align="left" position="-0.28 0.08 0.01" width="1.0" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipTaskRoom" value="[ ] 4. Ask Room Type" align="left" position="-0.28 0.01 0.01" width="1.0" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipTaskNights" value="[ ] 5. Ask Nights Count" align="left" position="-0.28 -0.06 0.01" width="1.0" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipTaskConfirm" value="[ ] 6. Confirm Booking" align="left" position="-0.28 -0.13 0.01" width="1.0" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-
-      <!-- Seccion de Datos de Reserva -->
-      <a-plane position="0 -0.18 0.004" width="0.58" height="0.002" material="color: #374151; shader: flat"></a-plane>
-      
-      <a-text id="clipGuestLabel" value="Guest Info:" align="left" position="-0.28 -0.22 0.01" width="0.9" color="#9ca3af" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipGuestVal" value="Guest: TBD" align="left" position="-0.08 -0.22 0.01" width="1.0" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-
-      <a-text id="clipRoomLabel" value="Room Type:" align="left" position="-0.28 -0.27 0.01" width="0.9" color="#9ca3af" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipRoomVal" value="Type: TBD" align="left" position="-0.08 -0.27 0.01" width="1.0" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-
-      <a-text id="clipNightsLabel" value="Nights Count:" align="left" position="-0.28 -0.32 0.01" width="0.9" color="#9ca3af" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipNightsVal" value="Nights: TBD" align="left" position="-0.08 -0.32 0.01" width="1.0" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-
-      <a-text id="clipAssignedLabel" value="Room Assigned:" align="left" position="-0.28 -0.37 0.01" width="0.9" color="#9ca3af" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipAssignedVal" value="Room: TBD" align="left" position="-0.08 -0.37 0.01" width="1.0" color="#fbbf24" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-
-    </a-plane>
-
-    <!-- VR INTERACTION & DISPLAY PANEL (Holographic Screen) centrado -->
     <a-plane id="uiPanel"
-             position="0 1.55 -0.3"
-             rotation="-10 0 0"
-             width="1.4" height="0.8"
-             material="shader: flat; color: #080a14; opacity: 0.88; transparent: true; roughness: 1"
+             position="-8.61 1.8 -7.63"
+             rotation="0 -123 0"
+             width="1.6" height="0.9"
+             material="shader: flat; color: #1a1814; opacity: 0.95; transparent: true; roughness: 1"
              class="clickable">
-      
-      <!-- Sub-frame borders -->
-      <a-plane position="0 0.38 0.005" width="1.4" height="0.03" material="color: #4f46e5; shader: flat; emissive: #4f46e5; emissiveIntensity: 1.5"></a-plane>
-      <a-plane position="0 -0.39 0.005" width="1.4" height="0.03" material="color: #312e81; shader: flat; emissive: #312e81; emissiveIntensity: 0.5"></a-plane>
 
-      <!-- Status indicator -->
       <a-text id="statusText"
               value="HOLD M TO SPEAK"
               align="center"
               position="0 0.30 0.01"
-              width="2.4"
-              color="#38bdf8"
+              width="2.8"
+              color="#e8e0d0"
               font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
               negate="false">
       </a-text>
 
-      <!-- User Text (Your question) -->
       <a-text id="userText"
               value="You: ..."
               align="center"
               position="0 0.10 0.01"
-              width="1.5"
-              color="#a5b4fc"
+              width="2.0"
+              color="#d4ccc0"
               font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
-              wrap-count="35"
+              wrap-count="40"
               negate="false">
       </a-text>
 
-      <!-- AI Text (Guest response) -->
       <a-text id="aiText"
               value="Guest: (Checking in...) Say Hello to begin."
               align="center"
               position="0 -0.15 0.01"
-              width="1.5"
-              color="#f472b6"
+              width="2.0"
+              color="#f0ece4"
               font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
-              wrap-count="35"
+              wrap-count="40"
               negate="false">
       </a-text>
 
     </a-plane>
 
-    <!-- EVALUATION PANEL (visible after booking completion, misma posición que el panel de diálogo) -->
     <a-plane id="evaluationPanel"
-             position="0 1.55 -0.3"
-             rotation="-10 0 0"
-             width="1.8" height="1.3"
-             material="shader: flat; color: #0a0320; opacity: 0.95; transparent: true; roughness: 1"
+             position="-8.61 1.8 -7.63"
+             rotation="0 -123 0"
+             width="2.4" height="1.6"
+             material="shader: flat; color: #1a1814; opacity: 0.95; transparent: true; roughness: 1"
              visible="false">
-      
-      <!-- Borders -->
-      <a-plane position="0 0.63 0.005" width="1.8" height="0.03" material="color: #f472b6; shader: flat; emissive: #f472b6; emissiveIntensity: 1.5"></a-plane>
-      <a-plane position="0 -0.64 0.005" width="1.8" height="0.03" material="color: #831843; shader: flat; emissive: #831843; emissiveIntensity: 0.5"></a-plane>
 
-      <a-text value="EVALUATION REPORT" align="center" position="0 0.55 0.01" width="2.8" color="#f472b6" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text value="EVALUATION REPORT" align="center" position="0 0.60 0.01" width="3.5" color="#e8e0d0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
 
-      <!-- Overall Score -->
-      <a-text id="evalScore" value="OVERALL: -- / 10" align="center" position="0 0.38 0.01" width="2.8" color="#fbbf24" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="evalScore" value="OVERALL: -- / 10" align="center" position="0 0.42 0.01" width="3.5" color="#f0ece4" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
 
-      <!-- Criteria Left Column -->
-      <a-text id="evalCriteria1" value="Communication: -\nLogical Order: -\nProfessionalism: -" align="left" position="-0.80 0.10 0.01" width="1.4" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="evalCriteria1" value="Communication: -\nLogical Order: -\nProfessionalism: -" align="left" position="-0.95 0.10 0.01" width="1.8" color="#d4ccc0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
 
-      <!-- Criteria Right Column -->
-      <a-text id="evalCriteria2" value="Precision: -\nFluency: -" align="left" position="0.10 0.13 0.01" width="1.4" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="evalCriteria2" value="Precision: -\nFluency: -" align="left" position="0.15 0.13 0.01" width="1.8" color="#d4ccc0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
 
-      <!-- Summary / Recommendations -->
-      <a-text id="evalSummary" value="Summary: awaiting results..." align="center" position="0 -0.18 0.01" width="2.6" color="#e2e8f0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" wrap-count="40" negate="false"></a-text>
+      <a-text id="evalSummary" value="Summary: awaiting results..." align="center" position="0 -0.18 0.01" width="3.2" color="#c8beb0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" wrap-count="45" negate="false"></a-text>
 
-      <!-- Mistakes -->
-      <a-text id="evalMistakes" value="Mistakes: -" align="center" position="0 -0.38 0.01" width="2.6" color="#fca5a5" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" wrap-count="40" negate="false"></a-text>
+      <a-text id="evalMistakes" value="Mistakes: -" align="center" position="0 -0.40 0.01" width="3.2" color="#d4bcb0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" wrap-count="45" negate="false"></a-text>
 
-      <!-- Recommendations -->
-      <a-text id="evalRecommendations" value="Recommendations: -" align="center" position="0 -0.55 0.01" width="2.6" color="#86efac" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" wrap-count="40" negate="false"></a-text>
+      <a-text id="evalRecommendations" value="Recommendations: -" align="center" position="0 -0.58 0.01" width="3.2" color="#b0c8b0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" wrap-count="45" negate="false"></a-text>
 
     </a-plane>
 
-    <!-- PLAYER RIG (Camera & Hands) -->
-    <a-entity id="rig" position="0 0 1.5" position-clamp wasd-controls thumbstick-locomotion>
-      <!-- Camera with a gaze cursor for desktop fallback -->
+    <a-plane id="clipboardPanel"
+             position="-10.70 1.8 -10.47"
+             rotation="0 -15 0"
+             width="0.85" height="0.95"
+             material="shader: flat; color: #1a1814; opacity: 0.95; transparent: true"
+             class="clickable">
+
+      <a-text id="clipTitle" value="CLIPBOARD" align="center" position="0 0.38 0.01" width="1.6" color="#c8b88a" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+
+      <a-text id="clipTaskGreet" value="[ ] 1. Greet Guest" align="left" position="-0.34 0.26 0.01" width="1.3" color="#e8e0d0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskName" value="[ ] 2. Ask Name" align="left" position="-0.34 0.19 0.01" width="1.3" color="#e8e0d0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskCount" value="[ ] 3. Ask Guest Count" align="left" position="-0.34 0.12 0.01" width="1.3" color="#e8e0d0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskRoom" value="[ ] 4. Ask Room Type" align="left" position="-0.34 0.05 0.01" width="1.3" color="#e8e0d0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskNights" value="[ ] 5. Ask Nights Count" align="left" position="-0.34 -0.02 0.01" width="1.3" color="#e8e0d0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskConfirm" value="[ ] 6. Confirm Booking" align="left" position="-0.34 -0.09 0.01" width="1.3" color="#e8e0d0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+
+      <a-plane position="0 -0.14 0.004" width="0.72" height="0.002" material="color: #554a3a; shader: flat"></a-plane>
+
+      <a-text id="clipGuestVal" value="Guest: TBD" align="left" position="-0.34 -0.18 0.01" width="1.4" color="#d4ccc0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipRoomVal" value="Type: TBD" align="left" position="-0.34 -0.24 0.01" width="1.4" color="#d4ccc0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipNightsVal" value="Nights: TBD" align="left" position="-0.34 -0.30 0.01" width="1.4" color="#d4ccc0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipAssignedVal" value="Room: TBD" align="left" position="-0.34 -0.36 0.01" width="1.4" color="#e8e0d0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+
+    </a-plane>
+
+    <a-entity id="rig" position="-11.04 0.70 -9.22" rotation="0 -90 0" thumbstick-locomotion>
       <a-entity id="camera" camera look-controls position="0 1.6 0">
         <a-cursor id="desktopCursor"
                   raycaster="objects: .clickable; far: 6"
-                  material="color: #818cf8; shader: flat"
+                  material="color: #c8b88a; shader: flat"
                   position="0 0 -1"
                   geometry="primitive: ring; radiusInner: 0.008; radiusOuter: 0.015">
         </a-cursor>
       </a-entity>
       
-      <!-- VR Laser Controllers -->
       <a-entity id="leftController"
                 laser-controls="hand: left"
                 raycaster="objects: .clickable; far: 12"
-                line="color: #06b6d4; opacity: 0.9; width: 4">
+                line="color: #c8b88a; opacity: 0.6; width: 2">
       </a-entity>
       <a-entity id="rightController"
                 laser-controls="hand: right"
                 raycaster="objects: .clickable; far: 12"
-                line="color: #ec4899; opacity: 0.9; width: 4">
+                line="color: #c8b88a; opacity: 0.6; width: 2">
       </a-entity>
     </a-entity>
 
@@ -561,20 +419,50 @@
     AFRAME.registerComponent('position-clamp', {
       tick: function () {
         const p = this.el.getAttribute('position');
-        p.x = Math.max(-4.0, Math.min(4.0, p.x));
-        p.z = Math.max(0.4, Math.min(3.5, p.z));
+        p.x = Math.max(-8.0, Math.min(4.0, p.x));
+        p.z = Math.max(-14.0, Math.min(-6.0, p.z));
         this.el.setAttribute('position', p);
       }
     });
 
-    // VR thumbstick locomotion for Pico 4 / standalone headsets
+    AFRAME.registerComponent('npc-controller', {
+      init: function () {
+        this.mixer = null;
+        this.actions = [];
+        this.el.addEventListener('model-loaded', () => {
+          const model = this.el.getObject3D('mesh');
+          if (!model) return;
+          model.scale.set(1.5, 1.5, 1.5);
+          if (model.animations && model.animations.length > 0) {
+            this.mixer = new THREE.AnimationMixer(model);
+            this.actions = model.animations.map(clip => {
+              const action = this.mixer.clipAction(clip);
+              action.loop = THREE.LoopRepeat;
+              action.play();
+              return action;
+            });
+          }
+        });
+      },
+      tick: function (t, dt) {
+        if (this.mixer) this.mixer.update(dt / 1000);
+      },
+      stopAnimations: function () {
+        this.actions.forEach(a => a.stop());
+        this.actions = [];
+        this.mixer = null;
+      }
+    });
+
     AFRAME.registerComponent('thumbstick-locomotion', {
       init: function () {
         this.moveX = 0;
         this.moveZ = 0;
         this.rotateY = 0;
         this.deadZone = 0.15;
-        this.speed = 0.04;
+        this.speed = 0.05;
+        this.keys = { w: false, a: false, s: false, d: false };
+
         const leftEl = document.getElementById('leftController');
         if (leftEl) {
           leftEl.addEventListener('axismove', (e) => {
@@ -594,6 +482,23 @@
             }
           });
         }
+
+        window.addEventListener('keydown', (e) => {
+          const k = e.key.toLowerCase();
+          if (k in this.keys) { this.keys[k] = true; e.preventDefault(); }
+        });
+        window.addEventListener('keyup', (e) => {
+          const k = e.key.toLowerCase();
+          if (k in this.keys) { this.keys[k] = false; e.preventDefault(); }
+        });
+
+        window.addEventListener('keydown', (e) => {
+          if (e.key.toLowerCase() === 'p') {
+            const pos = this.el.getAttribute('position');
+            const rot = this.el.getAttribute('rotation');
+            console.log('RIG:', pos.x.toFixed(2), pos.y.toFixed(2), pos.z.toFixed(2), 'ROT:', rot.y.toFixed(1));
+          }
+        });
       },
       tick: function () {
         if (this.rotateY !== 0) {
@@ -601,7 +506,17 @@
           r.y -= this.rotateY * 1.5;
           this.el.setAttribute('rotation', r);
         }
-        if (this.moveX !== 0 || this.moveZ !== 0) {
+
+        let kx = 0, kz = 0;
+        if (this.keys.w) kz += 1;
+        if (this.keys.s) kz -= 1;
+        if (this.keys.a) kx -= 1;
+        if (this.keys.d) kx += 1;
+
+        const mx = this.moveX + kx;
+        const mz = this.moveZ + kz;
+
+        if (mx !== 0 || mz !== 0) {
           const cam = document.getElementById('camera');
           if (cam) {
             const rigRot = this.el.getAttribute('rotation') || { x: 0, y: 0, z: 0 };
@@ -609,8 +524,8 @@
             const yaw = THREE.MathUtils.degToRad((rigRot.y || 0) + (camRot.y || 0));
             const s = Math.sin(yaw), c = Math.cos(yaw);
             const p = this.el.getAttribute('position');
-            p.x += (this.moveX * c - this.moveZ * s) * this.speed;
-            p.z += (this.moveX * s + this.moveZ * c) * this.speed;
+            p.x += (mx * c - mz * s) * this.speed;
+            p.z += (-mx * s - mz * c) * this.speed;
             this.el.setAttribute('position', p);
           }
         }
@@ -631,234 +546,6 @@
     // GEMINI CONFIGURATION
     // ==========================================
     const ENDPOINT = `/api/chat`;
-
-// ==========================================
-// PROCEDURAL TEXTURE SYSTEM (Canvas-based)
-// ==========================================
-function createProceduralTexture(type, params = {}) {
-  const s = params.size || 512;
-  const c = document.createElement('canvas');
-  c.width = s; c.height = s;
-  const ctx = c.getContext('2d');
-  const w = s, h = s;
-
-  ctx.fillStyle = params.bg || '#ffffff';
-  ctx.fillRect(0, 0, w, h);
-
-  if (type === 'marble') {
-    ctx.globalAlpha = 0.15;
-    for (let i = 0; i < 30; i++) {
-      ctx.strokeStyle = `hsl(0,0%,${45 + Math.random() * 30}%)`;
-      ctx.beginPath();
-      const x = Math.random() * w, y = Math.random() * h;
-      ctx.moveTo(x, y);
-      for (let j = 0; j < 8; j++) {
-        const cx = x + (j * w/8) + Math.sin(j * 0.7 + i) * 20;
-        const cy = y + Math.sin(j * 1.2 + i * 2) * 30 + j * 8;
-        ctx.lineTo(cx + Math.random() * 15, cy + Math.random() * 15);
-      }
-      ctx.stroke();
-    }
-    ctx.globalAlpha = 1;
-    return c;
-  }
-
-  if (type === 'wood') {
-    const base = params.base || '#8B6914';
-    const dark = params.dark || '#5C4A1E';
-    for (let y = 0; y < h; y++) {
-      const wave = Math.sin(y * 0.05) * 8 + Math.sin(y * 0.12) * 3;
-      const grain = (y % 12 < 2) ? 0.15 : 0;
-      const bright = 1 - (y / h) * 0.3 + Math.sin(y * 0.3) * 0.05;
-      const r = (parseInt(base.slice(1,3),16) * bright) | 0;
-      const g = (parseInt(base.slice(3,5),16) * bright) | 0;
-      const b = (parseInt(base.slice(5,7),16) * (bright - grain)) | 0;
-      ctx.fillStyle = `rgb(${r},${g},${b})`;
-      ctx.fillRect(0, y + wave, w, 1);
-    }
-    return c;
-  }
-
-  if (type === 'fabric') {
-    const base = params.base || '#4a4a5a';
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        const weave = (Math.floor(x / 4) + Math.floor(y / 4)) % 2 === 0 ? 0 : 0.08;
-        const noise = (Math.random() - 0.5) * 0.04;
-        const val = 1 - weave + noise;
-        const r = parseInt(base.slice(1,3),16) * val;
-        const g = parseInt(base.slice(3,5),16) * val;
-        const b = parseInt(base.slice(5,7),16) * val;
-        ctx.fillStyle = `rgb(${r|0},${g|0},${b|0})`;
-        ctx.fillRect(x, y, 1, 1);
-      }
-    }
-    return c;
-  }
-
-  if (type === 'floorTile') {
-    const ts = params.tileSize || 64;
-    const gap = params.gap || 3;
-    const light = params.light || '#e8e0d0';
-    const dark = params.dark || '#c8c0b0';
-    for (let y = 0; y < h; y += ts) {
-      for (let x = 0; x < w; x += ts) {
-        const off = ((y / ts) % 2 === 0) ? 0 : ts / 2;
-        const v = (Math.sin(x * 0.1) * 0.5 + 0.5) * 20 + 60;
-        ctx.fillStyle = `hsl(40,${8}%,${v}%)`;
-        ctx.fillRect(x + off + gap, y + gap, ts - gap * 2, ts - gap * 2);
-        ctx.fillStyle = `hsl(40,5%,${v - 10}%)`;
-        ctx.fillRect(x + off, y, ts, gap);
-        ctx.fillRect(x + off, y + ts - gap, ts, gap);
-        ctx.fillRect(x + off, y, gap, ts);
-        ctx.fillRect(x + off + ts - gap, y, gap, ts);
-      }
-    }
-    return c;
-  }
-
-  if (type === 'carpet') {
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        const speckle = Math.random() < 0.15 ? 15 : 0;
-        const v = 60 + speckle + Math.sin(x * 0.02) * 3 + Math.sin(y * 0.02) * 3;
-        ctx.fillStyle = `hsl(220,15%,${v}%)`;
-        ctx.fillRect(x, y, 1, 1);
-      }
-    }
-    return c;
-  }
-
-  if (type === 'wallPaint') {
-    const base = params.base || '#e8e4dc';
-    const r0 = parseInt(base.slice(1,3),16);
-    const g0 = parseInt(base.slice(3,5),16);
-    const b0 = parseInt(base.slice(5,7),16);
-    const imgData = ctx.createImageData(w, h);
-    for (let i = 0; i < imgData.data.length; i += 4) {
-      const noise = (Math.random() - 0.5) * 8;
-      imgData.data[i] = Math.max(0, Math.min(255, r0 + noise));
-      imgData.data[i+1] = Math.max(0, Math.min(255, g0 + noise));
-      imgData.data[i+2] = Math.max(0, Math.min(255, b0 + noise));
-      imgData.data[i+3] = 255;
-    }
-    ctx.putImageData(imgData, 0, 0);
-    return c;
-  }
-
-  if (type === 'ceilingTile') {
-    const ts = params.tileSize || 64;
-    const gap = params.gap || 2;
-    for (let y = 0; y < h; y += ts) {
-      for (let x = 0; x < w; x += ts) {
-        const v = 88 + Math.random() * 4;
-        ctx.fillStyle = `hsl(40,5%,${v}%)`;
-        ctx.fillRect(x + gap, y + gap, ts - gap * 2, ts - gap * 2);
-        ctx.fillStyle = 'rgba(0,0,0,0.08)';
-        ctx.fillRect(x, y, ts, gap);
-        ctx.fillRect(x, y, gap, ts);
-      }
-    }
-    return c;
-  }
-
-  if (type === 'abstractArt') {
-    const colors = params.colors || ['#c0392b','#2980b9','#f39c12','#27ae60','#8e44ad','#e67e22'];
-    for (let i = 0; i < 20; i++) {
-      ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
-      const x = Math.random() * w, y = Math.random() * h;
-      const rw = 30 + Math.random() * 80, rh = 30 + Math.random() * 80;
-      ctx.globalAlpha = 0.7 + Math.random() * 0.3;
-      if (Math.random() > 0.5) {
-        ctx.fillRect(x, y, rw, rh);
-      } else {
-        ctx.beginPath();
-        ctx.arc(x, y, rw / 2, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-    ctx.globalAlpha = 1;
-    ctx.strokeStyle = '#2a1a0a';
-    ctx.lineWidth = 6;
-    ctx.strokeRect(2, 2, w - 4, h - 4);
-    return c;
-  }
-
-  return c;
-}
-
-function getThreeObject(entityId) {
-  const el = document.getElementById(entityId);
-  if (!el) return null;
-  if (el.object3D && el.object3D.children.length > 0) {
-    return el.object3D.children.find(c => c.isMesh) || el.object3D;
-  }
-  return el.object3D;
-}
-
-function setTexture(entityId, canvas, mapType = 'map', repeatX = 1, repeatY = 1) {
-  const el = document.getElementById(entityId);
-  if (!el) return;
-  const obj = getThreeObject(entityId);
-  if (!obj || !obj.material) {
-    el.setAttribute('material', 'src', canvas);
-    return;
-  }
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(repeatX, repeatY);
-  if (obj.material) {
-    obj.material[mapType] = tex;
-    obj.material.needsUpdate = true;
-  }
-}
-
-function buildEnvironment() {
-  const envMap = createEnvMap();
-  const cubeObj = getThreeObject('aiCube');
-  if (cubeObj && cubeObj.material) {
-    cubeObj.material.envMap = envMap;
-    cubeObj.material.envMapIntensity = 1.8;
-    cubeObj.material.needsUpdate = true;
-  }
-}
-
-function createBumpFromBase(canvas, strength = 1) {
-  const s = canvas.width;
-  const out = document.createElement('canvas');
-  out.width = s; out.height = s;
-  const ctx = out.getContext('2d');
-  ctx.drawImage(canvas, 0, 0);
-  const imgData = ctx.getImageData(0, 0, s, s);
-  for (let i = 0; i < imgData.data.length; i += 4) {
-    const gray = (imgData.data[i] + imgData.data[i+1] + imgData.data[i+2]) / 3;
-    const val = Math.max(0, Math.min(255, Math.round(gray * strength)));
-    imgData.data[i] = val;
-    imgData.data[i+1] = val;
-    imgData.data[i+2] = val;
-    imgData.data[i+3] = 255;
-  }
-  ctx.putImageData(imgData, 0, 0);
-  return out;
-}
-
-function createEnvMap() {
-  const size = 32;
-  const faces = [];
-  for (let i = 0; i < 6; i++) {
-    const c = document.createElement('canvas');
-    c.width = size; c.height = size;
-    const ctx = c.getContext('2d');
-    const grad = ctx.createLinearGradient(0, 0, size, size);
-    grad.addColorStop(0, '#f0e8d8');
-    grad.addColorStop(0.5, '#d0c0a8');
-    grad.addColorStop(1, '#a09078');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, size, size);
-    faces.push(c);
-  }
-  return new THREE.CubeTexture(faces);
-}
 
 // ==========================================
      // SPEECH RECOGNITION & SYNTHESIS SETUP
@@ -1070,8 +757,6 @@ let ttsAudioCtx = null;
     function initApp() {
       console.log("App ready.");
       
-      buildEnvironment();
-      
       // Select random guest profile for role reversal
       selectRandomGuestProfile();
       update3DClipboard();
@@ -1133,7 +818,7 @@ talkBtn.addEventListener('mousedown', async () => { await startRecording(); });
       }
 
       // C. Click on AI Cube Hook (Toggles voice)
-      const cubeEl = document.getElementById('aiCube');
+      const cubeEl = document.getElementById('aiNPC');
       if (cubeEl) {
         cubeEl.addEventListener('click', async () => {
            if (isRecording) {
@@ -1221,13 +906,11 @@ async function startRecording() {
   }
   recognizedText = "";
   stopSpeakingAnimation();
-  const cubeEl = document.getElementById('aiCube');
+  const cubeEl = document.getElementById('aiNPC');
   if (cubeEl) {
     cubeEl.removeAttribute('animation__move_room');
-    cubeEl.setAttribute('position', '0 1.6 -1.5');
-    if (!cubeEl.hasAttribute('animation__bob')) {
-      cubeEl.setAttribute('animation__bob', 'property: position; to: 0 1.75 -1.5; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine');
-    }
+    cubeEl.setAttribute('position', '-8.52 0.05 -8.93');
+    cubeEl.setAttribute('rotation', '0 270 0');
   }
   isRecording = true;
   updateUIState("Listening...");
@@ -1328,10 +1011,10 @@ async function stopRecording() {
       if (status3D) {
         status3D.setAttribute('value', stateText.toUpperCase());
         
-        if (stateText === "Listening...") status3D.setAttribute('color', '#22d3ee');
-        else if (stateText === "Thinking...") status3D.setAttribute('color', '#fbbf24');
-        else if (stateText === "Speaking...") status3D.setAttribute('color', '#f472b6');
-        else status3D.setAttribute('color', '#38bdf8');
+        if (stateText === "Listening...") status3D.setAttribute('color', '#d4ccc0');
+        else if (stateText === "Thinking...") status3D.setAttribute('color', '#d4ccc0');
+        else if (stateText === "Speaking...") status3D.setAttribute('color', '#d4ccc0');
+        else status3D.setAttribute('color', '#e8e0d0');
       }
 
       // 2D Desktop badge
@@ -1346,36 +1029,27 @@ async function stopRecording() {
     }
 
     function setCubeState(state) {
-      const cube = document.getElementById('aiCube');
       const light = document.getElementById('cubeLight');
-      if (!cube || !light) return;
+      if (!light) return;
 
       switch (state) {
         case "idle":
-          cube.setAttribute('material', 'color: #6366f1; emissive: #312e81; emissiveIntensity: 1.2; roughness: 0.05; metalness: 0.95');
-          light.setAttribute('light', 'color: #818cf8; intensity: 1.5; distance: 6');
-          cube.setAttribute('animation__rotate', 'property: rotation; to: 360 405 45; dur: 9000; loop: true; easing: linear');
+          light.setAttribute('light', 'color: #c8b88a; intensity: 1.2; distance: 6');
           stopSpeakingAnimation();
           break;
 
         case "listening":
-          cube.setAttribute('material', 'color: #22d3ee; emissive: #0891b2; emissiveIntensity: 2.0; roughness: 0.1; metalness: 0.8');
-          light.setAttribute('light', 'color: #22d3ee; intensity: 2.2; distance: 7');
-          cube.setAttribute('animation__rotate', 'property: rotation; to: 360 405 45; dur: 4500; loop: true; easing: linear');
+          light.setAttribute('light', 'color: #d4ccc0; intensity: 1.5; distance: 6');
           stopSpeakingAnimation();
           break;
 
         case "thinking":
-          cube.setAttribute('material', 'color: #fbbf24; emissive: #b45309; emissiveIntensity: 2.5; roughness: 0.15; metalness: 0.8');
-          light.setAttribute('light', 'color: #fbbf24; intensity: 2.5; distance: 7');
-          cube.setAttribute('animation__rotate', 'property: rotation; to: 720 405 45; dur: 2200; loop: true; easing: linear');
+          light.setAttribute('light', 'color: #d4ccc0; intensity: 1.5; distance: 6');
           stopSpeakingAnimation();
           break;
 
         case "speaking":
-          cube.setAttribute('material', 'color: #ec4899; emissive: #db2777; emissiveIntensity: 2.2; roughness: 0.05; metalness: 0.9');
-          light.setAttribute('light', 'color: #f472b6; intensity: 2.0; distance: 8');
-          cube.setAttribute('animation__rotate', 'property: rotation; to: 360 405 45; dur: 6000; loop: true; easing: linear');
+          light.setAttribute('light', 'color: #d4ccc0; intensity: 1.5; distance: 6');
           startSpeakingAnimation();
           break;
       }
@@ -1383,17 +1057,16 @@ async function stopRecording() {
 
     function startSpeakingAnimation() {
       stopSpeakingAnimation();
-      const cube = document.getElementById('aiCube');
-      if (!cube) return;
-
-      let direction = 1;
-      let scale = 1.0;
+      const light = document.getElementById('cubeLight');
+      if (!light) return;
+      let dir = 1;
+      let intensity = 1.2;
       speechAnimationInterval = setInterval(() => {
-        scale += (0.04 + Math.random() * 0.03) * direction;
-        if (scale >= 1.25) direction = -1;
-        else if (scale <= 0.88) direction = 1;
-        cube.setAttribute('scale', `${scale} ${scale} ${scale}`);
-      }, 65);
+        intensity += 0.08 * dir;
+        if (intensity >= 2.0) dir = -1;
+        else if (intensity <= 1.0) dir = 1;
+        light.setAttribute('light', `color: #d4ccc0; intensity: ${intensity}; distance: 8`);
+      }, 80);
     }
 
     function stopSpeakingAnimation() {
@@ -1401,9 +1074,9 @@ async function stopRecording() {
         clearInterval(speechAnimationInterval);
         speechAnimationInterval = null;
       }
-      const cube = document.getElementById('aiCube');
-      if (cube) {
-        cube.setAttribute('scale', '1 1 1');
+      const light = document.getElementById('cubeLight');
+      if (light) {
+        light.setAttribute('light', 'color: #c8b88a; intensity: 1.2; distance: 8');
       }
     }
 
@@ -1606,7 +1279,7 @@ function initAmbientAudio() {
       };
       
       const getTaskColor = (isCompleted) => {
-        return isCompleted ? "#4ade80" : "#ef4444";
+        return isCompleted ? "#8aaa88" : "#e8e0d0";
       };
       
       const clipTaskGreet = document.getElementById('clipTaskGreet');
@@ -1704,7 +1377,7 @@ function initAmbientAudio() {
       if (nights2D) nights2D.textContent = obtainedValues.nights;
       if (bookingStatus2D) {
         bookingStatus2D.textContent = obtainedValues.roomNumberAssigned;
-        bookingStatus2D.style.color = (obtainedValues.roomNumberAssigned !== "TBD") ? "#4ade80" : "#fbbf24";
+        bookingStatus2D.style.color = (obtainedValues.roomNumberAssigned !== "TBD") ? "#8aaa88" : "#c8b88a";
       }
       
       if (hudTip) {
@@ -1924,6 +1597,15 @@ Be honest but constructive. Use numbers only for scores (1-10).`;
       updateUIState("HOLD M TO SPEAK");
       setCubeState("idle");
 
+      const npc = document.getElementById('aiNPC');
+      if (npc) {
+        npc.removeAttribute('animation__move_room');
+        npc.setAttribute('position', '-8.52 0.05 -8.93');
+        npc.setAttribute('rotation', '0 270 0');
+        npc.removeAttribute('npc-controller');
+        npc.setAttribute('npc-controller', '');
+      }
+
       const hudTip = document.getElementById('hudTip');
       if (hudTip) hudTip.textContent = "A new guest has arrived! Say 'Hello!' to start.";
     }
@@ -2078,10 +1760,11 @@ const fallbackText = "Sorry, our booking system is currently down. Let's try aga
     }
 
     function triggerGoToRoomAnimation() {
-      const cubeEl = document.getElementById('aiCube');
+      const cubeEl = document.getElementById('aiNPC');
       if (cubeEl) {
-        cubeEl.removeAttribute('animation__bob');
-        cubeEl.setAttribute('animation__move_room', 'property: position; to: -15 2 -20; dur: 8000; easing: easeInOutQuad');
+        cubeEl.components['npc-controller'].stopAnimations();
+        cubeEl.removeAttribute('npc-controller');
+        cubeEl.setAttribute('animation__move_room', 'property: position; to: -15 0 -20; dur: 8000; easing: easeInOutQuad');
         cubeEl.addEventListener('animationcomplete', function onMoveDone() {
           cubeEl.removeEventListener('animationcomplete', onMoveDone);
         });
