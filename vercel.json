@@ -10,9 +10,26 @@
           "value": "microphone=(self)"
         }
       ]
+    },
+    {
+      "source": "/Models/(.*)\\.glb",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "model/gltf-binary"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     }
   ],
   "routes": [
+    {
+      "src": "/Models/(.*)\\.glb",
+      "dest": "/Models/$1.glb"
+    },
     {
       "src": "/api/chat",
       "dest": "/api/chat.js"
@@ -27,4 +44,3 @@
     }
   ]
 }
-

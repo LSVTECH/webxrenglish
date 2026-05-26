@@ -276,8 +276,9 @@
   <a-scene shadow="type: pcfsoft" renderer="antialias: true; colorManagement: true; physicallyCorrectLights: true">
 
     <a-assets>
-      <a-asset-item id="hotelModel" src="Models/HotelModel.glb"></a-asset-item>
-      <a-asset-item id="npcModel" src="Models/NPC.glb"></a-asset-item>
+      <a-asset-item id="hotelModel" src="Models/HotelModel.glb" response-type="arraybuffer"></a-asset-item>
+      <a-asset-item id="npcModel" src="Models/NPC.glb" response-type="arraybuffer"></a-asset-item>
+
     </a-assets>
 
     <a-gltf-model src="#hotelModel" position="-3.5 0 5" rotation="0 0 0" scale="1.25 1.25 1.25"></a-gltf-model>
@@ -756,6 +757,9 @@ let ttsAudioCtx = null;
 
     function initApp() {
       console.log("App ready.");
+
+      document.querySelector('[src="#hotelModel"]').addEventListener('model-error', (e) => console.error('Hotel model error:', e.detail));
+      document.querySelector('[src="#npcModel"]').addEventListener('model-error', (e) => console.error('NPC model error:', e.detail));
       
       // Select random guest profile for role reversal
       selectRandomGuestProfile();
