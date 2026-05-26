@@ -2090,13 +2090,13 @@ const fallbackText = "Sorry, our booking system is currently down. Let's try aga
 
 function getGuestVoiceConfig() {
   if (!currentGuestProfile) {
-    return { voiceName: 'en-US-Neural2-D', ssmlGender: 'MALE' };
+    return { voiceName: 'en-US-Standard-D', ssmlGender: 'MALE' };
   }
   const name = currentGuestProfile.name;
-  if (name === 'Sophia Vance') return { voiceName: 'en-US-Neural2-F', ssmlGender: 'FEMALE' };
-  if (name === 'David Kim') return { voiceName: 'en-US-Neural2-J', ssmlGender: 'MALE' };
-  if (name === 'Elena Rostova') return { voiceName: 'en-US-Neural2-H', ssmlGender: 'FEMALE' };
-  return { voiceName: 'en-US-Neural2-D', ssmlGender: 'MALE' };
+  if (name === 'Sophia Vance') return { voiceName: 'en-US-Standard-F', ssmlGender: 'FEMALE' };
+  if (name === 'David Kim') return { voiceName: 'en-US-Standard-J', ssmlGender: 'MALE' };
+  if (name === 'Elena Rostova') return { voiceName: 'en-US-Standard-H', ssmlGender: 'FEMALE' };
+  return { voiceName: 'en-US-Standard-D', ssmlGender: 'MALE' };
 }
 
 function speakViaAudio(text) {
