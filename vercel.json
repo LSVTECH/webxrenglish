@@ -12,7 +12,7 @@
       ]
     },
     {
-      "source": "/Models/(.*)\\.glb",
+      "source": "/(.*)\\.(glb|gltf)",
       "headers": [
         {
           "key": "Content-Type",
@@ -27,8 +27,8 @@
   ],
   "routes": [
     {
-      "src": "/Models/(.*)\\.glb",
-      "dest": "/Models/$1.glb"
+      "src": "/(.*)\\.(glb|gltf)",
+      "dest": "/$1.$2"
     },
     {
       "src": "/api/chat",
