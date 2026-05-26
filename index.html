@@ -1019,51 +1019,7 @@ function initializeSpeechRecognition() {
     let recognitionStarted = false;
 
 
-// ==========================================
-// TTS VOICE LOADING (cross-browser)
-// ==========================================
-let ttsVoiceList = [];
-let ttsVoicesLoaded = false;
 let ttsAudioCtx = null;
-
-function loadTtsVoices() {
-  if (!window.speechSynthesis) {
-    ttsVoicesLoaded = true;
-    console.warn('SpeechSynthesis not supported');
-    return;
-  }
-
-  const poll = () => {
-    ttsVoiceList = window.speechSynthesis.getVoices();
-    if (ttsVoiceList.length > 0) {
-      ttsVoicesLoaded = true;
-      console.log(`TTS voices loaded: ${ttsVoiceList.length} voices`);
-      return true;
-    }
-    return false;
-  };
-
-  if (!poll()) {
-    window.speechSynthesis.onvoiceschanged = () => { poll(); };
-    let attempts = 0;
-    const interval = setInterval(() => {
-      attempts++;
-      if (poll() || attempts > 15) {
-        clearInterval(interval);
-        ttsVoicesLoaded = true;
-      }
-    }, 200);
-  }
-}
-
-function refreshTtsVoices() {
-  if (window.speechSynthesis) {
-    ttsVoiceList = window.speechSynthesis.getVoices();
-    if (ttsVoiceList.length > 0) ttsVoicesLoaded = true;
-  }
-}
-
-loadTtsVoices();
     
 // Hardcode practice language to English (US) as we are practicing English
      const currentLang = 'en-US';
@@ -1258,21 +1214,12 @@ async function startRecording() {
   if (ttsAudioCtx.state === 'suspended') {
     ttsAudioCtx.resume();
   }
-  if (browser === 'safari' && window.speechSynthesis) {
-    window.speechSynthesis.getVoices();
-    const warmup = new SpeechSynthesisUtterance(' ');
-    warmup.volume = 0;
-    window.speechSynthesis.speak(warmup);
-  }
   const talkBtn = document.getElementById('talkButton');
   if (talkBtn) {
     talkBtn.classList.add('listening');
     talkBtn.textContent = usePicoRecorder ? 'Hold to Speak (Recording...)' : 'Hold to Speak (Listening...)';
   }
   recognizedText = "";
-  if (window.speechSynthesis) {
-    window.speechSynthesis.cancel();
-  }
   stopSpeakingAnimation();
   const cubeEl = document.getElementById('aiCube');
   if (cubeEl) {
@@ -2185,23 +2132,25 @@ function speakViaAudio(text) {
         return;
       }
 
-      const audio = new Audio();
-      audio.src = 'data:audio/mp3;base64,' + data.audioContent;
-
-      if (ttsAudioCtx && ttsAudioCtx.state !== 'closed') {
-        try {
-          const source = ttsAudioCtx.createMediaElementSource(audio);
-          source.connect(ttsAudioCtx.destination);
-        } catch (e) {}
+      if (!ttsAudioCtx || ttsAudioCtx.state === 'closed') {
+        ttsAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (ttsAudioCtx.state === 'suspended') {
+        await ttsAudioCtx.resume();
       }
 
-      audio.onended = done;
-      audio.onerror = () => {
-        showTextResponse(text);
-        done();
-      };
+      const binary = atob(data.audioContent);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
 
-      await audio.play();
+      const audioBuffer = await ttsAudioCtx.decodeAudioData(bytes.buffer);
+      const source = ttsAudioCtx.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(ttsAudioCtx.destination);
+      source.onended = done;
+      source.start();
     } catch (e) {
       console.warn('Audio TTS play failed:', e);
       showTextResponse(text);
@@ -2210,119 +2159,8 @@ function speakViaAudio(text) {
   });
 }
 
-// ==========================================
-// MAIN SPEAK FUNCTION (cross-browser)
-// ==========================================
 async function speakText(textToSpeak) {
-  const browser = detectBrowser();
-  refreshTtsVoices();
-
-  // Pico 4 / Android WebView or no voices — skip straight to audio fallback
-  if (browser === 'pico' || ttsVoiceList.length === 0 || !window.speechSynthesis) {
-    await speakViaAudio(textToSpeak);
-    return;
-  }
-
-  // Safari: use primed SpeechSynthesis directly (no fallback timer, voice = null)
-  if (browser === 'safari') {
-    return new Promise((resolve) => {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(textToSpeak);
-      utterance.lang = currentLang;
-      utterance.voice = null;
-      utterance.onend = () => {
-        updateUIState("HOLD M TO SPEAK");
-        setCubeState("idle");
-        resolve();
-      };
-      utterance.onerror = (err) => {
-        console.error('Safari SpeechSynthesis error:', err);
-        updateUIState("HOLD M TO SPEAK");
-        setCubeState("idle");
-        resolve();
-      };
-      window.speechSynthesis.speak(utterance);
-    });
-  }
-
-  return new Promise((resolve) => {
-    let synthesisStarted = false;
-    let audioFallbackActive = false;
-
-    const fallbackTimer = setTimeout(() => {
-      if (!synthesisStarted && !audioFallbackActive) {
-        audioFallbackActive = true;
-        console.warn('SpeechSynthesis timeout, falling back to audio TTS');
-        if (window.speechSynthesis) window.speechSynthesis.cancel();
-        speakViaAudio(textToSpeak).then(resolve);
-      }
-    }, 2000);
-
-    const utterance = new SpeechSynthesisUtterance(textToSpeak);
-    utterance.lang = currentLang;
-    utterance.volume = 1;
-    utterance.rate = 1;
-    utterance.pitch = 1;
-
-    // Per-browser voice selection
-    if (browser === 'chrome' || browser === 'edge' || browser === 'opera') {
-      // Prefer female voices
-      const preferredVoice = ttsVoiceList.find(v =>
-        v.lang.startsWith('en') && (
-          v.name.includes('Google US English') ||
-          v.name.includes('Google UK English Female') ||
-          v.name.includes('Zira') ||
-          v.name.includes('Natural')
-        )
-      ) || ttsVoiceList.find(v =>
-        v.lang.startsWith('en') && (
-          v.name.includes('Google') ||
-          v.name.includes('Microsoft') ||
-          v.name.includes('Natural')
-        )
-      ) || ttsVoiceList.find(v => v.lang.startsWith('en')) || null;
-      if (preferredVoice) utterance.voice = preferredVoice;
-    } else if (browser === 'firefox') {
-      const enVoice = ttsVoiceList.find(v => v.lang.startsWith('en'));
-      if (enVoice) utterance.voice = enVoice;
-    }
-
-    utterance.onstart = () => {
-      synthesisStarted = true;
-      clearTimeout(fallbackTimer);
-    };
-
-    utterance.onend = () => {
-      clearTimeout(fallbackTimer);
-      updateUIState("HOLD M TO SPEAK");
-      setCubeState("idle");
-      resolve();
-    };
-
-    utterance.onerror = (err) => {
-      clearTimeout(fallbackTimer);
-      console.error('SpeechSynthesis error:', err);
-      if (err.error === 'voice-unavailable' || err.error === 'not-allowed') {
-        if (!audioFallbackActive) {
-          audioFallbackActive = true;
-          speakViaAudio(textToSpeak).then(resolve);
-          return;
-        }
-      }
-      updateUIState("HOLD M TO SPEAK");
-      setCubeState("idle");
-      resolve();
-    };
-
-    // Chrome/Edge bug: cancel() + immediate speak() drops utterance
-    if (browser === 'chrome' || browser === 'edge' || browser === 'opera') {
-      if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
-      setTimeout(() => { window.speechSynthesis.speak(utterance); }, 50);
-    } else {
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(utterance);
-    }
-  });
+  await speakViaAudio(textToSpeak);
 }
 
     // Helper alerts
