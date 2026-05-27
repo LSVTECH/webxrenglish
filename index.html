@@ -210,6 +210,47 @@
       color: #6b6358;
       line-height: 1.5;
     }
+
+    .pico-mic-banner {
+      margin-top: 12px;
+      padding: 14px;
+      border-radius: 12px;
+      background: rgba(200, 184, 138, 0.08);
+      border: 1px solid rgba(200, 184, 138, 0.18);
+      display: none;
+    }
+    .pico-mic-banner.visible {
+      display: block;
+    }
+    .pico-mic-btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      pointer-events: auto;
+      transition: all 0.2s ease;
+    }
+    .pico-mic-btn:hover {
+      background: linear-gradient(135deg, #818cf8, #6366f1);
+    }
+    .pico-mic-btn:active {
+      transform: scale(0.97);
+    }
+    .pico-mic-btn.granted {
+      background: linear-gradient(135deg, #4ade80, #22c55e);
+    }
+    .pico-mic-help {
+      margin-top: 8px;
+      font-size: 0.75rem;
+      color: #9ca3af;
+      line-height: 1.3;
+    }
   </style>
 </head>
 <body>
@@ -227,6 +268,14 @@
 
       <!-- Desktop Click/Touch talk button -->
       <button id="talkButton" class="talk-btn">Hold to Speak</button>
+
+      <!-- PICO 4 / VR: Mic enable banner, shown before entering VR -->
+      <div id="picoMicBanner" class="pico-mic-banner">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button id="picoEnableMicBtn" class="pico-mic-btn">🎤 Enable Microphone</button>
+        </div>
+        <div class="pico-mic-help">Enable microphone access <strong>before</strong> entering VR. If no prompt appears, go to browser settings and allow this site.</div>
+      </div>
 
       <!-- Text input fallback for Pico 4 / browsers without mic -->
       <div id="textInputFallback" style="display: none; margin-top: 10px;">
@@ -714,6 +763,64 @@ let ttsAudioCtx = null;
    // Initialization failed, warning already shown in function
  }
 
+function getAudioConstraints() {
+  if (detectBrowser() === 'pico') {
+    return { audio: { deviceId: 'default', echoCancellation: true, noiseSuppression: true, sampleRate: 16000 } };
+  }
+  return { audio: true };
+}
+
+async function checkMicPermissionState() {
+  if (!navigator.permissions || !navigator.permissions.query) return 'unknown';
+  try {
+    const status = await navigator.permissions.query({ name: 'microphone' });
+    return status.state;
+  } catch { return 'unknown'; }
+}
+
+function showPicoMicFailureHelp() {
+  const warningEl = document.getElementById('micWarning');
+  if (warningEl) {
+    warningEl.innerHTML = `⚠️ <strong>PICO Mic Issue:</strong><br>
+1. In the PICO browser address bar, type <strong>chrome://settings/content/microphone</strong><br>
+2. Find this site and set to <strong>Allow</strong><br>
+3. Return here and refresh the page<br>
+Or use the text input below.`;
+    warningEl.style.display = 'block';
+  }
+}
+
+function initPicoMicHandler() {
+  const banner = document.getElementById('picoMicBanner');
+  const btn = document.getElementById('picoEnableMicBtn');
+  if (!banner || !btn) return;
+  banner.classList.add('visible');
+  checkMicPermissionState().then(state => {
+    if (state === 'granted') {
+      btn.textContent = '✓ Microphone Enabled';
+      btn.classList.add('granted');
+      btn.disabled = true;
+    } else if (state === 'denied') {
+      btn.textContent = '❌ Mic Blocked';
+      showPicoMicFailureHelp();
+    }
+  });
+  btn.addEventListener('click', async () => {
+    if (window.globalMicStream) return;
+    btn.textContent = 'Requesting...';
+    btn.disabled = true;
+    const granted = await requestMicPermissionIfNeeded();
+    if (granted) {
+      btn.textContent = '✓ Microphone Enabled';
+      btn.classList.add('granted');
+      btn.disabled = true;
+    } else {
+      btn.textContent = '🎤 Try Again';
+      btn.disabled = false;
+    }
+  });
+}
+
   // Function to request microphone permission when needed (not on page load)
   async function requestMicPermissionIfNeeded() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -725,9 +832,10 @@ let ttsAudioCtx = null;
       return true;
     }
     try {
+      const constraints = getAudioConstraints();
       const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000));
       const stream = await Promise.race([
-        navigator.mediaDevices.getUserMedia({ audio: true }),
+        navigator.mediaDevices.getUserMedia(constraints),
         timeout
       ]);
       window.globalMicStream = stream;
@@ -735,6 +843,13 @@ let ttsAudioCtx = null;
       return true;
     } catch (err) {
       console.warn("Microphone access failed:", err);
+      if (detectBrowser() === 'pico') {
+        showPicoMicFailureHelp();
+      } else if (err.message === 'timeout') {
+        showMicWarning("Microphone access timed out. Check your microphone and try again.");
+      } else {
+        showMicWarning("Microphone access denied. Please allow microphone permissions in your browser settings and refresh.");
+      }
       showTextInputFallback();
       return false;
     }
@@ -836,6 +951,11 @@ talkBtn.addEventListener('mousedown', async () => { await startRecording(); });
            }
          });
       }
+
+      // Initialize PICO mic banner if on PICO device
+      if (detectBrowser() === 'pico') {
+        initPicoMicHandler();
+      }
       
       const bindControllerEvents = (controllerId) => {
         const controllerEl = document.getElementById(controllerId);
@@ -867,6 +987,9 @@ talkBtn.addEventListener('mousedown', async () => { await startRecording(); });
         const hud = document.getElementById('hud-overlay');
         if (hud) hud.style.display = 'none';
         usePicoRecorder = true;
+        if (!window.globalMicStream) {
+          requestMicPermissionIfNeeded();
+        }
       });
       sceneEl.addEventListener('exit-vr', () => {
         const cursor = document.getElementById('desktopCursor');
