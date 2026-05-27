@@ -329,13 +329,12 @@
 
     <a-gltf-model src="Models/HotelModel.glb" position="-3.5 0 5" rotation="0 0 0" scale="1.25 1.25 1.25"></a-gltf-model>
 
-    <a-light type="ambient" color="#f5ede0" intensity="0.6"></a-light>
-    <a-light type="point" color="#fef0d0" intensity="1.2" distance="10" decay="2" position="1 3.5 -9.5"></a-light>
-    <a-light type="point" color="#fef0d0" intensity="1.0" distance="12" decay="2" position="-3.5 3.5 -3"></a-light>
-    <a-light type="point" color="#fef0d0" intensity="0.8" distance="10" decay="2" position="-6 3.5 2"></a-light>
-    <a-light type="point" color="#fef0d0" intensity="0.6" distance="8" decay="2" position="2 2.5 -0.5"></a-light>
-    <a-light type="point" color="#fef0d0" intensity="0.5" distance="8" decay="2" position="-1 3 6"></a-light>
-    <a-entity id="cubeLight" light="type: point; color: #c8b88a; intensity: 1.2; distance: 8" position="-8.52 3.2 -8.93"></a-entity>
+    <a-light type="ambient" color="#f5ede0" intensity="0.5"></a-light>
+    <a-light type="directional" color="#fff8e8" intensity="0.9" position="3 6 -8"></a-light>
+    <a-light type="point" color="#fef0d0" intensity="1.5" distance="0" decay="1" position="0 3.0 -8.5"></a-light>
+    <a-light type="point" color="#fef0d0" intensity="1.3" distance="0" decay="1" position="-3.5 2.8 -3"></a-light>
+    <a-light type="point" color="#fef0d0" intensity="1.0" distance="0" decay="1" position="-6 2.5 2"></a-light>
+    <a-entity id="cubeLight" light="type: point; color: #818cf8; intensity: 1.5; distance: 0; decay: 1" position="-8.52 2.2 -8.93"></a-entity>
 
     <a-gltf-model id="aiNPC"
                   class="clickable"
@@ -662,7 +661,7 @@ const SpeechRecognition = window.SpeechRecognition
                         || window.webkitSpeechRecognition 
                         || window.mozSpeechRecognition 
                         || window.msSpeechRecognition;
-let usePicoRecorder = (detectBrowser() === 'pico' || !SpeechRecognition);
+let usePicoRecorder = !SpeechRecognition;
 let recognition = null;
 
 // Initialize SpeechRecognition if supported
@@ -986,7 +985,6 @@ talkBtn.addEventListener('mousedown', async () => { await startRecording(); });
         if (cursor) cursor.setAttribute('visible', 'false');
         const hud = document.getElementById('hud-overlay');
         if (hud) hud.style.display = 'none';
-        usePicoRecorder = true;
         if (!window.globalMicStream) {
           requestMicPermissionIfNeeded();
         }
@@ -996,7 +994,7 @@ talkBtn.addEventListener('mousedown', async () => { await startRecording(); });
         if (cursor) cursor.setAttribute('visible', 'true');
         const hud = document.getElementById('hud-overlay');
         if (hud) hud.style.display = 'block';
-        usePicoRecorder = (detectBrowser() === 'pico' || !SpeechRecognition);
+        usePicoRecorder = !SpeechRecognition;
       });
 
       window.addEventListener('click', async (e) => {
