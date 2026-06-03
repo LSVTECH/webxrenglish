@@ -24,23 +24,5 @@
         }
       ]
     }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)\\.(glb|gltf)",
-      "dest": "/$1.$2"
-    },
-    {
-      "src": "/api/chat",
-      "dest": "/api/chat.js"
-    },
-    {
-      "src": "/api/transcribe",
-      "dest": "/api/transcribe.js"
-    },
-    {
-      "src": "/api/synthesize",
-      "dest": "/api/synthesize.js"
-    }
   ]
 }
