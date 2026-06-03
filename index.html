@@ -661,7 +661,7 @@ const SpeechRecognition = window.SpeechRecognition
                         || window.webkitSpeechRecognition 
                         || window.mozSpeechRecognition 
                         || window.msSpeechRecognition;
-let usePicoRecorder = !SpeechRecognition;
+let usePicoRecorder = (!SpeechRecognition || detectBrowser() === 'pico');
 let recognition = null;
 
 // Initialize SpeechRecognition if supported
@@ -959,11 +959,16 @@ talkBtn.addEventListener('mousedown', async () => { await startRecording(); });
       const bindControllerEvents = (controllerId) => {
         const controllerEl = document.getElementById(controllerId);
         if (!controllerEl) return;
+        let triggerBusy = false;
         const onStart = () => {
+          if (triggerBusy) return;
+          triggerBusy = true;
           console.log(`VR Controller start: ${controllerId}`);
           startRecording();
         };
         const onEnd = () => {
+          if (!triggerBusy) return;
+          triggerBusy = false;
           console.log(`VR Controller stop: ${controllerId}`);
           stopRecording();
         };
@@ -994,7 +999,7 @@ talkBtn.addEventListener('mousedown', async () => { await startRecording(); });
         if (cursor) cursor.setAttribute('visible', 'true');
         const hud = document.getElementById('hud-overlay');
         if (hud) hud.style.display = 'block';
-        usePicoRecorder = !SpeechRecognition;
+        usePicoRecorder = (!SpeechRecognition || detectBrowser() === 'pico');
       });
 
       window.addEventListener('click', async (e) => {
