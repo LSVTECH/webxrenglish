@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — LinguaSpace VR</title>
+  <meta name="description" content="LinguaSpace VR dashboard — select your practice experience or review student progress.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold: #c8a96e;
+      --gold-light: #e2c98a;
+      --gold-dim: rgba(200,169,110,0.12);
+      --bg: #080604;
+      --surface: rgba(255,255,255,0.04);
+      --surface-2: rgba(255,255,255,0.07);
+      --border: rgba(255,255,255,0.08);
+      --border-gold: rgba(200,169,110,0.25);
+      --text: #f0ece4;
+      --text-dim: #7a7468;
+      --text-mid: #a09488;
+      --green: #5a9e78;
+      --radius: 16px;
+      --sidebar: 260px;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 40% at 50% 0%, rgba(200,169,110,0.05) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 60% at 0% 60%, rgba(80,60,30,0.07) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ======== LAYOUT ======== */
+    .layout {
+      display: flex;
+      min-height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar);
+      flex-shrink: 0;
+      border-right: 1px solid var(--border);
+      padding: 32px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: rgba(6,5,3,0.6);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .sidebar-brand {
+      padding: 8px 12px 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+
+    .sidebar-brand-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--gold-light);
+    }
+
+    .sidebar-brand-sub {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-mid);
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+      text-decoration: none;
+    }
+
+    .nav-item:hover {
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .nav-item.active {
+      background: var(--gold-dim);
+      border-color: var(--border-gold);
+      color: var(--gold-light);
+    }
+
+    .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: var(--surface);
+      margin-bottom: 8px;
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), #7a5a30);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #0d0a06;
+      flex-shrink: 0;
+    }
+
+    .user-info { min-width: 0; }
+    .user-name { font-size: 0.82rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-role { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; }
+
+    .logout-btn {
+      width: 100%;
+      padding: 9px 12px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-dim);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .logout-btn:hover { background: rgba(224,112,96,0.08); border-color: rgba(224,112,96,0.2); color: #e07060; }
+
+    /* Main content */
+    .main {
+      flex: 1;
+      padding: 40px 48px;
+      overflow-y: auto;
+      max-height: 100vh;
+    }
+
+    .page-header {
+      margin-bottom: 40px;
+      animation: fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.4rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.1;
+    }
+
+    .page-subtitle {
+      margin-top: 8px;
+      font-size: 0.9rem;
+      color: var(--text-dim);
+    }
+
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    /* ======== EXPERIENCE CARDS ======== */
+    .experiences-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 48px;
+      animation: fadeUp 0.5s 0.1s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    .experience-card {
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      background: rgba(10,8,5,0.8);
+      transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+      position: relative;
+    }
+
+    .experience-card.available {
+      cursor: pointer;
+    }
+
+    .experience-card.available:hover {
+      border-color: var(--border-gold);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 40px rgba(200,169,110,0.06);
+    }
+
+    .experience-card.locked {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .card-image {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      display: block;
+      background: linear-gradient(135deg, #1a1208, #0d0a05);
+      position: relative;
+    }
+
+    .card-image-placeholder {
+      width: 100%;
+      height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      position: relative;
+    }
+
+    .hotel-bg { background: linear-gradient(135deg, #1c140a, #2a1e10, #1a1208); }
+    .airport-bg { background: linear-gradient(135deg, #08121a, #0e1c2a, #081218); }
+    .restaurant-bg { background: linear-gradient(135deg, #1a0a0a, #2a1010, #1a0808); }
+    .job-bg { background: linear-gradient(135deg, #0a0a1a, #10102a, #080818); }
+
+    .card-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .badge-beginner { background: rgba(90,158,120,0.2); border: 1px solid rgba(90,158,120,0.4); color: #6ec68a; }
+    .badge-intermediate { background: rgba(200,169,110,0.15); border: 1px solid rgba(200,169,110,0.3); color: var(--gold-light); }
+    .badge-advanced { background: rgba(180,100,100,0.15); border: 1px solid rgba(180,100,100,0.3); color: #e08080; }
+
+    .badge-coming { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-dim); }
+
+    .card-body { padding: 20px; }
+
+    .card-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .card-desc {
+      font-size: 0.82rem;
+      color: var(--text-mid);
+      line-height: 1.55;
+      margin-bottom: 16px;
+    }
+
+    .card-meta {
+      display: flex;
+      gap: 12px;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    .card-meta span { display: flex; align-items: center; gap: 4px; }
+
+    .card-enter-btn {
+      display: block;
+      width: 100%;
+      margin-top: 16px;
+      padding: 11px;
+      background: linear-gradient(135deg, rgba(200,169,110,0.18), rgba(200,169,110,0.08));
+      border: 1px solid var(--border-gold);
+      border-radius: 10px;
+      color: var(--gold-light);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .card-enter-btn:hover {
+      background: linear-gradient(135deg, rgba(200,169,110,0.28), rgba(200,169,110,0.14));
+    }
+
+    .card-enter-btn.locked-btn {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--text-dim);
+      cursor: not-allowed;
+    }
+
+    /* ======== PROFESSOR DASHBOARD ======== */
+    #professorView { display: none; }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+      animation: fadeUp 0.5s 0.05s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    .stat-card {
+      padding: 20px;
+      border-radius: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+
+    .stat-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.2rem;
+      font-weight: 600;
+      color: var(--gold-light);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-top: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* Table */
+    .table-wrapper {
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      animation: fadeUp 0.5s 0.15s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    .table-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .table-search {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      outline: none;
+      min-width: 200px;
+      transition: border-color 0.2s;
+    }
+
+    .table-search:focus { border-color: var(--border-gold); }
+    .table-search::placeholder { color: var(--text-dim); }
+
+    .export-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border-gold);
+      background: var(--gold-dim);
+      color: var(--gold-light);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .export-btn:hover { background: rgba(200,169,110,0.2); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    thead th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      transition: background 0.15s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+    td {
+      padding: 13px 16px;
+      color: var(--text);
+      vertical-align: middle;
+    }
+
+    .td-name { font-weight: 600; }
+    .td-date { color: var(--text-dim); font-size: 0.78rem; }
+
+    .score-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 26px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .score-high { background: rgba(90,158,120,0.2); color: #6ec68a; }
+    .score-mid  { background: rgba(200,169,110,0.15); color: var(--gold-light); }
+    .score-low  { background: rgba(180,100,100,0.15); color: #e08080; }
+
+    .detail-btn {
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-mid);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .detail-btn:hover { border-color: var(--border-gold); color: var(--gold-light); }
+
+    /* Loading / Empty states */
+    .state-msg {
+      padding: 48px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+
+    /* Detail modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal {
+      background: #0e0b08;
+      border: 1px solid var(--border-gold);
+      border-radius: 20px;
+      padding: 32px;
+      max-width: 560px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      transform: scale(0.95);
+      transition: transform 0.25s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    .modal-backdrop.open .modal { transform: scale(1); }
+
+    .modal-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--gold-light);
+      margin-bottom: 20px;
+    }
+
+    .modal-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .modal-score-item {
+      padding: 14px;
+      border-radius: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+
+    .modal-score-label {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+
+    .modal-score-val {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+
+    .modal-text-block {
+      margin-bottom: 14px;
+    }
+
+    .modal-text-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 6px;
+    }
+
+    .modal-text-content {
+      font-size: 0.88rem;
+      color: var(--text-mid);
+      line-height: 1.6;
+      padding: 12px;
+      background: var(--surface);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .modal-close {
+      width: 100%;
+      margin-top: 20px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: transparent;
+      color: var(--text-mid);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .modal-close:hover { background: var(--surface); color: var(--text); }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { padding: 24px 20px; }
+      .experiences-grid { grid-template-columns: 1fr; }
+      .modal-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-name">🏨 LinguaSpace</div>
+        <div class="sidebar-brand-sub">VR English Practice</div>
+      </div>
+
+      <a class="nav-item active" id="navExperiences" href="#" onclick="showTab('experiences'); return false;">
+        <span class="nav-icon">🎮</span> Experiences
+      </a>
+      <a class="nav-item" id="navHistory" href="#" onclick="showTab('history'); return false;" style="display:none">
+        <span class="nav-icon">📊</span> My Progress
+      </a>
+      <a class="nav-item" id="navStudents" href="#" onclick="showTab('students'); return false;" style="display:none">
+        <span class="nav-icon">👥</span> Students
+      </a>
+      <a class="nav-item" id="navAnalytics" href="#" onclick="showTab('analytics'); return false;" style="display:none">
+        <span class="nav-icon">📈</span> Class Insights
+      </a>
+
+      <div class="sidebar-footer">
+        <div class="user-chip">
+          <div class="user-avatar" id="userAvatar">?</div>
+          <div class="user-info">
+            <div class="user-name" id="userNameDisplay">—</div>
+            <div class="user-role" id="userRoleDisplay">—</div>
+          </div>
+        </div>
+        <button class="logout-btn" onclick="logout()">Sign Out</button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+
+      <!-- Sandbox Testing Bar -->
+      <div class="demo-sandbox-bar" style="display: flex; gap: 12px; margin-bottom: 30px; padding: 12px 18px; background: rgba(200,169,110,0.06); border: 1px dashed var(--border-gold); border-radius: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.1rem;">🧪</span>
+          <span style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gold-light);">Sandbox Testing Mode</span>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="export-btn" style="background: rgba(255,255,255,0.03); border-color: var(--border); color: var(--text-mid);" onclick="runDemoMode('student')">🎓 Simular Estudiante</button>
+          <button class="export-btn" onclick="runDemoMode('professor')">👨‍🏫 Simular Profesor</button>
+        </div>
+      </div>
+
+      <!-- STUDENT VIEW -->
+      <div id="studentView">
+        <div class="page-header">
+          <h1 class="page-title" id="welcomeTitle">Welcome back</h1>
+          <p class="page-subtitle">Choose a practice scenario to begin your session.</p>
+        </div>
+
+        <p class="section-label">Available Experiences</p>
+        <div class="experiences-grid">
+
+          <!-- Hotel Receptionist — ACTIVE -->
+          <div class="experience-card available" onclick="enterExperience('experience')">
+            <div class="card-image-placeholder hotel-bg">
+              <span style="filter: drop-shadow(0 0 20px rgba(200,169,110,0.4))">🏨</span>
+              <span class="card-badge badge-beginner">Beginner</span>
+            </div>
+            <div class="card-body">
+              <div class="card-title">Hotel Receptionist</div>
+              <div class="card-desc">Practice hotel check-in procedures. Greet guests, collect booking details, assign rooms, and handle different guest personalities — from polite to demanding.</div>
+              <div class="card-meta">
+                <span>⏱ 5–10 min</span>
+                <span>🎯 6 missions</span>
+                <span>🗣 AI guest</span>
+              </div>
+              <button class="card-enter-btn">Enter Experience →</button>
+            </div>
+          </div>
+
+          <!-- Airport Check-in — COMING SOON -->
+          <div class="experience-card locked">
+            <div class="card-image-placeholder airport-bg">
+              <span>✈️</span>
+              <span class="card-badge badge-coming">Coming Soon</span>
+            </div>
+            <div class="card-body">
+              <div class="card-title">Airport Check-in</div>
+              <div class="card-desc">Handle passengers at a busy airport counter. Process tickets, manage baggage questions, and assist travelers with connecting flights.</div>
+              <div class="card-meta">
+                <span>⏱ 8–12 min</span>
+                <span>🎯 7 missions</span>
+                <span>🗣 AI passenger</span>
+              </div>
+              <button class="card-enter-btn locked-btn">In Development</button>
+            </div>
+          </div>
+
+          <!-- Restaurant Order — COMING SOON -->
+          <div class="experience-card locked">
+            <div class="card-image-placeholder restaurant-bg">
+              <span>🍽️</span>
+              <span class="card-badge badge-coming">Coming Soon</span>
+            </div>
+            <div class="card-body">
+              <div class="card-title">Restaurant Service</div>
+              <div class="card-desc">Work as a waiter in an upscale restaurant. Take orders, describe the menu in English, handle dietary restrictions, and manage table requests.</div>
+              <div class="card-meta">
+                <span>⏱ 6–10 min</span>
+                <span>🎯 5 missions</span>
+                <span>🗣 AI customer</span>
+              </div>
+              <button class="card-enter-btn locked-btn">In Development</button>
+            </div>
+          </div>
+
+          <!-- Job Interview — COMING SOON -->
+          <div class="experience-card locked">
+            <div class="card-image-placeholder job-bg">
+              <span>💼</span>
+              <span class="card-badge badge-advanced">Advanced</span>
+            </div>
+            <div class="card-body">
+              <div class="card-title">Job Interview</div>
+              <div class="card-desc">Prepare for a professional job interview in English. Answer behavioral questions, discuss experience, and negotiate offers with an AI interviewer.</div>
+              <div class="card-meta">
+                <span>⏱ 10–15 min</span>
+                <span>🎯 8 missions</span>
+                <span>🗣 AI interviewer</span>
+              </div>
+              <button class="card-enter-btn locked-btn">In Development</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- My recent progress -->
+        <div id="historySection" style="display:none">
+          <p class="section-label">My Recent Sessions</p>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Experience</th>
+                  <th>Overall</th>
+                  <th>Communication</th>
+                  <th>Fluency</th>
+                  <th>Date</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="historyTableBody">
+                <tr><td colspan="6" class="state-msg">Loading your history...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROFESSOR VIEW -->
+      <div id="professorView">
+        <div class="page-header">
+          <h1 class="page-title">Student Dashboard</h1>
+          <p class="page-subtitle">Review all student sessions, scores, and feedback.</p>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-value" id="statTotal">—</div>
+            <div class="stat-label">Total Sessions</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statStudents">—</div>
+            <div class="stat-label">Unique Students</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statAvgScore">—</div>
+            <div class="stat-label">Avg. Overall Score</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statTopScore">—</div>
+            <div class="stat-label">Best Score</div>
+          </div>
+        </div>
+
+        <p class="section-label">All Sessions</p>
+        <div class="table-wrapper">
+          <div class="table-toolbar">
+            <input class="table-search" type="text" id="tableSearch" placeholder="Search by student name..." oninput="filterTable()">
+            <button class="export-btn" onclick="exportCSV()">⬇ Export CSV</button>
+          </div>
+          <div style="overflow-x: auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Experience</th>
+                  <th>Overall</th>
+                  <th>Comm.</th>
+                  <th>Order</th>
+                  <th>Prof.</th>
+                  <th>Prec.</th>
+                  <th>Fluency</th>
+                  <th>Date</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="resultsTableBody">
+                <tr><td colspan="10" class="state-msg">Loading student results...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ANALYTICS VIEW (Professor only, extra relevant insights) -->
+      <div id="analyticsView" style="display: none;">
+        <div class="page-header">
+          <h1 class="page-title">Class Insights & Analytics</h1>
+          <p class="page-subtitle">Identify class performance trends, difficulties, and common mistakes.</p>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-value" id="insightAvgTime">6m 42s</div>
+            <div class="stat-label">Avg. Session Duration</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="insightLowestMission">Booking Confirmed</div>
+            <div class="stat-label">Hardest Mission Task</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="insightTopMistake">Polite Greeting</div>
+            <div class="stat-label">Most Omitted Aspect</div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 48px; animation: fadeUp 0.5s 0.1s cubic-bezier(0.16,1,0.3,1) both;">
+          <!-- Personality Difficulty Breakdown -->
+          <div class="table-wrapper" style="padding: 24px; background: rgba(10,8,5,0.8);">
+            <p class="section-label" style="margin-bottom: 16px;">Success by Guest Personality</p>
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px;">
+                  <span>James Sterling (Polite)</span>
+                  <span style="color: var(--green); font-weight: 600;">92% Success</span>
+                </div>
+                <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
+                  <div style="width: 92%; height: 100%; background: var(--green); border-radius: 3px;"></div>
+                </div>
+              </div>
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px;">
+                  <span>Sophia Vance (Impatient)</span>
+                  <span style="color: var(--gold); font-weight: 600;">78% Success</span>
+                </div>
+                <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
+                  <div style="width: 78%; height: 100%; background: var(--gold); border-radius: 3px;"></div>
+                </div>
+              </div>
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px;">
+                  <span>David Kim (Indecisive)</span>
+                  <span style="color: var(--gold); font-weight: 600;">71% Success</span>
+                </div>
+                <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
+                  <div style="width: 71%; height: 100%; background: var(--gold); border-radius: 3px;"></div>
+                </div>
+              </div>
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px;">
+                  <span>Elena Rostova (Demanding/VIP)</span>
+                  <span style="color: #e07060; font-weight: 600;">54% Success</span>
+                </div>
+                <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
+                  <div style="width: 54%; height: 100%; background: #e07060; border-radius: 3px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Common Grammatical/Procedural Errors -->
+          <div class="table-wrapper" style="padding: 24px; background: rgba(10,8,5,0.8);">
+            <p class="section-label" style="margin-bottom: 16px;">Top Procedural & Grammar Mistakes</p>
+            <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.85rem;">
+              <div style="display: flex; gap: 10px; align-items: flex-start; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 8px;">
+                <span style="color: #e07060; font-weight: bold;">#1</span>
+                <div>
+                  <div style="font-weight: 600;">Assigned room before confirming guest counts</div>
+                  <div style="font-size: 0.75rem; color: var(--text-dim);">Happened in 45% of Demanding/VIP sessions</div>
+                </div>
+              </div>
+              <div style="display: flex; gap: 10px; align-items: flex-start; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 8px;">
+                <span style="color: #e07060; font-weight: bold;">#2</span>
+                <div>
+                  <div style="font-weight: 600;">Grammar: Confusing "nights" with "days" in questions</div>
+                  <div style="font-size: 0.75rem; color: var(--text-dim);">E.g., "How many days will you stay?" instead of "nights"</div>
+                </div>
+              </div>
+              <div style="display: flex; gap: 10px; align-items: flex-start; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 8px;">
+                <span style="color: #e07060; font-weight: bold;">#3</span>
+                <div>
+                  <div style="font-weight: 600;">Omitted formal greeting on impatient guest arrival</div>
+                  <div style="font-size: 0.75rem; color: var(--text-dim);">Due to feeling rushed by the guest's prompt dialogue</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Detail Modal -->
+  <div class="modal-backdrop" id="detailModal" onclick="closeModal(event)">
+    <div class="modal" id="modalContent">
+      <div class="modal-title" id="modalTitle">Session Details</div>
+      <div class="modal-grid" id="modalScores"></div>
+      <div id="modalTexts"></div>
+      <button class="modal-close" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    // ======== MOCK DATA FOR SANDBOX TESTING ========
+    const MOCK_CLASS_RESULTS = [
+      {
+        studentName: 'Maria Garcia',
+        experience: 'Hotel Receptionist',
+        scores: { overall: 9, communication: 9, logicalOrder: 9, professionalism: 8, precision: 9, fluency: 8 },
+        completedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+        summary: 'Excellent performance. Used formal phrasing and assigned the room number correctly.',
+        mistakes: 'Minor delay in asking guest count.',
+        recommendations: 'Practice polite transitions like "May I request..."'
+      },
+      {
+        studentName: 'Lucas Miller',
+        experience: 'Hotel Receptionist',
+        scores: { overall: 6, communication: 7, logicalOrder: 5, professionalism: 6, precision: 6, fluency: 6 },
+        completedAt: new Date(Date.now() - 3600000 * 24).toISOString(),
+        summary: 'Adequate, but assigned room number before collecting name and night count.',
+        mistakes: 'Out of order questioning, missing details.',
+        recommendations: 'Follow the checklist systematically.'
+      },
+      {
+        studentName: 'Anna Kowalski',
+        experience: 'Hotel Receptionist',
+        scores: { overall: 8, communication: 8, logicalOrder: 9, professionalism: 9, precision: 7, fluency: 8 },
+        completedAt: new Date(Date.now() - 3600000 * 48).toISOString(),
+        summary: 'Very professional demeanor. Spoke clearly and handled the demanding guest well.',
+        mistakes: 'Got room type slightly wrong initially.',
+        recommendations: 'Listen carefully to guest preferences.'
+      },
+      {
+        studentName: 'Hiroshi Sato',
+        experience: 'Hotel Receptionist',
+        scores: { overall: 5, communication: 5, logicalOrder: 6, professionalism: 4, precision: 5, fluency: 5 },
+        completedAt: new Date(Date.now() - 3600000 * 72).toISOString(),
+        summary: 'Struggled with the impatient guest. Response time was slow and used informal language.',
+        mistakes: 'Used "Yeah" instead of "Yes, sir", took too long to assign room.',
+        recommendations: 'Practice high-pressure guest scenarios.'
+      }
+    ];
+
+    // ======== SANDBOX TESTING FUNCTION ========
+    window.runDemoMode = function(role) {
+      if (role === 'student') {
+        localStorage.setItem('vrSession', JSON.stringify({
+          role: 'student',
+          studentName: 'Maria Garcia',
+          loginAt: Date.now()
+        }));
+        localStorage.setItem('myResults', JSON.stringify([
+          {
+            experience: 'Hotel Receptionist',
+            scores: { overall: 9, communication: 8, fluency: 9 },
+            completedAt: new Date().toISOString(),
+            summary: 'Great job handling the demanding guest! The student covered all requested details systematically.',
+            mistakes: 'None major. Forgot to offer extra water bottles initially, but corrected later.',
+            recommendations: 'Practice using more formal vocabulary when discussing amenities.'
+          },
+          {
+            experience: 'Hotel Receptionist',
+            scores: { overall: 7, communication: 6, fluency: 7 },
+            completedAt: new Date(Date.now() - 86400000).toISOString(),
+            summary: 'Adequate but struggled with the impatient guest.',
+            mistakes: 'Let the guest wait without updates.',
+            recommendations: 'Focus on speed of confirmation.'
+          }
+        ]));
+      } else if (role === 'professor') {
+        localStorage.setItem('vrSession', JSON.stringify({
+          role: 'professor',
+          studentName: 'Professor Rodriguez',
+          loginAt: Date.now()
+        }));
+        localStorage.setItem('mockClassResults', JSON.stringify(MOCK_CLASS_RESULTS));
+      }
+      window.location.reload();
+    };
+
+    // ======== SESSION CHECK ========
+    const session = JSON.parse(localStorage.getItem('vrSession') || 'null');
+    if (!session || !session.role || !session.loginAt) {
+      window.location.href = '/login';
+      throw new Error('Not authenticated');
+    }
+    const EIGHT_HOURS = 8 * 60 * 60 * 1000;
+    if (Date.now() - session.loginAt > EIGHT_HOURS) {
+      localStorage.removeItem('vrSession');
+      window.location.href = '/login';
+      throw new Error('Session expired');
+    }
+
+    const isStudent = session.role === 'student';
+    const isProfessor = session.role === 'professor';
+
+    // Populate user chip
+    const nameDisplay = document.getElementById('userNameDisplay');
+    const roleDisplay = document.getElementById('userRoleDisplay');
+    const avatar = document.getElementById('userAvatar');
+    const welcomeTitle = document.getElementById('welcomeTitle');
+
+    nameDisplay.textContent = session.studentName || 'User';
+    roleDisplay.textContent = isProfessor ? 'Professor' : 'Student';
+    avatar.textContent = (session.studentName || 'U')[0].toUpperCase();
+    if (welcomeTitle) welcomeTitle.textContent = `Welcome, ${session.studentName || 'back'}`;
+
+    // Show correct view
+    if (isStudent) {
+      document.getElementById('studentView').style.display = 'block';
+      document.getElementById('professorView').style.display = 'none';
+      if (document.getElementById('analyticsView')) document.getElementById('analyticsView').style.display = 'none';
+      document.getElementById('navExperiences').style.display = 'flex';
+      document.getElementById('navHistory').style.display = 'flex';
+      document.getElementById('navStudents').style.display = 'none';
+      document.getElementById('navAnalytics').style.display = 'none';
+      loadStudentHistory();
+    } else {
+      document.getElementById('studentView').style.display = 'none';
+      document.getElementById('professorView').style.display = 'block';
+      if (document.getElementById('analyticsView')) document.getElementById('analyticsView').style.display = 'none';
+      document.getElementById('navExperiences').style.display = 'none';
+      document.getElementById('navHistory').style.display = 'none';
+      document.getElementById('navStudents').style.display = 'flex';
+      document.getElementById('navAnalytics').style.display = 'flex';
+      document.getElementById('navStudents').classList.add('active');
+      loadProfessorResults();
+    }
+
+    // ======== NAVIGATION ========
+    function showTab(tab) {
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      
+      document.getElementById('studentView').style.display = 'none';
+      document.getElementById('professorView').style.display = 'none';
+      if (document.getElementById('analyticsView')) document.getElementById('analyticsView').style.display = 'none';
+
+      if (tab === 'experiences') {
+        document.getElementById('navExperiences').classList.add('active');
+        document.getElementById('studentView').style.display = 'block';
+        document.getElementById('historySection').style.display = 'none';
+        document.querySelector('.experiences-grid').style.display = 'grid';
+      } else if (tab === 'history') {
+        document.getElementById('navHistory').classList.add('active');
+        document.getElementById('studentView').style.display = 'block';
+        document.getElementById('historySection').style.display = 'block';
+        document.querySelector('.experiences-grid').style.display = 'none';
+      } else if (tab === 'students') {
+        document.getElementById('navStudents').classList.add('active');
+        document.getElementById('professorView').style.display = 'block';
+      } else if (tab === 'analytics') {
+        document.getElementById('navAnalytics').classList.add('active');
+        if (document.getElementById('analyticsView')) document.getElementById('analyticsView').style.display = 'block';
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('vrSession');
+      window.location.href = '/';
+    }
+
+    function enterExperience(path) {
+      window.location.href = `/${path}`;
+    }
+
+    // ======== STUDENT HISTORY ========
+    async function loadStudentHistory() {
+      const tbody = document.getElementById('historyTableBody');
+      if (!tbody) return;
+
+      // Retrieve from localStorage (results saved by experience.html)
+      const stored = JSON.parse(localStorage.getItem('myResults') || '[]');
+      const myName = session.studentName;
+
+      // Also fetch from KV for this student
+      try {
+        const res = await fetch(`/api/get-results?student=${encodeURIComponent(myName)}`, {
+          headers: { 'Authorization': `Bearer ${session.studentName}` }
+        });
+        // If 401, we just show local results
+        if (res.ok) {
+          const data = await res.json();
+          const myResults = (data.results || []).filter(r =>
+            r.studentName && r.studentName.toLowerCase() === myName.toLowerCase()
+          );
+          renderHistoryTable(myResults.length > 0 ? myResults : stored);
+          if (myResults.length > 0) return;
+        }
+      } catch {}
+
+      renderHistoryTable(stored);
+    }
+
+    function renderHistoryTable(results) {
+      const tbody = document.getElementById('historyTableBody');
+      if (!tbody) return;
+      if (results.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="state-msg">No sessions yet. Complete an experience to see your progress here.</td></tr>';
+        return;
+      }
+      document.getElementById('historySection').style.display = 'block';
+      tbody.innerHTML = results.slice(0, 10).map((r, i) => `
+        <tr>
+          <td>${r.experience || 'Hotel Receptionist'}</td>
+          <td><span class="score-pill ${scoreClass(r.scores?.overall)}">${r.scores?.overall ?? '—'}</span></td>
+          <td><span class="score-pill ${scoreClass(r.scores?.communication)}">${r.scores?.communication ?? '—'}</span></td>
+          <td><span class="score-pill ${scoreClass(r.scores?.fluency)}">${r.scores?.fluency ?? '—'}</span></td>
+          <td class="td-date">${formatDate(r.completedAt)}</td>
+          <td><button class="detail-btn" onclick='openModal(${JSON.stringify(r)})'>Details</button></td>
+        </tr>
+      `).join('');
+    }
+
+    // ======== PROFESSOR RESULTS ========
+    let allResults = [];
+
+    async function loadProfessorResults() {
+      const tbody = document.getElementById('resultsTableBody');
+      try {
+        const res = await fetch('/api/get-results', {
+          headers: { 'Authorization': `Bearer ${session.studentName}` }
+        });
+
+        if (res.status === 401) {
+          tbody.innerHTML = '<tr><td colspan="10" class="state-msg">Authentication error. Please sign in again.</td></tr>';
+          return;
+        }
+
+        const data = await res.json();
+        allResults = data.results || [];
+      } catch (err) {
+        console.warn("Backend fetch failed, using local storage fallback:", err);
+        allResults = JSON.parse(localStorage.getItem('mockClassResults') || '[]');
+      }
+      
+      renderResultsTable(allResults);
+      updateStats(allResults);
+    }
+
+    function renderResultsTable(results) {
+      const tbody = document.getElementById('resultsTableBody');
+      if (results.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" class="state-msg">No student sessions recorded yet.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = results.map(r => `
+        <tr>
+          <td class="td-name">${esc(r.studentName || '—')}</td>
+          <td>${esc(r.experience || 'Hotel Receptionist')}</td>
+          <td><span class="score-pill ${scoreClass(r.scores?.overall)}">${r.scores?.overall ?? '—'}</span></td>
+          <td><span class="score-pill ${scoreClass(r.scores?.communication)}">${r.scores?.communication ?? '—'}</span></td>
+          <td><span class="score-pill ${scoreClass(r.scores?.logicalOrder)}">${r.scores?.logicalOrder ?? '—'}</span></td>
+          <td><span class="score-pill ${scoreClass(r.scores?.professionalism)}">${r.scores?.professionalism ?? '—'}</span></td>
+          <td><span class="score-pill ${scoreClass(r.scores?.precision)}">${r.scores?.precision ?? '—'}</span></td>
+          <td><span class="score-pill ${scoreClass(r.scores?.fluency)}">${r.scores?.fluency ?? '—'}</span></td>
+          <td class="td-date">${formatDate(r.completedAt)}</td>
+          <td><button class="detail-btn" onclick='openModal(${JSON.stringify(r)})'>Details</button></td>
+        </tr>
+      `).join('');
+    }
+
+    function updateStats(results) {
+      document.getElementById('statTotal').textContent = results.length;
+      const names = new Set(results.map(r => r.studentName));
+      document.getElementById('statStudents').textContent = names.size;
+      if (results.length > 0) {
+        const avg = results.reduce((s, r) => s + (r.scores?.overall || 0), 0) / results.length;
+        document.getElementById('statAvgScore').textContent = avg.toFixed(1);
+        const best = Math.max(...results.map(r => r.scores?.overall || 0));
+        document.getElementById('statTopScore').textContent = best;
+      }
+    }
+
+    function filterTable() {
+      const query = document.getElementById('tableSearch').value.toLowerCase();
+      const filtered = allResults.filter(r =>
+        (r.studentName || '').toLowerCase().includes(query)
+      );
+      renderResultsTable(filtered);
+    }
+
+    function exportCSV() {
+      const headers = ['Student','Experience','Overall','Communication','LogicalOrder','Professionalism','Precision','Fluency','Date','Summary','Mistakes','Recommendations'];
+      const rows = allResults.map(r => [
+        r.studentName, r.experience,
+        r.scores?.overall, r.scores?.communication, r.scores?.logicalOrder,
+        r.scores?.professionalism, r.scores?.precision, r.scores?.fluency,
+        formatDate(r.completedAt),
+        `"${(r.summary || '').replace(/"/g, '""')}"`,
+        `"${(r.mistakes || '').replace(/"/g, '""')}"`,
+        `"${(r.recommendations || '').replace(/"/g, '""')}"`
+      ]);
+      const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `linguaspace-results-${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+    }
+
+    // ======== DETAIL MODAL ========
+    function openModal(record) {
+      const modal = document.getElementById('detailModal');
+      document.getElementById('modalTitle').textContent =
+        `${record.studentName || 'Student'} — ${record.experience || 'Hotel Receptionist'}`;
+
+      const scores = record.scores || {};
+      const scoreItems = [
+        { label: 'Overall', value: scores.overall, field: 'overall' },
+        { label: 'Communication', value: scores.communication, field: 'communication' },
+        { label: 'Logical Order', value: scores.logicalOrder, field: 'logicalOrder' },
+        { label: 'Professionalism', value: scores.professionalism, field: 'professionalism' },
+        { label: 'Precision', value: scores.precision, field: 'precision' },
+        { label: 'Fluency', value: scores.fluency, field: 'fluency' },
+      ];
+
+      document.getElementById('modalScores').innerHTML = scoreItems.map(s => `
+        <div class="modal-score-item">
+          <div class="modal-score-label">${s.label}</div>
+          <div class="modal-score-val ${scoreClass(s.value)}" style="font-size:1.6rem">${s.value ?? '—'}<span style="font-size:0.9rem;opacity:0.5">/10</span></div>
+        </div>
+      `).join('');
+
+      const texts = [
+        { label: 'Summary', value: record.summary },
+        { label: 'Mistakes', value: record.mistakes },
+        { label: 'Recommendations', value: record.recommendations },
+      ].filter(t => t.value);
+
+      document.getElementById('modalTexts').innerHTML = texts.map(t => `
+        <div class="modal-text-block">
+          <div class="modal-text-label">${t.label}</div>
+          <div class="modal-text-content">${esc(t.value)}</div>
+        </div>
+      `).join('');
+
+      modal.classList.add('open');
+    }
+
+    function closeModal(e) {
+      if (e && e.target !== document.getElementById('detailModal')) return;
+      document.getElementById('detailModal').classList.remove('open');
+    }
+
+    // ======== HELPERS ========
+    function scoreClass(score) {
+      if (score == null) return '';
+      if (score >= 8) return 'score-high';
+      if (score >= 5) return 'score-mid';
+      return 'score-low';
+    }
+
+    function formatDate(iso) {
+      if (!iso) return '—';
+      try {
+        const d = new Date(iso);
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      } catch { return iso; }
+    }
+
+    function esc(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>

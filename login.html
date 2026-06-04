@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — LinguaSpace VR</title>
+  <meta name="description" content="Sign in to access your LinguaSpace VR English practice sessions.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold: #c8a96e;
+      --gold-light: #e2c98a;
+      --gold-dim: rgba(200, 169, 110, 0.15);
+      --bg: #080604;
+      --surface: rgba(255,255,255,0.04);
+      --surface-hover: rgba(255,255,255,0.07);
+      --border: rgba(255,255,255,0.08);
+      --border-gold: rgba(200,169,110,0.3);
+      --text: #f0ece4;
+      --text-dim: #8a8070;
+      --error: #e07060;
+      --radius: 16px;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      overflow: hidden;
+    }
+
+    /* Ambient background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% 0%, rgba(200,169,110,0.06) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 80% 100%, rgba(100,80,50,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .page {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+      position: relative;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(12,10,8,0.92);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 48px 40px 40px;
+      backdrop-filter: blur(24px);
+      box-shadow:
+        0 0 0 1px rgba(200,169,110,0.05),
+        0 40px 80px rgba(0,0,0,0.6),
+        0 0 60px rgba(200,169,110,0.04) inset;
+      animation: cardIn 0.6s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .brand {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .brand-icon {
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 16px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(200,169,110,0.2), rgba(200,169,110,0.05));
+      border: 1px solid var(--border-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+    }
+
+    .brand-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.9rem;
+      font-weight: 600;
+      color: var(--gold-light);
+      letter-spacing: 0.01em;
+      line-height: 1;
+    }
+
+    .brand-tagline {
+      margin-top: 6px;
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    /* Role tabs */
+    .role-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 28px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 4px;
+    }
+
+    .role-tab {
+      padding: 10px;
+      border: none;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--text-dim);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      letter-spacing: 0.02em;
+    }
+
+    .role-tab.active {
+      background: linear-gradient(135deg, rgba(200,169,110,0.18), rgba(200,169,110,0.08));
+      border: 1px solid var(--border-gold);
+      color: var(--gold-light);
+    }
+
+    /* Form */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 13px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .form-input:focus {
+      border-color: var(--border-gold);
+      background: var(--surface-hover);
+    }
+
+    .form-input::placeholder { color: var(--text-dim); }
+
+    /* Student name field — hidden for professor */
+    #nameGroup {
+      transition: opacity 0.3s, max-height 0.3s;
+      overflow: hidden;
+      max-height: 100px;
+    }
+
+    #nameGroup.hidden {
+      opacity: 0;
+      max-height: 0;
+      margin-bottom: 0;
+      pointer-events: none;
+    }
+
+    .submit-btn {
+      width: 100%;
+      margin-top: 8px;
+      padding: 14px;
+      background: linear-gradient(135deg, #c8a96e, #a87f50);
+      border: none;
+      border-radius: 12px;
+      color: #0d0a06;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .submit-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .submit-btn:hover::before { opacity: 1; }
+    .submit-btn:active { transform: scale(0.98); }
+
+    .submit-btn.loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .submit-btn .btn-text { transition: opacity 0.2s; }
+    .submit-btn.loading .btn-text { opacity: 0; }
+    .submit-btn .spinner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .submit-btn.loading .spinner { opacity: 1; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner-ring {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(0,0,0,0.2);
+      border-top-color: #0d0a06;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    .error-msg {
+      margin-top: 14px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: rgba(224,112,96,0.1);
+      border: 1px solid rgba(224,112,96,0.25);
+      color: var(--error);
+      font-size: 0.82rem;
+      text-align: center;
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .error-msg.visible { display: block; }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 24px;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--gold); }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 24px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="card">
+      <div class="brand">
+        <div class="brand-icon">🏨</div>
+        <div class="brand-name">LinguaSpace</div>
+        <div class="brand-tagline">VR English Practice Platform</div>
+      </div>
+
+      <div class="role-tabs">
+        <button class="role-tab active" id="tabStudent" onclick="setRole('student')">🎓 Student</button>
+        <button class="role-tab" id="tabProfessor" onclick="setRole('professor')">👨‍🏫 Professor</button>
+      </div>
+
+      <form id="loginForm" novalidate>
+        <div class="form-group" id="nameGroup">
+          <label class="form-label" for="nameInput">Your Name</label>
+          <input class="form-input" type="text" id="nameInput" placeholder="e.g. Maria Garcia" autocomplete="name">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="passwordInput">Access Code</label>
+          <input class="form-input" type="password" id="passwordInput" placeholder="Enter your access code" autocomplete="current-password">
+        </div>
+
+        <button class="submit-btn" type="submit" id="submitBtn">
+          <span class="btn-text">Enter Platform →</span>
+          <span class="spinner"><span class="spinner-ring"></span></span>
+        </button>
+
+        <div class="error-msg" id="errorMsg">Incorrect access code. Please try again.</div>
+      </form>
+
+      <div class="divider"></div>
+      
+      <!-- Sandbox Testing Bypass -->
+      <div style="text-align: center; margin-top: 10px;">
+        <p style="font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px;">🧪 Sandbox Testing Bypass</p>
+        <div style="display: flex; gap: 8px; justify-content: center;">
+          <button type="button" class="submit-btn" style="background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; font-size: 0.8rem; margin: 0; width: auto;" onclick="bypassLogin('student')">🎓 Estudiante</button>
+          <button type="button" class="submit-btn" style="background: linear-gradient(135deg, rgba(200,169,110,0.15), rgba(200,169,110,0.05)); border: 1px solid var(--border-gold); color: var(--gold-light); padding: 8px 12px; font-size: 0.8rem; margin: 0; width: auto;" onclick="bypassLogin('professor')">👨‍🏫 Profesor</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <a href="/" class="back-link">← Back to LinguaSpace</a>
+    </div>
+  </div>
+
+  <script>
+    let currentRole = 'student';
+
+    function bypassLogin(role) {
+      if (role === 'student') {
+        localStorage.setItem('vrSession', JSON.stringify({
+          role: 'student',
+          studentName: 'Maria Garcia',
+          loginAt: Date.now()
+        }));
+        localStorage.setItem('myResults', JSON.stringify([
+          {
+            experience: 'Hotel Receptionist',
+            scores: { overall: 9, communication: 8, fluency: 9 },
+            completedAt: new Date().toISOString(),
+            summary: 'Great job handling the demanding guest! The student covered all requested details systematically.',
+            mistakes: 'None major. Forgot to offer extra water bottles initially, but corrected later.',
+            recommendations: 'Practice using more formal vocabulary when discussing amenities.'
+          },
+          {
+            experience: 'Hotel Receptionist',
+            scores: { overall: 7, communication: 6, fluency: 7 },
+            completedAt: new Date(Date.now() - 86400000).toISOString(),
+            summary: 'Adequate but struggled with the impatient guest.',
+            mistakes: 'Let the guest wait without updates.',
+            recommendations: 'Focus on speed of confirmation.'
+          }
+        ]));
+      } else {
+        localStorage.setItem('vrSession', JSON.stringify({
+          role: 'professor',
+          studentName: 'Professor Rodriguez',
+          loginAt: Date.now()
+        }));
+        localStorage.setItem('mockClassResults', JSON.stringify([
+          {
+            studentName: 'Maria Garcia',
+            experience: 'Hotel Receptionist',
+            scores: { overall: 9, communication: 9, logicalOrder: 9, professionalism: 8, precision: 9, fluency: 8 },
+            completedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+            summary: 'Excellent performance. Used formal phrasing and assigned the room number correctly.',
+            mistakes: 'Minor delay in asking guest count.',
+            recommendations: 'Practice polite transitions like "May I request..."'
+          },
+          {
+            studentName: 'Lucas Miller',
+            experience: 'Hotel Receptionist',
+            scores: { overall: 6, communication: 7, logicalOrder: 5, professionalism: 6, precision: 6, fluency: 6 },
+            completedAt: new Date(Date.now() - 3600000 * 24).toISOString(),
+            summary: 'Adequate, but assigned room number before collecting name and night count.',
+            mistakes: 'Out of order questioning, missing details.',
+            recommendations: 'Follow the checklist systematically.'
+          },
+          {
+            studentName: 'Anna Kowalski',
+            experience: 'Hotel Receptionist',
+            scores: { overall: 8, communication: 8, logicalOrder: 9, professionalism: 9, precision: 7, fluency: 8 },
+            completedAt: new Date(Date.now() - 3600000 * 48).toISOString(),
+            summary: 'Very professional demeanor. Spoke clearly and handled the demanding guest well.',
+            mistakes: 'Got room type slightly wrong initially.',
+            recommendations: 'Listen carefully to guest preferences.'
+          },
+          {
+            studentName: 'Hiroshi Sato',
+            experience: 'Hotel Receptionist',
+            scores: { overall: 5, communication: 5, logicalOrder: 6, professionalism: 4, precision: 5, fluency: 5 },
+            completedAt: new Date(Date.now() - 3600000 * 72).toISOString(),
+            summary: 'Struggled with the impatient guest. Response time was slow and used informal language.',
+            mistakes: 'Used "Yeah" instead of "Yes, sir", took too long to assign room.',
+            recommendations: 'Practice high-pressure guest scenarios.'
+          }
+        ]));
+      }
+      window.location.href = '/dashboard.html';
+    }
+
+    // Redirect if already logged in
+    (function() {
+      const session = JSON.parse(localStorage.getItem('vrSession') || 'null');
+      if (session && session.loginAt && (Date.now() - session.loginAt < 8 * 60 * 60 * 1000)) {
+        window.location.href = '/dashboard.html';
+      }
+    })();
+
+    function setRole(role) {
+      currentRole = role;
+      document.getElementById('tabStudent').classList.toggle('active', role === 'student');
+      document.getElementById('tabProfessor').classList.toggle('active', role === 'professor');
+      const nameGroup = document.getElementById('nameGroup');
+      nameGroup.classList.toggle('hidden', role === 'professor');
+      document.getElementById('passwordInput').placeholder = role === 'professor'
+        ? 'Professor access code'
+        : 'Class access code';
+      document.getElementById('errorMsg').classList.remove('visible');
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      const errorMsg = document.getElementById('errorMsg');
+      const password = document.getElementById('passwordInput').value.trim();
+      const name = document.getElementById('nameInput').value.trim();
+
+      if (!password) {
+        errorMsg.textContent = 'Please enter your access code.';
+        errorMsg.classList.add('visible');
+        return;
+      }
+      if (currentRole === 'student' && !name) {
+        errorMsg.textContent = 'Please enter your name.';
+        errorMsg.classList.add('visible');
+        return;
+      }
+
+      btn.classList.add('loading');
+      errorMsg.classList.remove('visible');
+
+      try {
+        const res = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password, role: currentRole })
+        });
+
+        const data = await res.json();
+
+        if (data.ok) {
+          const session = {
+            role: data.role,
+            studentName: currentRole === 'student' ? name : 'Professor',
+            loginAt: Date.now()
+          };
+          localStorage.setItem('vrSession', JSON.stringify(session));
+          window.location.href = '/dashboard';
+        } else {
+          errorMsg.textContent = 'Incorrect access code. Please try again.';
+          errorMsg.classList.add('visible');
+          btn.classList.remove('loading');
+        }
+      } catch (err) {
+        errorMsg.textContent = 'Connection error. Please check your network and try again.';
+        errorMsg.classList.add('visible');
+        btn.classList.remove('loading');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,1887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hotel Receptionist VR — Spatial English Teacher</title>
+  
+  <!-- A-Frame VR Library -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  
+  <!-- Google Fonts for Modern 2D Desktop UI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* Premium 2D Desktop/Mobile HUD Overlay Styles */
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+      background-color: #030712;
+      color: #f3f4f6;
+    }
+
+    #hud-overlay {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 10;
+      pointer-events: none;
+      max-width: 420px;
+      width: calc(100vw - 40px);
+    }
+
+    .glass-card {
+      background: rgba(26, 24, 20, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      pointer-events: auto;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .hud-title {
+      margin: 0 0 4px 0;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #c8b88a, #d4ccc0, #e8e0d0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.02em;
+    }
+
+    .hud-subtitle {
+      margin: 0 0 15px 0;
+      font-size: 0.8rem;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 600;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: rgba(200, 184, 138, 0.10);
+      border: 1px solid rgba(200, 184, 138, 0.20);
+      color: #c8b88a;
+      transition: all 0.3s ease;
+    }
+
+    .status-badge.listening {
+      background: rgba(200, 184, 138, 0.14);
+      border: 1px solid rgba(200, 184, 138, 0.25);
+      color: #d4ccc0;
+    }
+
+    .status-badge.thinking {
+      background: rgba(200, 184, 138, 0.14);
+      border: 1px solid rgba(200, 184, 138, 0.25);
+      color: #d4ccc0;
+    }
+
+    .status-badge.speaking {
+      background: rgba(200, 184, 138, 0.14);
+      border: 1px solid rgba(200, 184, 138, 0.25);
+      color: #d4ccc0;
+    }
+
+    .talk-btn {
+      margin-top: 15px;
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #c8b88a, #a89070);
+      border: none;
+      border-radius: 12px;
+      color: #1a1814;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      transition: all 0.2s ease, background 0.5s ease;
+      pointer-events: auto;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .talk-btn:hover {
+      background: linear-gradient(135deg, #d4c4a0, #b8a080);
+    }
+    .talk-btn.listening {
+      background: linear-gradient(135deg, #c8b88a, #d4ccc0);
+      box-shadow: 0 0 16px rgba(200, 184, 138, 0.25);
+    }
+
+    .talk-btn:active {
+      transform: scale(0.97);
+      background: linear-gradient(135deg, #b8a880, #a89070);
+    }
+
+    /* 2D Scoreboard styling */
+    .hud-scores {
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      display: block;
+    }
+
+    .score-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+
+    .score-label {
+      color: #9ca3af;
+      font-weight: 600;
+    }
+
+    .stars-display {
+      color: #6b6358;
+      font-size: 1.25rem;
+      letter-spacing: 2px;
+    }
+
+    .tip-box {
+      margin-top: 12px;
+      padding: 10px 14px;
+      background: rgba(200, 184, 138, 0.06);
+      border-left: 3px solid #c8b88a;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      color: #d4ccc0;
+      line-height: 1.4;
+    }
+
+    .mic-instruction {
+      margin-top: 16px;
+      font-size: 0.8rem;
+      color: #9ca3af;
+      line-height: 1.4;
+    }
+
+    .key-cap {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      padding: 2px 6px;
+      font-family: 'Space Grotesk', monospace;
+      font-weight: 700;
+      color: #e8e0d0;
+      box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+    }
+
+    .mic-warning {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      background: rgba(180, 120, 100, 0.12);
+      border: 1px solid rgba(180, 120, 100, 0.25);
+      color: #d4bcb0;
+      display: none;
+      pointer-events: auto;
+    }
+
+    #quick-guide {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      z-index: 10;
+      pointer-events: none;
+      font-size: 0.75rem;
+      color: #6b6358;
+      line-height: 1.5;
+    }
+
+    .pico-mic-banner {
+      margin-top: 12px;
+      padding: 14px;
+      border-radius: 12px;
+      background: rgba(200, 184, 138, 0.08);
+      border: 1px solid rgba(200, 184, 138, 0.18);
+      display: none;
+    }
+    .pico-mic-banner.visible {
+      display: block;
+    }
+    .pico-mic-btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      pointer-events: auto;
+      transition: all 0.2s ease;
+    }
+    .pico-mic-btn:hover {
+      background: linear-gradient(135deg, #818cf8, #6366f1);
+    }
+    .pico-mic-btn:active {
+      transform: scale(0.97);
+    }
+    .pico-mic-btn.granted {
+      background: linear-gradient(135deg, #4ade80, #22c55e);
+    }
+    .pico-mic-help {
+      margin-top: 8px;
+      font-size: 0.75rem;
+      color: #9ca3af;
+      line-height: 1.3;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 2D HUD OVERLAY (Desktop & Mobile) -->
+  <div id="hud-overlay">
+    <div class="glass-card">
+      <div class="hud-title">VR Receptionist Desk</div>
+      <div class="hud-subtitle">Guest Booking Practice Mode</div>
+      
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span id="hudStatusBadge" class="status-badge">Idle</span>
+        <span id="langDisplay" style="font-size: 0.75rem; color: #c8b88a; font-weight: bold;">Language: English</span>
+      </div>
+
+      <!-- Desktop Click/Touch talk button -->
+      <button id="talkButton" class="talk-btn">Hold to Speak</button>
+
+      <!-- PICO 4 / VR: Mic enable banner, shown before entering VR -->
+      <div id="picoMicBanner" class="pico-mic-banner">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button id="picoEnableMicBtn" class="pico-mic-btn">🎤 Enable Microphone</button>
+        </div>
+        <div class="pico-mic-help">Enable microphone access <strong>before</strong> entering VR. If no prompt appears, go to browser settings and allow this site.</div>
+      </div>
+
+      <!-- Text input fallback for Pico 4 / browsers without mic -->
+      <div id="textInputFallback" style="display: none; margin-top: 10px;">
+        <div style="font-size: 0.75rem; color: #c8b88a; margin-bottom: 6px; font-weight: 600;">⌨️ Mic not available — type your message below:</div>
+        <div style="display: flex; gap: 8px;">
+          <input id="textInput" type="text" placeholder="Type your message to the guest..."
+                 style="flex: 1; padding: 12px 16px; border-radius: 10px; border: 2px solid rgba(200,184,138,0.3); background: rgba(0,0,0,0.6); color: #e8e0d0; font-size: 1.1rem; outline: none;">
+          <button id="textSendBtn" class="talk-btn" style="padding: 12px 24px; white-space: nowrap; font-size: 1rem;">Send ➤</button>
+        </div>
+      </div>
+
+<!-- 2D Scoreboard for booking details -->
+<div id="hudScores" class="hud-scores">
+  <div style="font-size: 0.85rem; color: #9ca3af; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Receptionist Checklist:</div>
+  <div class="score-row"><span class="score-label" id="taskGreet">⬜ 1. Greet the guest</span></div>
+  <div class="score-row"><span class="score-label" id="taskName">⬜ 2. Get guest's name</span></div>
+  <div class="score-row"><span class="score-label" id="taskCount">⬜ 3. Ask guest count</span></div>
+  <div class="score-row"><span class="score-label" id="taskRoom">⬜ 4. Ask preferred room type</span></div>
+  <div class="score-row"><span class="score-label" id="taskNights">⬜ 5. Ask number of nights</span></div>
+  <div class="score-row"><span class="score-label" id="taskConfirm">⬜ 6. Confirm the booking</span></div>
+  
+  <div style="margin-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 10px;">
+    <div class="score-row"><span class="score-label">Guest:</span><span id="guestName2D" style="color: #c8b88a; font-weight: bold;">TBD</span></div>
+    <div class="score-row"><span class="score-label">Room Type:</span><span id="roomDetails2D" style="color: #c8b88a; font-weight: bold;">Not Selected</span></div>
+    <div class="score-row"><span class="score-label">Nights:</span><span id="nights2D" style="color: #c8b88a; font-weight: bold;">TBD</span></div>
+    <div class="score-row"><span class="score-label">Assigned Room:</span><span id="bookingStatus2D" style="color: #c8b88a; font-weight: bold;">TBD</span></div>
+  </div>
+  <div id="hudTip" class="tip-box">Welcome! A guest has arrived at your reception desk. Say "Hello!" or "Welcome to our hotel!" to start the check-in process.</div>
+</div>
+
+      <div class="mic-instruction">
+        👉 <strong>Inside VR:</strong> Hold the controller Trigger to speak (or press thumbstick to turn).<br>
+        👉 <strong>On Keyboard:</strong> Press &amp; hold <span class="key-cap">M</span> to speak.<br>
+        👉 <strong>On Screen:</strong> Hold the button above or click the floating cube.
+      </div>
+
+      <div id="micWarning" class="mic-warning"></div>
+    </div>
+  </div>
+
+  <div id="quick-guide">
+    💡 Localhost or HTTPS required for mic &amp; WebXR.<br>
+    🔒 Pico 4 / VR: If mic doesn't respond, use the text input that appears.
+  </div>
+
+  <!-- A-FRAME VR SCENE — OPTIMIZED FOR PICO 4 ULTRA -->
+  <!-- OPT-A1: Removed shadow="type:pcfsoft", antialias:false, physicallyCorrectLights:false -->
+  <!-- OPT-A8: background color set to avoid expensive clear pass -->
+  <a-scene
+    shadow="type: pcfsoft"
+    renderer="antialias: true; colorManagement: true; physicallyCorrectLights: true"
+    background="color: #1a1510"
+    vr-perf>
+
+    <a-assets>
+    </a-assets>
+
+    <a-gltf-model src="Models/HotelModel.glb" position="-3.5 0 5" rotation="0 0 0" scale="1.25 1.25 1.25"></a-gltf-model>
+
+    <a-light type="ambient" color="#f5ede0" intensity="0.5"></a-light>
+    <a-light type="directional" color="#fff8e8" intensity="0.9" position="3 6 -8"></a-light>
+    <a-light type="point" color="#fef0d0" intensity="1.5" distance="0" decay="1" position="0 3.0 -8.5"></a-light>
+    <a-light type="point" color="#fef0d0" intensity="1.3" distance="0" decay="1" position="-3.5 2.8 -3"></a-light>
+    <a-light type="point" color="#fef0d0" intensity="1.0" distance="0" decay="1" position="-6 2.5 2"></a-light>
+    <a-entity id="cubeLight" light="type: point; color: #818cf8; intensity: 1.5; distance: 0; decay: 1" position="-8.52 2.2 -8.93"></a-entity>
+
+    <a-gltf-model id="aiNPC"
+                  class="clickable"
+                  src="Models/NPC.glb"
+                  position="-8.52 0.05 -8.93"
+                  rotation="0 270 0"
+                  npc-controller>
+    </a-gltf-model>
+
+    <a-plane id="uiPanel"
+             position="-8.61 1.8 -7.63"
+             rotation="0 -123 0"
+             width="1.6" height="0.9"
+             material="shader: flat; color: #1a1814; opacity: 0.95; transparent: true; roughness: 1"
+             class="clickable">
+
+      <a-text id="statusText"
+              value="HOLD M TO SPEAK"
+              align="center"
+              position="0 0.30 0.01"
+              width="2.8"
+              color="#e8e0d0"
+              font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
+              negate="false">
+      </a-text>
+
+      <a-text id="userText"
+              value="You: ..."
+              align="center"
+              position="0 0.10 0.01"
+              width="2.0"
+              color="#d4ccc0"
+              font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
+              wrap-count="40"
+              negate="false">
+      </a-text>
+
+      <a-text id="aiText"
+              value="Guest: (Checking in...) Say Hello to begin."
+              align="center"
+              position="0 -0.15 0.01"
+              width="2.0"
+              color="#f0ece4"
+              font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
+              wrap-count="40"
+              negate="false">
+      </a-text>
+
+    </a-plane>
+
+    <a-plane id="evaluationPanel"
+             position="-8.61 1.8 -7.63"
+             rotation="0 -123 0"
+             width="2.4" height="1.6"
+             material="shader: flat; color: #1a1814; opacity: 0.95; transparent: true; roughness: 1"
+             visible="false">
+
+      <a-text value="EVALUATION REPORT" align="center" position="0 0.60 0.01" width="3.5" color="#e8e0d0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+
+      <a-text id="evalScore" value="OVERALL: -- / 10" align="center" position="0 0.42 0.01" width="3.5" color="#f0ece4" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+
+      <a-text id="evalCriteria1" value="Communication: -\nLogical Order: -\nProfessionalism: -" align="left" position="-0.95 0.10 0.01" width="1.8" color="#d4ccc0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+
+      <a-text id="evalCriteria2" value="Precision: -\nFluency: -" align="left" position="0.15 0.13 0.01" width="1.8" color="#d4ccc0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+
+      <a-text id="evalSummary" value="Summary: awaiting results..." align="center" position="0 -0.18 0.01" width="3.2" color="#c8beb0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" wrap-count="45" negate="false"></a-text>
+
+      <a-text id="evalMistakes" value="Mistakes: -" align="center" position="0 -0.40 0.01" width="3.2" color="#d4bcb0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" wrap-count="45" negate="false"></a-text>
+
+      <a-text id="evalRecommendations" value="Recommendations: -" align="center" position="0 -0.58 0.01" width="3.2" color="#b0c8b0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" wrap-count="45" negate="false"></a-text>
+
+    </a-plane>
+
+    <a-plane id="clipboardPanel"
+             position="-10.70 1.8 -10.47"
+             rotation="0 -15 0"
+             width="0.85" height="0.95"
+             material="shader: flat; color: #1a1814; opacity: 0.95; transparent: true"
+             class="clickable">
+
+      <a-text id="clipTitle" value="CLIPBOARD" align="center" position="0 0.38 0.01" width="1.6" color="#c8b88a" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+
+      <a-text id="clipTaskGreet" value="[ ] 1. Greet Guest" align="left" position="-0.34 0.26 0.01" width="1.3" color="#e8e0d0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskName" value="[ ] 2. Ask Name" align="left" position="-0.34 0.19 0.01" width="1.3" color="#e8e0d0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskCount" value="[ ] 3. Ask Guest Count" align="left" position="-0.34 0.12 0.01" width="1.3" color="#e8e0d0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskRoom" value="[ ] 4. Ask Room Type" align="left" position="-0.34 0.05 0.01" width="1.3" color="#e8e0d0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskNights" value="[ ] 5. Ask Nights Count" align="left" position="-0.34 -0.02 0.01" width="1.3" color="#e8e0d0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskConfirm" value="[ ] 6. Confirm Booking" align="left" position="-0.34 -0.09 0.01" width="1.3" color="#e8e0d0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+
+      <a-plane position="0 -0.14 0.004" width="0.72" height="0.002" material="color: #554a3a; shader: flat"></a-plane>
+
+      <a-text id="clipGuestVal" value="Guest: TBD" align="left" position="-0.34 -0.18 0.01" width="1.4" color="#d4ccc0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipRoomVal" value="Type: TBD" align="left" position="-0.34 -0.24 0.01" width="1.4" color="#d4ccc0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipNightsVal" value="Nights: TBD" align="left" position="-0.34 -0.30 0.01" width="1.4" color="#d4ccc0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipAssignedVal" value="Room: TBD" align="left" position="-0.34 -0.36 0.01" width="1.4" color="#e8e0d0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+
+    </a-plane>
+
+    <a-entity id="rig" position="-11.04 0.70 -9.22" rotation="0 -90 0" thumbstick-locomotion>
+      <a-entity id="camera" camera look-controls position="0 1.6 0">
+        <a-cursor id="desktopCursor"
+                  raycaster="objects: .clickable; far: 6"
+                  material="color: #c8b88a; shader: flat"
+                  position="0 0 -1"
+                  geometry="primitive: ring; radiusInner: 0.008; radiusOuter: 0.015">
+        </a-cursor>
+      </a-entity>
+      
+      <a-entity id="leftController"
+                laser-controls="hand: left"
+                raycaster="objects: .clickable; far: 12"
+                line="color: #c8b88a; opacity: 0.6; width: 2">
+      </a-entity>
+      <a-entity id="rightController"
+                laser-controls="hand: right"
+                raycaster="objects: .clickable; far: 12"
+                line="color: #c8b88a; opacity: 0.6; width: 2">
+      </a-entity>
+    </a-entity>
+
+  </a-scene>
+
+  <!-- APP LOGIC -->
+  <script>
+    // ==========================================
+    // SESSION GUARD — redirect to login if not authenticated
+    // ==========================================
+    (function() {
+      const session = JSON.parse(localStorage.getItem('vrSession') || 'null');
+      if (!session || !session.role || !session.loginAt) {
+        window.location.href = '/login';
+        throw new Error('Not authenticated');
+      }
+      const EIGHT_HOURS = 8 * 60 * 60 * 1000;
+      if (Date.now() - session.loginAt > EIGHT_HOURS) {
+        localStorage.removeItem('vrSession');
+        window.location.href = '/login';
+        throw new Error('Session expired');
+      }
+      window.__vrSession = session;
+    })();
+
+    // ==========================================
+    // OPT-A3: vr-perf component — pixel ratio cap for mobile VR
+    // ==========================================
+    AFRAME.registerComponent('vr-perf', {
+      init() {
+        const renderer = this.el.renderer;
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+        this.el.addEventListener('enter-vr', () => {
+          renderer.setPixelRatio(1.0);
+        });
+        this.el.addEventListener('exit-vr', () => {
+          renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+        });
+      }
+    });
+
+    // ==========================================
+    // OPT-A5: position-clamp — direct object3D access (no getAttribute/setAttribute)
+    // ==========================================
+    AFRAME.registerComponent('position-clamp', {
+      tick() {
+        const p = this.el.object3D.position;
+        p.x = Math.max(-8.0, Math.min(4.0, p.x));
+        p.z = Math.max(-14.0, Math.min(-6.0, p.z));
+      }
+    });
+
+    // ==========================================
+    // OPT-A4: npc-controller with frustum culling to pause animation when out of view
+    // ==========================================
+    AFRAME.registerComponent('npc-controller', {
+      init() {
+        this.mixer = null;
+        this.actions = [];
+        this._frustum = new THREE.Frustum();
+        this._projScreenMatrix = new THREE.Matrix4();
+        this._cameraEl = null;
+        this.el.addEventListener('model-loaded', () => {
+          const model = this.el.getObject3D('mesh');
+          if (!model) return;
+          model.scale.set(1.5, 1.5, 1.5);
+          if (model.animations && model.animations.length > 0) {
+            this.mixer = new THREE.AnimationMixer(model);
+            this.actions = model.animations.map(clip => {
+              const action = this.mixer.clipAction(clip);
+              action.loop = THREE.LoopRepeat;
+              action.play();
+              return action;
+            });
+          }
+        });
+      },
+      tick(t, dt) {
+        if (!this.mixer) return;
+        if (!this._cameraEl) {
+          this._cameraEl = document.getElementById('camera');
+        }
+        if (this._cameraEl && this._cameraEl.object3D) {
+          const camObj3D = this._cameraEl.object3D;
+          const threeCamera = this._cameraEl.getObject3D('camera');
+          if (threeCamera) {
+            threeCamera.updateMatrixWorld();
+            this._projScreenMatrix.multiplyMatrices(
+              threeCamera.projectionMatrix,
+              threeCamera.matrixWorldInverse
+            );
+            this._frustum.setFromProjectionMatrix(this._projScreenMatrix);
+            const npcPos = this.el.object3D.position;
+            if (!this._frustum.containsPoint(npcPos)) {
+              return;
+            }
+          }
+        }
+        this.mixer.update(dt / 1000);
+      },
+      stopAnimations() {
+        this.actions.forEach(a => a.stop());
+        this.actions = [];
+        this.mixer = null;
+      }
+    });
+
+    // ==========================================
+    // OPT-A6: thumbstick-locomotion — direct object3D access in tick
+    // ==========================================
+    AFRAME.registerComponent('thumbstick-locomotion', {
+      init() {
+        this.moveX = 0;
+        this.moveZ = 0;
+        this.rotateY = 0;
+        this.deadZone = 0.15;
+        this.speed = 0.05;
+        this.keys = { w: false, a: false, s: false, d: false };
+        this._camEl = null;
+
+        const leftEl = document.getElementById('leftController');
+        if (leftEl) {
+          leftEl.addEventListener('axismove', (e) => {
+            const ax = e.detail.axis;
+            if (ax) {
+              this.moveX = Math.abs(ax[0]) > this.deadZone ? ax[0] : 0;
+              this.moveZ = Math.abs(ax[1]) > this.deadZone ? ax[1] : 0;
+            }
+          });
+        }
+        const rightEl = document.getElementById('rightController');
+        if (rightEl) {
+          rightEl.addEventListener('axismove', (e) => {
+            const ax = e.detail.axis;
+            if (ax) {
+              this.rotateY = Math.abs(ax[0]) > this.deadZone ? ax[0] : 0;
+            }
+          });
+        }
+
+        window.addEventListener('keydown', (e) => {
+          const k = e.key.toLowerCase();
+          if (k in this.keys) { this.keys[k] = true; e.preventDefault(); }
+        });
+        window.addEventListener('keyup', (e) => {
+          const k = e.key.toLowerCase();
+          if (k in this.keys) { this.keys[k] = false; e.preventDefault(); }
+        });
+
+        window.addEventListener('keydown', (e) => {
+          if (e.key.toLowerCase() === 'p') {
+            const pos = this.el.object3D.position;
+            const rot = this.el.object3D.rotation;
+            console.log('RIG:', pos.x.toFixed(2), pos.y.toFixed(2), pos.z.toFixed(2),
+                        'ROT:', THREE.MathUtils.radToDeg(rot.y).toFixed(1));
+          }
+        });
+      },
+      tick() {
+        const rigObj = this.el.object3D;
+        if (this.rotateY !== 0) {
+          rigObj.rotation.y -= THREE.MathUtils.degToRad(this.rotateY * 1.5);
+        }
+
+        let kx = 0, kz = 0;
+        if (this.keys.w) kz += 1;
+        if (this.keys.s) kz -= 1;
+        if (this.keys.a) kx -= 1;
+        if (this.keys.d) kx += 1;
+
+        const mx = this.moveX + kx;
+        const mz = this.moveZ + kz;
+
+        if (mx !== 0 || mz !== 0) {
+          if (!this._camEl) this._camEl = document.getElementById('camera');
+          if (this._camEl) {
+            const rigRotY = rigObj.rotation.y;
+            const camRotY = this._camEl.object3D.rotation.y;
+            const yaw = rigRotY + camRotY;
+            const s = Math.sin(yaw), c = Math.cos(yaw);
+            rigObj.position.x += (mx * c - mz * s) * this.speed;
+            rigObj.position.z += (-mx * s - mz * c) * this.speed;
+          }
+        }
+      }
+    });
+
+    // ==========================================
+    // GLOBAL ERROR MONITORING
+    // ==========================================
+    window.onerror = function (message, source, lineno, colno, error) {
+      if (message === 'Script error.') return true;
+      console.error(`Error: ${message} (Line ${lineno})`, error);
+      showMicWarning(`JS Runtime Error: ${message} (Line ${lineno})`);
+      return false;
+    };
+
+    // ==========================================
+    // GEMINI CONFIGURATION
+    // ==========================================
+    const ENDPOINT = `/api/chat`;
+
+    // ==========================================
+    // SPEECH RECOGNITION & SYNTHESIS SETUP
+    // ==========================================
+    class PicoAudioRecorder {
+      constructor() {
+        this.mediaRecorder = null;
+        this.audioChunks = [];
+        this.stream = null;
+      }
+      async start() {
+        this.audioChunks = [];
+        let stream = window.globalMicStream;
+        if (!stream) {
+          stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          window.globalMicStream = stream;
+        }
+        this.stream = stream;
+        let options = {};
+        if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+          options.mimeType = 'audio/webm;codecs=opus';
+        } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+          options.mimeType = 'audio/webm';
+        }
+        this.mediaRecorder = new MediaRecorder(this.stream, options);
+        this.mediaRecorder.ondataavailable = (event) => {
+          if (event.data && event.data.size > 0) {
+            this.audioChunks.push(event.data);
+          }
+        };
+        this.mediaRecorder.start();
+      }
+      async stop() {
+        return new Promise((resolve) => {
+          if (!this.mediaRecorder || this.mediaRecorder.state === 'inactive') {
+            resolve(null);
+            return;
+          }
+          this.mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(this.audioChunks, { type: this.mediaRecorder.mimeType });
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const base64data = reader.result.split(',')[1];
+              resolve(base64data);
+            };
+            reader.readAsDataURL(audioBlob);
+          };
+          this.mediaRecorder.stop();
+        });
+      }
+    }
+    const picoRecorder = new PicoAudioRecorder();
+
+    function detectBrowser() {
+      const ua = navigator.userAgent.toLowerCase();
+      if (ua.includes('pico') || ua.includes('picovr')) return 'pico';
+      if (ua.includes('firefox')) return 'firefox';
+      if (ua.includes('samsungbrowser')) return 'samsung';
+      if (ua.includes('edg/') || ua.includes('edge/')) return 'edge';
+      if (ua.includes('opr/') || ua.includes('opera')) return 'opera';
+      if (ua.includes('chrome') || ua.includes('chromium')) return 'chrome';
+      if (ua.includes('safari')) return 'safari';
+      return 'unknown';
+    }
+
+    const SpeechRecognition = window.SpeechRecognition 
+                            || window.webkitSpeechRecognition 
+                            || window.mozSpeechRecognition 
+                            || window.msSpeechRecognition;
+    let usePicoRecorder = (!SpeechRecognition || detectBrowser() === 'pico');
+    let recognition = null;
+
+    function initializeSpeechRecognition() {
+      if (!SpeechRecognition) {
+        return false;
+      }
+      try {
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = true;
+        recognition.lang = currentLang;
+        
+        recognition.onresult = (event) => {
+          let interimTranscript = '';
+          let finalTranscript = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              finalTranscript += event.results[i][0].transcript;
+            } else {
+              interimTranscript += event.results[i][0].transcript;
+            }
+          }
+          const transcriptText = finalTranscript || interimTranscript;
+          if (transcriptText) {
+            recognizedText = transcriptText;
+            document.getElementById('userText').setAttribute('value', `You: "${recognizedText}"`);
+          }
+        };
+
+        recognition.onstart = () => {
+          recognitionStarted = true;
+        };
+
+        recognition.onerror = (event) => {
+          console.error("Speech Recognition Event Error:", event.error);
+          if (event.error === 'not-allowed') {
+            updateUIState("Err: Mic Blocked");
+            showMicWarning("Mic access was denied. Please allow microphone permissions in the browser settings and refresh.");
+          } else if (event.error === 'no-speech') {
+            // Silent skip
+          } else {
+            updateUIState("Err: " + event.error);
+          }
+          setCubeState("idle");
+        };
+
+        recognition.onend = () => {
+          console.log("Recognition lifecycle complete. recognizedText:", recognizedText);
+          clearTimeout(recognitionFallbackTimeout);
+          isRecording = false;
+          recognitionStarted = false;
+          const talkBtn = document.getElementById('talkButton');
+          if (talkBtn) {
+            talkBtn.classList.remove('listening');
+            talkBtn.textContent = 'Hold to Speak';
+          }
+          if (recognizedText) {
+            updateUIState("Thinking...");
+            setCubeState("thinking");
+            sendToGemini(recognizedText);
+          } else {
+            updateUIState("HOLD M TO SPEAK");
+            setCubeState("idle");
+            document.getElementById('userText').setAttribute('value', 'You: ...');
+          }
+        };
+        
+        return true;
+      } catch (err) {
+        console.error("Failed to initialize SpeechRecognition:", err);
+        showMicWarning("Failed to initialize speech recognition. Please try refreshing the page.");
+        return false;
+      }
+    }
+
+    let isRecording = false;
+    let recognizedText = "";
+    let speechAnimationInterval = null;
+    let recognitionFallbackTimeout = null;
+    let chatHistory = [];
+    let recognitionStarted = false;
+
+    let ttsAudioCtx = null;
+    const currentLang = 'en-US';
+
+    if (!initializeSpeechRecognition()) {
+      // Initialization failed, warning shown inside function
+    }
+
+    function getAudioConstraints() {
+      if (detectBrowser() === 'pico') {
+        return { audio: { deviceId: 'default', echoCancellation: true, noiseSuppression: true, sampleRate: 16000 } };
+      }
+      return { audio: true };
+    }
+
+    async function checkMicPermissionState() {
+      if (!navigator.permissions || !navigator.permissions.query) return 'unknown';
+      try {
+        const status = await navigator.permissions.query({ name: 'microphone' });
+        return status.state;
+      } catch { return 'unknown'; }
+    }
+
+    function showPicoMicFailureHelp() {
+      const warningEl = document.getElementById('micWarning');
+      if (warningEl) {
+        warningEl.innerHTML = `⚠️ <strong>PICO Mic Issue:</strong><br>
+1. In the PICO browser address bar, type <strong>chrome://settings/content/microphone</strong><br>
+2. Find this site and set to <strong>Allow</strong><br>
+3. Return here and refresh the page<br>
+Or use the text input below.`;
+        warningEl.style.display = 'block';
+      }
+    }
+
+    function initPicoMicHandler() {
+      const banner = document.getElementById('picoMicBanner');
+      const btn = document.getElementById('picoEnableMicBtn');
+      if (!banner || !btn) return;
+      banner.classList.add('visible');
+      checkMicPermissionState().then(state => {
+        if (state === 'granted') {
+          btn.textContent = '✓ Microphone Enabled';
+          btn.classList.add('granted');
+          btn.disabled = true;
+        } else if (state === 'denied') {
+          btn.textContent = '❌ Mic Blocked';
+          showPicoMicFailureHelp();
+        }
+      });
+      btn.addEventListener('click', async () => {
+        if (window.globalMicStream) return;
+        btn.textContent = 'Requesting...';
+        btn.disabled = true;
+        const granted = await requestMicPermissionIfNeeded();
+        if (granted) {
+          btn.textContent = '✓ Microphone Enabled';
+          btn.classList.add('granted');
+          btn.disabled = true;
+        } else {
+          btn.textContent = '🎤 Try Again';
+          btn.disabled = false;
+        }
+      });
+    }
+
+    async function requestMicPermissionIfNeeded() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showMicWarning("Your browser does not support microphone access. Please use a modern browser like Chrome, Firefox, or Safari.");
+        showTextInputFallback();
+        return false;
+      }
+      if (window.globalMicStream) {
+        return true;
+      }
+      try {
+        const constraints = getAudioConstraints();
+        const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000));
+        const stream = await Promise.race([
+          navigator.mediaDevices.getUserMedia(constraints),
+          timeout
+        ]);
+        window.globalMicStream = stream;
+        console.log("Microphone permission verified.");
+        return true;
+      } catch (err) {
+        console.warn("Microphone access failed:", err);
+        if (detectBrowser() === 'pico') {
+          showPicoMicFailureHelp();
+        } else if (err.message === 'timeout') {
+          showMicWarning("Microphone access timed out. Check your microphone and try again.");
+        } else {
+          showMicWarning("Microphone access denied. Please allow microphone permissions in your browser settings and refresh.");
+        }
+        showTextInputFallback();
+        return false;
+      }
+    }
+
+    // ==========================================
+    // INITIALIZATION & USER INPUTS
+    // ==========================================
+    document.addEventListener('DOMContentLoaded', () => {
+      const scene = document.querySelector('a-scene');
+      if (scene.hasLoaded) {
+        initApp();
+      } else {
+        scene.addEventListener('loaded', initApp);
+      }
+    });
+
+    function initApp() {
+      console.log("App ready. Session:", window.__vrSession);
+
+      const hotelModel = document.querySelector('a-gltf-model[src="Models/HotelModel.glb"]');
+      if (hotelModel) {
+        hotelModel.addEventListener('model-error', (e) => console.error('Hotel model error:', e.detail));
+      }
+
+      const npcModel = document.getElementById('aiNPC');
+      if (npcModel) {
+        npcModel.addEventListener('model-error', (e) => console.error('NPC model error:', e.detail));
+      }
+      
+      selectRandomGuestProfile();
+      update3DClipboard();
+      update2DHUD();
+      
+      setCubeState("idle");
+      updateUIState("HOLD M TO SPEAK");
+
+      window.addEventListener('keydown', async (e) => {
+        if (e.key.toLowerCase() === 'm' && !isRecording) {
+          await startRecording();
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        if (e.key.toLowerCase() === 'm' && isRecording) {
+          stopRecording();
+        }
+      });
+
+      const talkBtn = document.getElementById('talkButton');
+      if (talkBtn) {
+        talkBtn.addEventListener('mousedown', async () => { await startRecording(); });
+        talkBtn.addEventListener('mouseup', stopRecording);
+        talkBtn.addEventListener('mouseleave', stopRecording);
+        talkBtn.addEventListener('touchstart', async (e) => {
+          e.preventDefault();
+          await startRecording();
+        });
+        talkBtn.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          stopRecording();
+        });
+      }
+
+      const textInput = document.getElementById('textInput');
+      const textSendBtn = document.getElementById('textSendBtn');
+      const sendTextMessage = () => {
+        if (!textInput) return;
+        const msg = textInput.value.trim();
+        if (!msg) return;
+        textInput.value = '';
+        document.getElementById('userText').setAttribute('value', `You: "${msg}"`);
+        recognizedText = msg;
+        updateUIState("Thinking...");
+        setCubeState("thinking");
+        sendToGemini(msg);
+      };
+      if (textInput) {
+        textInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendTextMessage(); });
+      }
+      if (textSendBtn) {
+        textSendBtn.addEventListener('click', sendTextMessage);
+      }
+
+      const cubeEl = document.getElementById('aiNPC');
+      if (cubeEl) {
+        cubeEl.addEventListener('click', async () => {
+          if (isRecording) {
+            stopRecording();
+          } else {
+            await startRecording();
+          }
+        });
+      }
+
+      if (detectBrowser() === 'pico') {
+        initPicoMicHandler();
+      }
+      
+      const bindControllerEvents = (controllerId) => {
+        const controllerEl = document.getElementById(controllerId);
+        if (!controllerEl) return;
+        let triggerBusy = false;
+        const onStart = () => {
+          if (triggerBusy) return;
+          triggerBusy = true;
+          startRecording();
+        };
+        const onEnd = () => {
+          if (!triggerBusy) return;
+          triggerBusy = false;
+          stopRecording();
+        };
+        controllerEl.addEventListener('triggerdown', onStart);
+        controllerEl.addEventListener('selectstart', onStart);
+        controllerEl.addEventListener('triggerup', onEnd);
+        controllerEl.addEventListener('selectend', onEnd);
+        controllerEl.addEventListener('controllerconnected', (e) => {
+          console.log(`Controller connected: ${controllerId}`, e.detail);
+        });
+      };
+
+      bindControllerEvents('leftController');
+      bindControllerEvents('rightController');
+
+      const sceneEl = document.querySelector('a-scene');
+      sceneEl.addEventListener('enter-vr', () => {
+        const cursor = document.getElementById('desktopCursor');
+        if (cursor) {
+          cursor.setAttribute('visible', 'false');
+          // OPT-A7: disable raycaster when in VR
+          cursor.setAttribute('raycaster', 'enabled: false');
+        }
+        const hud = document.getElementById('hud-overlay');
+        if (hud) hud.style.display = 'none';
+        if (!window.globalMicStream) {
+          requestMicPermissionIfNeeded();
+        }
+      });
+      sceneEl.addEventListener('exit-vr', () => {
+        const cursor = document.getElementById('desktopCursor');
+        if (cursor) {
+          cursor.setAttribute('visible', 'true');
+          cursor.setAttribute('raycaster', 'enabled: true');
+        }
+        const hud = document.getElementById('hud-overlay');
+        if (hud) hud.style.display = 'block';
+        usePicoRecorder = (!SpeechRecognition || detectBrowser() === 'pico');
+      });
+
+      window.addEventListener('click', async (e) => {
+        if (e.target && (e.target.classList.contains('a-enter-vr-button') || e.target.closest('.a-enter-vr-button'))) {
+          await requestMicPermissionIfNeeded();
+        }
+      }, true);
+    }
+
+    // ==========================================
+    // RECORDING CONTROL FLOW
+    // ==========================================
+    async function startRecording() {
+      if (!recognition && !usePicoRecorder) {
+        showTextInputFallback();
+        return;
+      }
+      if (isRecording) return;
+      const hasPermission = await requestMicPermissionIfNeeded();
+      if (!hasPermission) {
+        showTextInputFallback();
+        return;
+      }
+      initAmbientAudio();
+      if (!ttsAudioCtx) {
+        ttsAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (ttsAudioCtx.state === 'suspended') {
+        ttsAudioCtx.resume();
+      }
+      const talkBtn = document.getElementById('talkButton');
+      if (talkBtn) {
+        talkBtn.classList.add('listening');
+        talkBtn.textContent = usePicoRecorder ? 'Hold to Speak (Recording...)' : 'Hold to Speak (Listening...)';
+      }
+      recognizedText = "";
+      stopSpeakingAnimation();
+      const cubeEl = document.getElementById('aiNPC');
+      if (cubeEl) {
+        cubeEl.removeAttribute('animation__move_room');
+        cubeEl.setAttribute('position', '-8.52 0.05 -8.93');
+        cubeEl.setAttribute('rotation', '0 270 0');
+      }
+      isRecording = true;
+      updateUIState("Listening...");
+      setCubeState("listening");
+      document.getElementById('userText').setAttribute('value', "You: [Listening...]");
+      if (usePicoRecorder) {
+        try {
+          await picoRecorder.start();
+        } catch (err) {
+          console.error(err);
+          isRecording = false;
+          updateUIState("HOLD M TO SPEAK");
+          setCubeState("idle");
+          showTextInputFallback();
+        }
+      } else {
+        recognitionStarted = false;
+        try {
+          recognition.lang = currentLang;
+          recognition.start();
+        } catch (err) {
+          console.error(err);
+          isRecording = false;
+          updateUIState("HOLD M TO SPEAK");
+          setCubeState("idle");
+        }
+      }
+    }
+
+    async function stopRecording() {
+      if (!isRecording) return;
+      if (usePicoRecorder) {
+        isRecording = false;
+        updateUIState("Transcribing...");
+        document.getElementById('userText').setAttribute('value', "You: [Transcribing...]");
+        const talkBtn = document.getElementById('talkButton');
+        if (talkBtn) {
+          talkBtn.classList.remove('listening');
+          talkBtn.textContent = 'Hold to Speak';
+        }
+        try {
+          const base64Audio = await picoRecorder.stop();
+          if (base64Audio) {
+            const res = await fetch('/api/transcribe', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ audio: { content: base64Audio } })
+            });
+            if (res.ok) {
+              const data = await res.json();
+              recognizedText = data.transcript || '';
+            }
+          }
+        } catch (err) {
+          console.error(err);
+        }
+        if (recognizedText) {
+          updateUIState("Thinking...");
+          setCubeState("thinking");
+          sendToGemini(recognizedText);
+        } else {
+          updateUIState("HOLD M TO SPEAK");
+          setCubeState("idle");
+          document.getElementById('userText').setAttribute('value', 'You: ...');
+        }
+      } else {
+        if (!recognition) return;
+        if (!recognitionStarted) {
+          isRecording = false;
+          return;
+        }
+        try {
+          recognition.stop();
+        } catch (err) {
+          console.error(err);
+        }
+        clearTimeout(recognitionFallbackTimeout);
+        recognitionFallbackTimeout = setTimeout(() => {
+          if (isRecording) {
+            recognition.onend();
+          }
+        }, 3000);
+      }
+    }
+
+    // ==========================================
+    // DYNAMIC VISUAL STATES & ANIMATIONS
+    // ==========================================
+    function updateUIState(stateText) {
+      const status3D = document.getElementById('statusText');
+      if (status3D) {
+        status3D.setAttribute('value', stateText.toUpperCase());
+        if (stateText === "Listening...") status3D.setAttribute('color', '#d4ccc0');
+        else if (stateText === "Thinking...") status3D.setAttribute('color', '#d4ccc0');
+        else if (stateText === "Speaking...") status3D.setAttribute('color', '#d4ccc0');
+        else status3D.setAttribute('color', '#e8e0d0');
+      }
+
+      const badge2D = document.getElementById('hudStatusBadge');
+      if (badge2D) {
+        badge2D.textContent = stateText;
+        badge2D.className = 'status-badge';
+        if (stateText === "Listening...") badge2D.classList.add('listening');
+        if (stateText === "Thinking...") badge2D.classList.add('thinking');
+        if (stateText === "Speaking...") badge2D.classList.add('speaking');
+      }
+    }
+
+    function setCubeState(state) {
+      const light = document.getElementById('cubeLight');
+      if (!light) return;
+      switch (state) {
+        case "idle":
+          light.setAttribute('light', 'color: #c8b88a; intensity: 1.2; distance: 12; decay: 2');
+          stopSpeakingAnimation();
+          break;
+        case "listening":
+          light.setAttribute('light', 'color: #d4ccc0; intensity: 1.5; distance: 12; decay: 2');
+          stopSpeakingAnimation();
+          break;
+        case "thinking":
+          light.setAttribute('light', 'color: #d4ccc0; intensity: 1.5; distance: 12; decay: 2');
+          stopSpeakingAnimation();
+          break;
+        case "speaking":
+          light.setAttribute('light', 'color: #d4ccc0; intensity: 1.5; distance: 12; decay: 2');
+          startSpeakingAnimation();
+          break;
+      }
+    }
+
+    function startSpeakingAnimation() {
+      stopSpeakingAnimation();
+      const light = document.getElementById('cubeLight');
+      if (!light) return;
+      let dir = 1;
+      let intensity = 1.2;
+      speechAnimationInterval = setInterval(() => {
+        intensity += 0.08 * dir;
+        if (intensity >= 2.0) dir = -1;
+        else if (intensity <= 1.0) dir = 1;
+        light.setAttribute('light', `color: #d4ccc0; intensity: ${intensity}; distance: 12; decay: 2`);
+      }, 80);
+    }
+
+    function stopSpeakingAnimation() {
+      if (speechAnimationInterval) {
+        clearInterval(speechAnimationInterval);
+        speechAnimationInterval = null;
+      }
+      const light = document.getElementById('cubeLight');
+      if (light) {
+        light.setAttribute('light', 'color: #c8b88a; intensity: 1.2; distance: 12; decay: 2');
+      }
+    }
+
+    // ==========================================
+    // ROLE REVERSAL: GUEST PROFILES & STATE
+    // ==========================================
+    const GUEST_PROFILES = [
+      {
+        name: "James Sterling",
+        nights: 3,
+        guestsCount: 2,
+        secretRoomType: "Suite",
+        personality: "Polite",
+        guidance: "You are a very polite, friendly, and helpful guest. Answer the receptionist clearly, cordially, and in brief sentences."
+      },
+      {
+        name: "Sophia Vance",
+        nights: 2,
+        guestsCount: 1,
+        secretRoomType: "Single Room",
+        personality: "Impatient",
+        guidance: "You are in a big hurry. Your answers must be direct, brief, and slightly rushed. Absolutely do NOT include any stage directions or physical descriptions (like looks at watch, sighs, etc.) in your spoken text. Speak only as a natural, hurried human. Make sure to verbally push the receptionist to be quick, but answer when asked."
+      },
+      {
+        name: "David Kim",
+        nights: 5,
+        guestsCount: 4,
+        secretRoomType: "Family Room",
+        personality: "Indecisive",
+        guidance: "You are traveling with your family and need space, but you are highly indecisive. If asked about room type, ask the receptionist for advice or to list and describe options. Do not make up your mind immediately. Ask questions like 'What would you recommend for a family?'."
+      },
+      {
+        name: "Elena Rostova",
+        nights: 4,
+        guestsCount: 3,
+        secretRoomType: "Double Room",
+        personality: "Demanding",
+        guidance: "You are a demanding VIP guest. Before fully giving your information or confirming the booking, ask if premium Wi-Fi is available, or if breakfast is included, and if parking is covered. Expect high-class service and respond accordingly."
+      }
+    ];
+
+    let currentGuestProfile = null;
+
+    function selectRandomGuestProfile() {
+      const randomIndex = Math.floor(Math.random() * GUEST_PROFILES.length);
+      currentGuestProfile = GUEST_PROFILES[randomIndex];
+      console.log("Selected guest profile:", currentGuestProfile);
+    }
+
+    let missions = {
+      greeted: false,
+      nameObtained: false,
+      guestsConfirmed: false,
+      roomTypeSelected: false,
+      nightsCountAsked: false,
+      bookingConfirmed: false
+    };
+
+    let obtainedValues = {
+      guestName: "TBD",
+      roomType: "Not Selected",
+      nights: "TBD",
+      roomNumberAssigned: "TBD"
+    };
+
+    let evaluationComplete = false;
+    let successAudioCtx = null;
+
+    function playSuccessSound() {
+      try {
+        if (!successAudioCtx) {
+          successAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        const now = successAudioCtx.currentTime;
+        const osc1 = successAudioCtx.createOscillator();
+        const gain1 = successAudioCtx.createGain();
+        osc1.type = "sine";
+        osc1.frequency.setValueAtTime(523.25, now);
+        gain1.gain.setValueAtTime(0.12, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+        osc1.connect(gain1);
+        gain1.connect(successAudioCtx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.15);
+        const osc2 = successAudioCtx.createOscillator();
+        const gain2 = successAudioCtx.createGain();
+        osc2.type = "sine";
+        osc2.frequency.setValueAtTime(659.25, now + 0.08);
+        gain2.gain.setValueAtTime(0.12, now + 0.08);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.33);
+        osc2.connect(gain2);
+        gain2.connect(successAudioCtx.destination);
+        osc2.start(now + 0.08);
+        osc2.stop(now + 0.33);
+      } catch (err) {
+        console.warn("Could not play success sound:", err);
+      }
+    }
+
+    let ambientAudioCtx = null;
+
+    function initAmbientAudio() {
+      if (ambientAudioCtx) return;
+      try {
+        ambientAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const bufferSize = ambientAudioCtx.sampleRate * 2;
+        const buffer = ambientAudioCtx.createBuffer(1, bufferSize, ambientAudioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * (1 - Math.random() * 0.5);
+        }
+        const hvacSource = ambientAudioCtx.createBufferSource();
+        hvacSource.buffer = buffer;
+        hvacSource.loop = true;
+        const hvacFilter = ambientAudioCtx.createBiquadFilter();
+        hvacFilter.type = 'lowpass';
+        hvacFilter.frequency.setValueAtTime(350, ambientAudioCtx.currentTime);
+        hvacFilter.Q.setValueAtTime(0.5, ambientAudioCtx.currentTime);
+        const hvacGain = ambientAudioCtx.createGain();
+        hvacGain.gain.setValueAtTime(0.012, ambientAudioCtx.currentTime);
+        hvacSource.connect(hvacFilter);
+        hvacFilter.connect(hvacGain);
+        hvacGain.connect(ambientAudioCtx.destination);
+        hvacSource.start();
+
+        function scheduleFootstep() {
+          if (!ambientAudioCtx) return;
+          const delay = 6000 + Math.random() * 12000;
+          setTimeout(() => {
+            if (!ambientAudioCtx) return;
+            const fb = ambientAudioCtx.createBuffer(1, ambientAudioCtx.sampleRate * 0.08, ambientAudioCtx.sampleRate);
+            const fd = fb.getChannelData(0);
+            for (let i = 0; i < fd.length; i++) {
+              fd[i] = (Math.random() * 2 - 1) * (1 - i / fd.length) * 0.025;
+            }
+            const fs = ambientAudioCtx.createBufferSource();
+            fs.buffer = fb;
+            const fg = ambientAudioCtx.createGain();
+            fg.gain.setValueAtTime(0.006, ambientAudioCtx.currentTime);
+            const ff = ambientAudioCtx.createBiquadFilter();
+            ff.type = 'lowpass';
+            ff.frequency.setValueAtTime(800, ambientAudioCtx.currentTime);
+            fs.connect(ff);
+            ff.connect(fg);
+            fg.connect(ambientAudioCtx.destination);
+            fs.start();
+            scheduleFootstep();
+          }, delay);
+        }
+        scheduleFootstep();
+      } catch (e) {
+        console.warn('Ambient audio unavailable:', e);
+      }
+    }
+
+    function updateMissionsAndUI(detectedMissions, currentValues) {
+      if (!detectedMissions || !currentValues) return;
+      let anyMissionCompleted = false;
+      const missionKeys = ["greeted", "nameObtained", "guestsConfirmed", "roomTypeSelected", "nightsCountAsked", "bookingConfirmed"];
+      missionKeys.forEach(key => {
+        if (detectedMissions[key] === true && missions[key] === false) {
+          missions[key] = true;
+          anyMissionCompleted = true;
+        }
+      });
+      if (anyMissionCompleted) {
+        playSuccessSound();
+      }
+      if (currentValues.guestName) obtainedValues.guestName = currentValues.guestName;
+      if (currentValues.roomType) obtainedValues.roomType = currentValues.roomType;
+      if (currentValues.nights) obtainedValues.nights = currentValues.nights;
+      if (currentValues.roomNumberAssigned) obtainedValues.roomNumberAssigned = currentValues.roomNumberAssigned;
+      update3DClipboard();
+      update2DHUD();
+    }
+
+    function update3DClipboard() {
+      const getTaskText = (isCompleted, taskName) => isCompleted ? `[X] ${taskName}` : `[ ] ${taskName}`;
+      const getTaskColor = (isCompleted) => isCompleted ? "#8aaa88" : "#e8e0d0";
+      const ids = ['clipTaskGreet','clipTaskName','clipTaskCount','clipTaskRoom','clipTaskNights','clipTaskConfirm'];
+      const keys = ['greeted','nameObtained','guestsConfirmed','roomTypeSelected','nightsCountAsked','bookingConfirmed'];
+      const names = ['1. Greet Guest','2. Ask Name','3. Ask Guest Count','4. Ask Room Type','5. Ask Nights Count','6. Confirm Booking'];
+      ids.forEach((id, i) => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.setAttribute('value', getTaskText(missions[keys[i]], names[i]));
+          el.setAttribute('color', getTaskColor(missions[keys[i]]));
+        }
+      });
+      const clipGuestVal = document.getElementById('clipGuestVal');
+      const clipRoomVal = document.getElementById('clipRoomVal');
+      const clipNightsVal = document.getElementById('clipNightsVal');
+      const clipAssignedVal = document.getElementById('clipAssignedVal');
+      if (clipGuestVal) clipGuestVal.setAttribute('value', `Guest: ${obtainedValues.guestName}`);
+      if (clipRoomVal) clipRoomVal.setAttribute('value', `Type: ${obtainedValues.roomType}`);
+      if (clipNightsVal) clipNightsVal.setAttribute('value', `Nights: ${obtainedValues.nights}`);
+      if (clipAssignedVal) clipAssignedVal.setAttribute('value', `Room: ${obtainedValues.roomNumberAssigned}`);
+    }
+
+    function update2DHUD() {
+      const getTask2DHTML = (isCompleted, taskName) => isCompleted ? `✅ ${taskName}` : `⬜ ${taskName}`;
+      const getTask2DColor = (isCompleted) => isCompleted ? "#4ade80" : "#9ca3af";
+      const hudIds = ['taskGreet','taskName','taskCount','taskRoom','taskNights','taskConfirm'];
+      const keys = ['greeted','nameObtained','guestsConfirmed','roomTypeSelected','nightsCountAsked','bookingConfirmed'];
+      const names = ['1. Greet the guest',"2. Get guest's name",'3. Ask guest count','4. Ask preferred room type','5. Ask number of nights','6. Confirm the booking'];
+      hudIds.forEach((id, i) => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.textContent = getTask2DHTML(missions[keys[i]], names[i]);
+          el.style.color = getTask2DColor(missions[keys[i]]);
+        }
+      });
+      const guestName2D = document.getElementById('guestName2D');
+      const roomDetails2D = document.getElementById('roomDetails2D');
+      const nights2D = document.getElementById('nights2D');
+      const bookingStatus2D = document.getElementById('bookingStatus2D');
+      const hudTip = document.getElementById('hudTip');
+      if (guestName2D) guestName2D.textContent = obtainedValues.guestName;
+      if (roomDetails2D) roomDetails2D.textContent = obtainedValues.roomType;
+      if (nights2D) nights2D.textContent = obtainedValues.nights;
+      if (bookingStatus2D) {
+        bookingStatus2D.textContent = obtainedValues.roomNumberAssigned;
+        bookingStatus2D.style.color = (obtainedValues.roomNumberAssigned !== "TBD") ? "#8aaa88" : "#c8b88a";
+      }
+      if (hudTip) {
+        if (!missions.greeted) hudTip.textContent = "Tip: Welcome the guest! Try saying 'Hello, welcome to our hotel.'";
+        else if (!missions.nameObtained) hudTip.textContent = "Tip: Ask for the guest's name. Try 'Could I have your name, please?'";
+        else if (!missions.guestsConfirmed) hudTip.textContent = "Tip: Ask how many people are staying. Try 'For how many people is the room?'";
+        else if (!missions.roomTypeSelected) hudTip.textContent = "Tip: Offer room types. Try 'We have single rooms, double rooms, and suites. Which would you like?'";
+        else if (!missions.nightsCountAsked) hudTip.textContent = "Tip: Ask how many nights. Try 'How many nights will you be staying with us?'";
+        else if (!missions.bookingConfirmed) hudTip.textContent = "Tip: Assign a room and confirm! Try 'I have assigned you Room 204. Your booking is confirmed!'";
+        else hudTip.textContent = "Congratulations! All tasks complete. Waiting for evaluation...";
+      }
+    }
+
+    // ==========================================
+    // FINAL EVALUATION SYSTEM
+    // ==========================================
+    async function triggerEvaluation() {
+      if (evaluationComplete) return;
+      evaluationComplete = true;
+      updateUIState("EVALUATING...");
+      setCubeState("thinking");
+      try {
+        const evalPrompt = `You are an expert hospitality instructor. Evaluate the receptionist's performance in the preceding hotel booking conversation.
+
+Analyze the entire conversation history. Rate the receptionist 1-10 for each criterion:
+1. Communication - clear, polite, appropriate vocabulary
+2. LogicalOrder - proper sequence: greeting → details → assigning room → confirmation
+3. Professionalism - courteous, helpful, service attitude
+4. Precision - successfully gathered all required information
+5. Fluency - smooth natural interaction
+
+Provide evaluation in this JSON schema:
+{
+  "communication": number,
+  "logicalOrder": number,
+  "professionalism": number,
+  "precision": number,
+  "fluency": number,
+  "overallScore": number,
+  "summary": "Brief summary of overall performance.",
+  "mistakes": "Specific mistakes or areas needing improvement.",
+  "recommendations": "Actionable recommendations to improve."
+}
+
+Be honest but constructive. Use numbers only for scores (1-10).`;
+
+        const evalPayload = {
+          contents: chatHistory,
+          systemInstruction: { parts: [{ text: evalPrompt }] },
+          generationConfig: { responseMimeType: "application/json" }
+        };
+
+        const response = await fetch(ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(evalPayload)
+        });
+
+        if (!response.ok) {
+          throw new Error(`Evaluation API failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+        let evalString = "";
+        if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0]) {
+          evalString = data.candidates[0].content.parts[0].text;
+        }
+
+        let evalData;
+        try {
+          evalData = JSON.parse(evalString);
+        } catch {
+          const cleaned = evalString.replace(/```json|```/g, "").trim();
+          evalData = JSON.parse(cleaned);
+        }
+
+        updateEvaluationUI(evalData);
+        updateEvaluationHUD(evalData);
+        updateUIState("EVALUATION COMPLETE");
+        setCubeState("idle");
+
+        // OPT-A9: Persist evaluation results to Vercel KV
+        await saveEvaluationResult(evalData);
+
+      } catch (error) {
+        console.error("Evaluation failed:", error);
+        updateUIState("HOLD M TO SPEAK");
+        setCubeState("idle");
+        evaluationComplete = false;
+      }
+    }
+
+    async function saveEvaluationResult(evalData) {
+      const session = window.__vrSession;
+      if (!session) return;
+      try {
+        await fetch('/api/save-result', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            studentName: session.studentName || 'Unknown',
+            experience: 'Hotel Receptionist',
+            guestProfile: currentGuestProfile ? currentGuestProfile.name : 'Unknown',
+            scores: {
+              communication: evalData.communication,
+              logicalOrder: evalData.logicalOrder,
+              professionalism: evalData.professionalism,
+              precision: evalData.precision,
+              fluency: evalData.fluency,
+              overall: evalData.overallScore
+            },
+            summary: evalData.summary,
+            mistakes: evalData.mistakes,
+            recommendations: evalData.recommendations,
+            completedAt: new Date().toISOString()
+          })
+        });
+        console.log("Evaluation result saved.");
+      } catch (err) {
+        console.warn("Could not save evaluation result:", err);
+      }
+    }
+
+    function updateEvaluationUI(evalData) {
+      const evalPanel = document.getElementById('evaluationPanel');
+      if (!evalPanel) return;
+      evalPanel.setAttribute('visible', 'true');
+      const evalScore = document.getElementById('evalScore');
+      if (evalScore) evalScore.setAttribute('value', `OVERALL: ${evalData.overallScore || '?'}/10`);
+      const evalCriteria1 = document.getElementById('evalCriteria1');
+      if (evalCriteria1) evalCriteria1.setAttribute('value', `Communication: ${evalData.communication || '-'}/10\nLogical Order: ${evalData.logicalOrder || '-'}/10\nProfessionalism: ${evalData.professionalism || '-'}/10`);
+      const evalCriteria2 = document.getElementById('evalCriteria2');
+      if (evalCriteria2) evalCriteria2.setAttribute('value', `Precision: ${evalData.precision || '-'}/10\nFluency: ${evalData.fluency || '-'}/10`);
+      const evalSummary = document.getElementById('evalSummary');
+      if (evalSummary) evalSummary.setAttribute('value', `Summary: ${evalData.summary || 'No summary provided.'}`);
+      const evalMistakes = document.getElementById('evalMistakes');
+      if (evalMistakes) evalMistakes.setAttribute('value', `Mistakes: ${evalData.mistakes || 'None recorded'}`);
+      const evalRecommendations = document.getElementById('evalRecommendations');
+      if (evalRecommendations) evalRecommendations.setAttribute('value', `Recommendations: ${evalData.recommendations || 'Continue practicing!'}`);
+      const uiPanel = document.getElementById('uiPanel');
+      if (uiPanel) uiPanel.setAttribute('visible', 'false');
+    }
+
+    function updateEvaluationHUD(evalData) {
+      const hudTip = document.getElementById('hudTip');
+      if (hudTip) {
+        hudTip.innerHTML = `<strong>EVALUATION COMPLETE</strong><br>Overall: ${evalData.overallScore || '?'}/10<br>Communication: ${evalData.communication || '-'}/10 | Logical Order: ${evalData.logicalOrder || '-'}/10 | Professionalism: ${evalData.professionalism || '-'}/10<br>Precision: ${evalData.precision || '-'}/10 | Fluency: ${evalData.fluency || '-'}/10<br><br>Summary: ${evalData.summary || ''}<br>Mistakes: ${evalData.mistakes || 'None recorded'}<br>Recommendations: ${evalData.recommendations || 'Continue practicing!'}`;
+      }
+      let resetBtn = document.getElementById('resetSimulationBtn');
+      if (!resetBtn) {
+        resetBtn = document.createElement('button');
+        resetBtn.id = 'resetSimulationBtn';
+        resetBtn.className = 'talk-btn';
+        resetBtn.textContent = '🔄 Start New Simulation';
+        resetBtn.style.marginTop = '15px';
+        resetBtn.addEventListener('click', resetSimulation);
+        const hudOverlay = document.querySelector('.glass-card');
+        if (hudOverlay) hudOverlay.appendChild(resetBtn);
+      }
+    }
+
+    function resetSimulation() {
+      missions = {
+        greeted: false, nameObtained: false, guestsConfirmed: false,
+        roomTypeSelected: false, nightsCountAsked: false, bookingConfirmed: false
+      };
+      obtainedValues = {
+        guestName: "TBD", roomType: "Not Selected", nights: "TBD", roomNumberAssigned: "TBD"
+      };
+      evaluationComplete = false;
+      chatHistory = [];
+      selectRandomGuestProfile();
+      const evalPanel = document.getElementById('evaluationPanel');
+      if (evalPanel) evalPanel.setAttribute('visible', 'false');
+      const uiPanel = document.getElementById('uiPanel');
+      if (uiPanel) uiPanel.setAttribute('visible', 'true');
+      const aiText = document.getElementById('aiText');
+      if (aiText) aiText.setAttribute('value', `Guest: (New guest arriving...) Welcome to begin.`);
+      const userText = document.getElementById('userText');
+      if (userText) userText.setAttribute('value', 'You: ...');
+      update3DClipboard();
+      update2DHUD();
+      const resetBtn = document.getElementById('resetSimulationBtn');
+      if (resetBtn) resetBtn.remove();
+      updateUIState("HOLD M TO SPEAK");
+      setCubeState("idle");
+      const npc = document.getElementById('aiNPC');
+      if (npc) {
+        npc.removeAttribute('animation__move_room');
+        npc.setAttribute('position', '-8.52 0.05 -8.93');
+        npc.setAttribute('rotation', '0 270 0');
+        npc.removeAttribute('npc-controller');
+        npc.setAttribute('npc-controller', '');
+      }
+      const hudTip = document.getElementById('hudTip');
+      if (hudTip) hudTip.textContent = "A new guest has arrived! Say 'Hello!' to start.";
+    }
+
+    // ==========================================
+    // GEMINI CONNECTION & TEXT-TO-SPEECH
+    // ==========================================
+    async function sendToGemini(textPrompt) {
+      try {
+        console.log("Calling Gemini API with text:", textPrompt);
+        chatHistory.push({ role: "user", parts: [{ text: textPrompt }] });
+        chatHistory = chatHistory.slice(-20);
+        
+        const profile = currentGuestProfile;
+        const systemPrompt = `You are a hotel guest (the customer) in a virtual reality hotel. The user is the hotel receptionist.
+
+Your profile (internal - do not reveal all at once):
+- Name: ${profile.name}
+- Number of guests in your party: ${profile.guestsCount}
+- Preferred room type (secret until you are offered options): ${profile.secretRoomType}
+- Number of nights staying: ${profile.nights}
+- Personality: ${profile.personality}
+
+Personality Guidance: ${profile.guidance}
+
+IMPORTANT RULES:
+- Speak ONLY in English.
+- NEVER include stage directions, asterisks, brackets, or descriptions of physical actions in your speech. Speak only as a real person talking.
+- Do NOT reveal your profile information unless the receptionist asks you specific questions.
+- If the receptionist asks about room type, ONLY choose from the options they list. If they don't offer options, ask them to describe what is available.
+- Keep your conversational responses brief (1-2 sentences maximum).
+- Be a realistic guest - behave according to your personality.
+
+Your response MUST be a JSON object with the following schema:
+{
+  "guestResponse": "Your conversational reply in English as the guest speaking to the receptionist.",
+  "detectedMissions": {
+    "greeted": false,
+    "nameObtained": false,
+    "guestsConfirmed": false,
+    "roomTypeSelected": false,
+    "nightsCountAsked": false,
+    "bookingConfirmed": false
+  },
+  "currentValues": {
+    "guestName": null,
+    "guestsCount": null,
+    "roomType": null,
+    "nights": null,
+    "roomNumberAssigned": null
+  }
+}
+
+Always output ONLY valid JSON. Speak only in English in guestResponse.`;
+
+        const payload = {
+          contents: chatHistory,
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          generationConfig: { responseMimeType: "application/json" }
+        };
+
+        const response = await fetch(ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          const errBody = await response.text();
+          throw new Error(`API returned status ${response.status}: ${errBody}`);
+        }
+
+        const data = await response.json();
+        let replyJsonString = "";
+        if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0]) {
+          replyJsonString = data.candidates[0].content.parts[0].text;
+          chatHistory.push({ role: "model", parts: [{ text: replyJsonString }] });
+        } else {
+          throw new Error("Invalid API candidates response structure.");
+        }
+
+        console.log("Raw Gemini JSON Reply:", replyJsonString);
+
+        let aiData;
+        try {
+          aiData = JSON.parse(replyJsonString);
+        } catch (jsonErr) {
+          const cleanedString = replyJsonString.replace(/```json|```/g, "").trim();
+          try {
+            aiData = JSON.parse(cleanedString);
+          } catch (jsonErr2) {
+            throw new Error("Failed to parse Gemini response as JSON: " + jsonErr2.message);
+          }
+        }
+
+        const aiReply = aiData.guestResponse || "Hello, I'd like to check in please.";
+        const detectedMissions = aiData.detectedMissions || {};
+        const currentValues = aiData.currentValues || {};
+
+        updateMissionsAndUI(detectedMissions, currentValues);
+        document.getElementById('aiText').setAttribute('value', `Guest: ${aiReply}`);
+        document.getElementById('userText').setAttribute('value', `You: ${recognizedText}`);
+        updateUIState("Speaking...");
+        setCubeState("speaking");
+        await speakText(aiReply);
+
+        if (currentValues.roomNumberAssigned && detectedMissions.bookingConfirmed === true) {
+          triggerGoToRoomAnimation();
+          setTimeout(() => {
+            if (missions.bookingConfirmed && !evaluationComplete) {
+              triggerEvaluation();
+            }
+          }, 2000);
+        }
+
+      } catch (error) {
+        console.error("Gemini Request Failed:", error);
+        chatHistory.pop();
+        const fallbackText = "Sorry, our booking system is currently down. Let's try again.";
+        document.getElementById('aiText').setAttribute('value', `AI Error: ${error.message}`);
+        updateUIState("HOLD M TO SPEAK");
+        setCubeState("idle");
+        await speakText(fallbackText);
+      }
+    }
+
+    function triggerGoToRoomAnimation() {
+      const cubeEl = document.getElementById('aiNPC');
+      if (cubeEl) {
+        cubeEl.components['npc-controller'].stopAnimations();
+        cubeEl.removeAttribute('npc-controller');
+        cubeEl.setAttribute('animation__move_room', 'property: position; to: -15 0 -20; dur: 8000; easing: easeInOutQuad');
+        cubeEl.addEventListener('animationcomplete', function onMoveDone() {
+          cubeEl.removeEventListener('animationcomplete', onMoveDone);
+        });
+      }
+    }
+
+    function getGuestVoiceConfig() {
+      if (!currentGuestProfile) {
+        return { voiceName: 'en-US-Standard-D', ssmlGender: 'MALE' };
+      }
+      const name = currentGuestProfile.name;
+      if (name === 'Sophia Vance') return { voiceName: 'en-US-Standard-F', ssmlGender: 'FEMALE' };
+      if (name === 'David Kim') return { voiceName: 'en-US-Standard-J', ssmlGender: 'MALE' };
+      if (name === 'Elena Rostova') return { voiceName: 'en-US-Standard-H', ssmlGender: 'FEMALE' };
+      return { voiceName: 'en-US-Standard-D', ssmlGender: 'MALE' };
+    }
+
+    function speakViaAudio(text) {
+      return new Promise(async (resolve) => {
+        const done = () => {
+          updateUIState("HOLD M TO SPEAK");
+          setCubeState("idle");
+          resolve();
+        };
+        try {
+          const voiceConfig = getGuestVoiceConfig();
+          const res = await fetch('/api/synthesize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              text: text,
+              voiceName: voiceConfig.voiceName,
+              ssmlGender: voiceConfig.ssmlGender
+            })
+          });
+          if (!res.ok) { showTextResponse(text); done(); return; }
+          const data = await res.json();
+          if (!data.audioContent) { showTextResponse(text); done(); return; }
+          if (!ttsAudioCtx || ttsAudioCtx.state === 'closed') {
+            ttsAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          }
+          if (ttsAudioCtx.state === 'suspended') await ttsAudioCtx.resume();
+          const binary = atob(data.audioContent);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+          const audioBuffer = await ttsAudioCtx.decodeAudioData(bytes.buffer);
+          const source = ttsAudioCtx.createBufferSource();
+          source.buffer = audioBuffer;
+          source.connect(ttsAudioCtx.destination);
+          source.onended = done;
+          source.start();
+        } catch (e) {
+          console.warn('Audio TTS play failed:', e);
+          showTextResponse(text);
+          done();
+        }
+      });
+    }
+
+    async function speakText(textToSpeak) {
+      await speakViaAudio(textToSpeak);
+    }
+
+    function showTextInputFallback() {
+      const container = document.getElementById('textInputFallback');
+      const talkBtn = document.getElementById('talkButton');
+      if (container) {
+        container.style.display = 'block';
+        const input = document.getElementById('textInput');
+        if (input) setTimeout(() => input.focus(), 100);
+      }
+      if (talkBtn) talkBtn.style.display = 'none';
+      updateUIState("TYPE YOUR MESSAGE");
+    }
+
+    function showTextResponse(text) {
+      const hudTip = document.getElementById('hudTip');
+      if (hudTip) hudTip.innerHTML = `<strong>Guest said:</strong> "${text}"`;
+    }
+
+    function showMicWarning(msg) {
+      const warningEl = document.getElementById('micWarning');
+      if (warningEl) {
+        warningEl.innerHTML = `⚠️ <strong>Notice:</strong> ${msg}`;
+        warningEl.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>

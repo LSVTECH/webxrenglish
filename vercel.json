@@ -24,5 +24,16 @@
         }
       ]
     }
+  ],
+  "rewrites": [
+    { "source": "/login", "destination": "/login.html" },
+    { "source": "/dashboard", "destination": "/dashboard.html" },
+    { "source": "/experience", "destination": "/experience.html" },
+    { "source": "/api/chat", "destination": "/api/chat.js" },
+    { "source": "/api/synthesize", "destination": "/api/synthesize.js" },
+    { "source": "/api/transcribe", "destination": "/api/transcribe.js" },
+    { "source": "/api/auth", "destination": "/api/auth.js" },
+    { "source": "/api/save-result", "destination": "/api/save-result.js" },
+    { "source": "/api/get-results", "destination": "/api/get-results.js" }
   ]
 }

@@ -58,12 +58,19 @@ The content is organized as follows:
 .agents/skills/threejs-geometry/SKILL.md
 .agents/skills/threejs-lighting/SKILL.md
 .agents/skills/threejs-materials/SKILL.md
+.agents/skills/threejs-postprocessing/SKILL.md
 .agents/skills/threejs-shaders/SKILL.md
+.env.example
 .gitignore
 ~/.config/opencode/opencode.json
 AGENTS.md
 api/chat.js
+api/synthesize.js
+api/transcribe.js
+dev.sh
 index.html
+Models/HotelModel.glb
+Models/NPC.glb
 package.json
 skills-lock.json
 vercel.json
@@ -6762,6 +6769,611 @@ material.dispose();
 - `threejs-lighting` - Light interaction with materials
 </file>
 
+<file path=".agents/skills/threejs-postprocessing/SKILL.md">
+---
+name: threejs-postprocessing
+description: Three.js post-processing - EffectComposer, bloom, DOF, screen effects. Use when adding visual effects, color grading, blur, glow, or creating custom screen-space shaders.
+---
+
+# Three.js Post-Processing
+
+## Quick Start
+
+```javascript
+import * as THREE from "three";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+
+// Setup composer
+const composer = new EffectComposer(renderer);
+
+// Render scene
+const renderPass = new RenderPass(scene, camera);
+composer.addPass(renderPass);
+
+// Add bloom
+const bloomPass = new UnrealBloomPass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  1.5, // strength
+  0.4, // radius
+  0.85, // threshold
+);
+composer.addPass(bloomPass);
+
+// Animation loop - use composer instead of renderer
+function animate() {
+  requestAnimationFrame(animate);
+  composer.render(); // NOT renderer.render()
+}
+```
+
+## EffectComposer Setup
+
+```javascript
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+
+const composer = new EffectComposer(renderer);
+
+// First pass: render scene
+const renderPass = new RenderPass(scene, camera);
+composer.addPass(renderPass);
+
+// Add more passes...
+composer.addPass(effectPass);
+
+// Last pass should render to screen
+effectPass.renderToScreen = true; // Default for last pass
+
+// Handle resize
+function onResize() {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+
+  renderer.setSize(width, height);
+  composer.setSize(width, height);
+}
+```
+
+## Common Effects
+
+### Bloom (Glow)
+
+```javascript
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+
+const bloomPass = new UnrealBloomPass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  1.5, // strength - intensity of glow
+  0.4, // radius - spread of glow
+  0.85, // threshold - brightness threshold
+);
+
+composer.addPass(bloomPass);
+
+// Adjust at runtime
+bloomPass.strength = 2.0;
+bloomPass.threshold = 0.5;
+bloomPass.radius = 0.8;
+```
+
+### Selective Bloom
+
+Apply bloom only to specific objects.
+
+```javascript
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
+
+// Layer setup
+const BLOOM_LAYER = 1;
+const bloomLayer = new THREE.Layers();
+bloomLayer.set(BLOOM_LAYER);
+
+// Mark objects to bloom
+glowingMesh.layers.enable(BLOOM_LAYER);
+
+// Dark material for non-blooming objects
+const darkMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+const materials = {};
+
+function darkenNonBloomed(obj) {
+  if (obj.isMesh && !bloomLayer.test(obj.layers)) {
+    materials[obj.uuid] = obj.material;
+    obj.material = darkMaterial;
+  }
+}
+
+function restoreMaterial(obj) {
+  if (materials[obj.uuid]) {
+    obj.material = materials[obj.uuid];
+    delete materials[obj.uuid];
+  }
+}
+
+// Custom render loop
+function render() {
+  // Render bloom pass
+  scene.traverse(darkenNonBloomed);
+  composer.render();
+  scene.traverse(restoreMaterial);
+
+  // Render final scene over bloom
+  renderer.render(scene, camera);
+}
+```
+
+### FXAA (Anti-Aliasing)
+
+```javascript
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
+import { FXAAShader } from "three/addons/shaders/FXAAShader.js";
+
+const fxaaPass = new ShaderPass(FXAAShader);
+fxaaPass.material.uniforms["resolution"].value.set(
+  1 / window.innerWidth,
+  1 / window.innerHeight,
+);
+
+composer.addPass(fxaaPass);
+
+// Update on resize
+function onResize() {
+  fxaaPass.material.uniforms["resolution"].value.set(
+    1 / window.innerWidth,
+    1 / window.innerHeight,
+  );
+}
+```
+
+### SMAA (Better Anti-Aliasing)
+
+```javascript
+import { SMAAPass } from "three/addons/postprocessing/SMAAPass.js";
+
+const smaaPass = new SMAAPass(
+  window.innerWidth * renderer.getPixelRatio(),
+  window.innerHeight * renderer.getPixelRatio(),
+);
+
+composer.addPass(smaaPass);
+```
+
+### SSAO (Ambient Occlusion)
+
+```javascript
+import { SSAOPass } from "three/addons/postprocessing/SSAOPass.js";
+
+const ssaoPass = new SSAOPass(
+  scene,
+  camera,
+  window.innerWidth,
+  window.innerHeight,
+);
+ssaoPass.kernelRadius = 16;
+ssaoPass.minDistance = 0.005;
+ssaoPass.maxDistance = 0.1;
+
+composer.addPass(ssaoPass);
+
+// Output modes
+ssaoPass.output = SSAOPass.OUTPUT.Default;
+// SSAOPass.OUTPUT.Default - Final composited output
+// SSAOPass.OUTPUT.SSAO - Just the AO
+// SSAOPass.OUTPUT.Blur - Blurred AO
+// SSAOPass.OUTPUT.Depth - Depth buffer
+// SSAOPass.OUTPUT.Normal - Normal buffer
+```
+
+### Depth of Field (DOF)
+
+```javascript
+import { BokehPass } from "three/addons/postprocessing/BokehPass.js";
+
+const bokehPass = new BokehPass(scene, camera, {
+  focus: 10.0, // Focus distance
+  aperture: 0.025, // Aperture (smaller = more DOF)
+  maxblur: 0.01, // Max blur amount
+});
+
+composer.addPass(bokehPass);
+
+// Update focus dynamically
+bokehPass.uniforms["focus"].value = distanceToTarget;
+```
+
+### Film Grain
+
+```javascript
+import { FilmPass } from "three/addons/postprocessing/FilmPass.js";
+
+const filmPass = new FilmPass(
+  0.35, // noise intensity
+  0.5, // scanline intensity
+  648, // scanline count
+  false, // grayscale
+);
+
+composer.addPass(filmPass);
+```
+
+### Vignette
+
+```javascript
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
+import { VignetteShader } from "three/addons/shaders/VignetteShader.js";
+
+const vignettePass = new ShaderPass(VignetteShader);
+vignettePass.uniforms["offset"].value = 1.0; // Vignette size
+vignettePass.uniforms["darkness"].value = 1.0; // Vignette intensity
+
+composer.addPass(vignettePass);
+```
+
+### Color Correction
+
+```javascript
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
+import { ColorCorrectionShader } from "three/addons/shaders/ColorCorrectionShader.js";
+
+const colorPass = new ShaderPass(ColorCorrectionShader);
+colorPass.uniforms["powRGB"].value = new THREE.Vector3(1.2, 1.2, 1.2); // Power
+colorPass.uniforms["mulRGB"].value = new THREE.Vector3(1.0, 1.0, 1.0); // Multiply
+
+composer.addPass(colorPass);
+```
+
+### Gamma Correction
+
+```javascript
+import { GammaCorrectionShader } from "three/addons/shaders/GammaCorrectionShader.js";
+
+const gammaPass = new ShaderPass(GammaCorrectionShader);
+composer.addPass(gammaPass);
+```
+
+### Pixelation
+
+```javascript
+import { RenderPixelatedPass } from "three/addons/postprocessing/RenderPixelatedPass.js";
+
+const pixelPass = new RenderPixelatedPass(6, scene, camera); // 6 = pixel size
+
+composer.addPass(pixelPass);
+```
+
+### Glitch Effect
+
+```javascript
+import { GlitchPass } from "three/addons/postprocessing/GlitchPass.js";
+
+const glitchPass = new GlitchPass();
+glitchPass.goWild = false; // Continuous glitching
+
+composer.addPass(glitchPass);
+```
+
+### Halftone
+
+```javascript
+import { HalftonePass } from "three/addons/postprocessing/HalftonePass.js";
+
+const halftonePass = new HalftonePass(window.innerWidth, window.innerHeight, {
+  shape: 1, // 1 = dot, 2 = ellipse, 3 = line, 4 = square
+  radius: 4, // Dot size
+  rotateR: Math.PI / 12,
+  rotateB: (Math.PI / 12) * 2,
+  rotateG: (Math.PI / 12) * 3,
+  scatter: 0,
+  blending: 1,
+  blendingMode: 1,
+  greyscale: false,
+});
+
+composer.addPass(halftonePass);
+```
+
+### Outline
+
+```javascript
+import { OutlinePass } from "three/addons/postprocessing/OutlinePass.js";
+
+const outlinePass = new OutlinePass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  scene,
+  camera,
+);
+
+outlinePass.edgeStrength = 3;
+outlinePass.edgeGlow = 0;
+outlinePass.edgeThickness = 1;
+outlinePass.pulsePeriod = 0;
+outlinePass.visibleEdgeColor.set(0xffffff);
+outlinePass.hiddenEdgeColor.set(0x190a05);
+
+// Select objects to outline
+outlinePass.selectedObjects = [mesh1, mesh2];
+
+composer.addPass(outlinePass);
+```
+
+## Custom ShaderPass
+
+Create your own post-processing effects.
+
+```javascript
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
+
+const CustomShader = {
+  uniforms: {
+    tDiffuse: { value: null }, // Required: input texture
+    time: { value: 0 },
+    intensity: { value: 1.0 },
+  },
+  vertexShader: `
+    varying vec2 vUv;
+
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: `
+    uniform sampler2D tDiffuse;
+    uniform float time;
+    uniform float intensity;
+    varying vec2 vUv;
+
+    void main() {
+      vec2 uv = vUv;
+
+      // Wave distortion
+      uv.x += sin(uv.y * 10.0 + time) * 0.01 * intensity;
+
+      vec4 color = texture2D(tDiffuse, uv);
+      gl_FragColor = color;
+    }
+  `,
+};
+
+const customPass = new ShaderPass(CustomShader);
+composer.addPass(customPass);
+
+// Update in animation loop
+customPass.uniforms.time.value = clock.getElapsedTime();
+```
+
+### Invert Colors Shader
+
+```javascript
+const InvertShader = {
+  uniforms: {
+    tDiffuse: { value: null },
+  },
+  vertexShader: `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: `
+    uniform sampler2D tDiffuse;
+    varying vec2 vUv;
+
+    void main() {
+      vec4 color = texture2D(tDiffuse, vUv);
+      gl_FragColor = vec4(1.0 - color.rgb, color.a);
+    }
+  `,
+};
+```
+
+### Chromatic Aberration
+
+```javascript
+const ChromaticAberrationShader = {
+  uniforms: {
+    tDiffuse: { value: null },
+    amount: { value: 0.005 },
+  },
+  vertexShader: `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: `
+    uniform sampler2D tDiffuse;
+    uniform float amount;
+    varying vec2 vUv;
+
+    void main() {
+      vec2 dir = vUv - 0.5;
+      float dist = length(dir);
+
+      float r = texture2D(tDiffuse, vUv - dir * amount * dist).r;
+      float g = texture2D(tDiffuse, vUv).g;
+      float b = texture2D(tDiffuse, vUv + dir * amount * dist).b;
+
+      gl_FragColor = vec4(r, g, b, 1.0);
+    }
+  `,
+};
+```
+
+## Combining Multiple Effects
+
+```javascript
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
+import { FXAAShader } from "three/addons/shaders/FXAAShader.js";
+import { VignetteShader } from "three/addons/shaders/VignetteShader.js";
+import { GammaCorrectionShader } from "three/addons/shaders/GammaCorrectionShader.js";
+
+const composer = new EffectComposer(renderer);
+
+// 1. Render scene
+composer.addPass(new RenderPass(scene, camera));
+
+// 2. Bloom
+const bloomPass = new UnrealBloomPass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  0.5,
+  0.4,
+  0.85,
+);
+composer.addPass(bloomPass);
+
+// 3. Vignette
+const vignettePass = new ShaderPass(VignetteShader);
+vignettePass.uniforms["offset"].value = 0.95;
+vignettePass.uniforms["darkness"].value = 1.0;
+composer.addPass(vignettePass);
+
+// 4. Gamma correction
+composer.addPass(new ShaderPass(GammaCorrectionShader));
+
+// 5. Anti-aliasing (always last before output)
+const fxaaPass = new ShaderPass(FXAAShader);
+fxaaPass.uniforms["resolution"].value.set(
+  1 / window.innerWidth,
+  1 / window.innerHeight,
+);
+composer.addPass(fxaaPass);
+```
+
+## Render to Texture
+
+```javascript
+// Create render target
+const renderTarget = new THREE.WebGLRenderTarget(512, 512);
+
+// Render scene to target
+renderer.setRenderTarget(renderTarget);
+renderer.render(scene, camera);
+renderer.setRenderTarget(null);
+
+// Use texture
+const texture = renderTarget.texture;
+otherMaterial.map = texture;
+```
+
+## Multi-Pass Rendering
+
+```javascript
+// Multiple composers for different scenes/layers
+const bgComposer = new EffectComposer(renderer);
+bgComposer.addPass(new RenderPass(bgScene, camera));
+
+const fgComposer = new EffectComposer(renderer);
+fgComposer.addPass(new RenderPass(fgScene, camera));
+fgComposer.addPass(bloomPass);
+
+// Combine in render loop
+function animate() {
+  // Render background without clearing
+  renderer.autoClear = false;
+  renderer.clear();
+
+  bgComposer.render();
+
+  // Render foreground over it
+  renderer.clearDepth();
+  fgComposer.render();
+}
+```
+
+## WebGPU Post-Processing (Three.js r150+)
+
+```javascript
+import { postProcessing } from "three/addons/nodes/Nodes.js";
+import { pass, bloom, dof } from "three/addons/nodes/Nodes.js";
+
+// Using node-based system
+const scenePass = pass(scene, camera);
+const bloomNode = bloom(scenePass, 0.5, 0.4, 0.85);
+
+const postProcessing = new THREE.PostProcessing(renderer);
+postProcessing.outputNode = bloomNode;
+
+// Render
+function animate() {
+  postProcessing.render();
+}
+```
+
+## Performance Tips
+
+1. **Limit passes**: Each pass adds a full-screen render
+2. **Lower resolution**: Use smaller render targets for blur passes
+3. **Disable unused effects**: Toggle passes on/off
+4. **Use FXAA over MSAA**: Less expensive anti-aliasing
+5. **Profile with DevTools**: Check GPU usage
+
+```javascript
+// Disable pass
+bloomPass.enabled = false;
+
+// Reduce bloom resolution
+const bloomPass = new UnrealBloomPass(
+  new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2),
+  strength,
+  radius,
+  threshold,
+);
+
+// Only apply effects in high-performance scenarios
+const isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
+if (!isMobile) {
+  composer.addPass(expensivePass);
+}
+```
+
+## Handle Resize
+
+```javascript
+function onWindowResize() {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  const pixelRatio = renderer.getPixelRatio();
+
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+
+  renderer.setSize(width, height);
+  composer.setSize(width, height);
+
+  // Update pass-specific resolutions
+  if (fxaaPass) {
+    fxaaPass.material.uniforms["resolution"].value.set(
+      1 / (width * pixelRatio),
+      1 / (height * pixelRatio),
+    );
+  }
+
+  if (bloomPass) {
+    bloomPass.resolution.set(width, height);
+  }
+}
+
+window.addEventListener("resize", onWindowResize);
+```
+
+## See Also
+
+- `threejs-shaders` - Custom shader development
+- `threejs-textures` - Render targets
+- `threejs-fundamentals` - Renderer setup
+</file>
+
 <file path=".agents/skills/threejs-shaders/SKILL.md">
 ---
 name: threejs-shaders
@@ -7407,162 +8019,64 @@ color = mix(colorB, colorA, step(0.5, value));
 - `threejs-textures` - Texture sampling in shaders
 </file>
 
-<file path=".gitignore">
-.env
-.env.local
-.vercel
-node_modules
+<file path=".env.example">
+# ==========================================================================
+#  webxrenglish — environment variables template
+#  Copy this file to .env.local and fill in the real values.
+#  .env.local is gitignored — never commit real secrets.
+# ==========================================================================
+
+# --- Application secrets (used by the serverless functions in /api) ---
+
+# Google Generative Language API key (Gemini).
+# Used by api/chat.js and api/transcribe.js.
+GOOGLE_API_KEY=
+
+# Google Text-to-Speech API key.
+# Used by api/synthesize.js. May be the same key as above if it has TTS enabled.
+GOOGLE_TTS_API_KEY=
+
+# --- Local development only (NOT used by the application itself) ---
+
+# Port for the local `vercel dev` server (used by dev.sh). Not a secret.
+DEV_PORT=49271
+
+# Vercel access token. Only the Vercel CLI uses this, so that `vercel dev`
+# can authenticate without an interactive login. Put the real value in
+# .env.local (gitignored). Leave this template value empty.
+# Alternative: run `vercel login` once instead of using a token.
+VERCEL_TOKEN=
 </file>
 
-<file path="~/.config/opencode/opencode.json">
-{
-    "$schema": "https://opencode.ai/config.json",
-    "plugin": ["@warp-dot-dev/opencode-warp"],
-    "plugin": ["opencode-gemini-auth@latest"]
-}
-</file>
+<file path="dev.sh">
+#!/usr/bin/env bash
+# Levanta la app en local con paridad de producción usando `vercel dev`.
+# Lee las credenciales desde .env.local (gitignored): GOOGLE_API_KEY,
+# GOOGLE_TTS_API_KEY y, opcionalmente, VERCEL_TOKEN para que la CLI
+# de Vercel no pida login interactivo.
+#
+# Uso:   ./dev.sh           (puerto 49271 por defecto)
+#        ./dev.sh 3000      (otro puerto)
+set -euo pipefail
+cd "$(dirname "$0")"
 
-<file path="AGENTS.md">
-# webxrenglish — Agent instructions
+if [ ! -f .env.local ]; then
+  echo "Falta .env.local. Copia .env.example a .env.local y rellena los valores."
+  exit 1
+fi
 
-## Project overview
+# Exporta todas las variables de .env.local al entorno del proceso.
+set -a; . ./.env.local; set +a
 
-Single-page VR English practice app: `index.html` is the entire frontend (A-Frame scene + 2D HUD + inline JS logic). Backend is a Vercel serverless proxy (`api/chat.js`) that forwards requests to Google Gemini.
+# Puerto: argumento posicional > variable DEV_PORT (.env.local) > 49271 por defecto.
+PORT="${1:-${DEV_PORT:-49271}}"
 
-## Architecture
-
-- **Frontend:** `index.html` — no build step, no npm, no framework. A-Frame 1.5.0 from CDN, inline `<script>` logic.
-- **Backend:** `api/chat.js` — Vercel serverless function (ES module). Proxies POST requests to `gemini-2.5-flash-lite` model.
-- **Deployment:** Vercel. `vercel.json` routes `/api/chat` → `api/chat.js`. `cleanUrls: true`.
-- **No test suite, no typecheck, no lint.**
-
-## API key
-
-Set `GOOGLE_API_KEY` as Vercel environment variable. The proxy sends it via `X-Goog-Api-Key` header, never as query param.
-
-## Application flow
-
-1. Page loads → `initApp()` selects a random guest profile (4 personalities).
-2. User holds **M key**, clicks button, or VR controller trigger → mic opens (SpeechRecognition).
-3. Spoken text sent to Gemini via `/api/chat` with a system prompt defining the guest persona + JSON output schema.
-4. Gemini returns `{ guestResponse, detectedMissions, currentValues }`.
-5. `updateMissionsAndUI()` updates VR clipboard checkboxes, 2D HUD checklist, plays success chime.
-6. When all 6 missions are complete → `triggerEvaluation()` sends full chat history to Gemini for scoring (5 criteria, 1–10).
-
-## Guest personalities (role reversal)
-
-The user is the receptionist; AI is the guest. Four profiles randomly selected on init/reset:
-- **Polite** (James Sterling, Suite, 2 guests, 3 nights)
-- **Impatient** (Sophia Vance, Single Room, 1 guest, 2 nights) — no stage directions in dialogue
-- **Indecisive** (David Kim, Family Room, 4 guests, 5 nights) — asks receptionist for recommendations
-- **Demanding/VIP** (Elena Rostova, Double Room, 3 guests, 4 nights) — asks about amenities before confirming
-
-Defined in `GUEST_PROFILES` array in `index.html`.
-
-## Mission tracking
-
-6 tasks detected semantically by Gemini from the receptionist's questions:
-`greeted → nameObtained → guestsConfirmed → roomTypeSelected → nightsCountAsked → bookingConfirmed`
-
-Each mission toggles a success chime (Web Audio API, no external files). UI updates in VR clipboard (`#clipboardPanel`) and 2D HUD tasks (`#taskGreet`, etc.).
-
-## Gemini response schema
-
-AI must return valid JSON:
-```json
-{
-  "guestResponse": "spoken reply",
-  "detectedMissions": { /* 6 booleans */ },
-  "currentValues": {
-    "guestName": null | string,
-    "guestsCount": null | number,
-    "roomType": null | string,
-    "nights": null | number,
-    "roomNumberAssigned": null | string
-  }
-}
-```
-
-`responseMimeType: "application/json"` is set on the request payload.
-
-## Evaluation
-
-When `bookingConfirmed === true`, a 2-second timeout triggers `triggerEvaluation()`, which sends the full `chatHistory` to Gemini with a rubric prompt. Returns scores 1–10 for: Communication, Logical Order, Professionalism, Precision, Fluency + overall, summary, mistakes, recommendations.
-
-Renderer on 3D panel (`#evaluationPanel`) and injected into 2D HUD. Reset button spawns in the HUD; clicking it calls `resetSimulation()`.
-
-## Speech APIs
-
-| API | Key detail |
-|-----|-----------|
-| SpeechRecognition | Initialized with cross-browser prefixed detection (`webkit`, `moz`, `ms`) |
-| SpeechSynthesis | Async voice loading via `ensureTtsVoicesLoaded()` before first speak |
-
-Mic permission is requested on user interaction (button/key/trigger press), not on page load. Error messages are browser-specific (Firefox, Safari, Chrome/Edge).
-
-## Procedural texture system
-
-All textures are Canvas-generated at runtime (no external image files). Defined in `buildEnvironment()`:
-- `createProceduralTexture(type, params)` — generates a 512×512 canvas for: `marble`, `wood`, `fabric`, `floorTile` (grid), `carpet`, `wallPaint`, `ceilingTile`, `abstractArt`
-- `setTexture(entityId, canvas, mapType, repeatX, repeatY)` — applies canvas as Three.js `CanvasTexture` with repeating
-- `createBumpFromBase(canvas, strength)` — converts any texture to a grayscale bump map
-- `createEnvMap()` — generates a 6-face CubeTexture for reflections (used on AI cube)
-- `getThreeObject(entityId)` — retrieves the underlying Three.js mesh from an A-Frame entity
-
-PBR enhancements (bump maps, envMap) are applied in `buildEnvironment()` on scene load. No images are downloaded.
-
-## VR scene layout
-
-Room dimensions: 8m × 5m × 3m (w × d × h). Textures applied procedurally in `buildEnvironment()`.
-
-| Element | Position | Notes |
-|---------|----------|-------|
-| Camera (user) | `0 1.6 0.3` | Behind reception desk |
-| Floor (marble tile) | `0 0.01 -1.5` | 8×5m, bump map, receives shadows |
-| Back wall | `0 1.5 1` | 8×3m |
-| Left/Right walls | `±4 1.5 -1.5` | 5×3m |
-| Ceiling (panel) | `0 3 -1.5` | 8×5m, recessed lights |
-| Reception desk | `0 0.52 -0.9` | 5-part: countertop (marble), front (wood), body, trim, edge |
-| Clipboard (tasks) | `-0.5 1.05 -0.85` | Tilted -25° X, 20° Y |
-| Holographic panel | `0.25 1.5 -1.4` | Tilted -15° X, -10° Y |
-| AI cube (guest) | `0 1.6 -1.8` | envMap reflections, bob/rotate anims |
-| Evaluation panel | `0 1.55 -1.4` | Hidden until booking confirmed |
-| Sofa (2-seat) | `-2.5 0.22 -3` | Fabric texture, 4-box construction |
-| Armchair | `2.5 0.22 -3` | Fabric texture, 4-box construction |
-| Coffee table | `0 0.42 -3` | Glass top + metal legs |
-| Carpet | `0 0.005 -3` | 3.5×2m, speckled pattern |
-| Decorative plant | `-2.5 0.65 -3.8` | Pot + spheres |
-| Floor lamp | `2.5 1.3 -3.8` | With point light |
-| Wall art | `-3.99 1.6 -2` | Abstract painting + frame |
-| Reception terminal | `0.5 0.99 -0.55` | Monitor + keyboard |
-| Phone | `-0.55 1.0 -0.65` | Base + handset |
-
-## Lighting
-
-| Type | Color | Intensity | Notes |
-|------|-------|-----------|-------|
-| Ambient | `#c4b5a0` | 0.25 | Base fill |
-| Hemisphere | `#f0e8d8` / `#7a6a5a` | 0.4 | Sky-ground gradient |
-| Directional | `#fef5e0` | 0.7 | Main sun, casts shadows |
-| 3 recessed points | `#fef5e0` | 0.3–0.35 | Ceiling downlights |
-| Chandelier point | `#fef0d0` | 0.6 | Above waiting area |
-| Floor lamp point | `#fef0d0` | 0.3 | Next to armchair |
-| Cube light (dynamic) | `#818cf8` | 1.5 | Changes color with AI state |
-
-## Ambient audio
-
-`initAmbientAudio()` starts on first mic action. Uses Web Audio API exclusively:
-- **HVAC rumble:** Pink noise → low-pass filter (350 Hz) → gain 0.012, looping
-- **Distant footsteps:** Random noise bursts every 6–18 seconds, low-passed
-
-No external audio files.
-
-## Style conventions
-
-- Colors: dark indigo background (`#030712`), purple accent (`#6366f1`), pink accent (`#ec4899`), cyan accent (`#06b6d4`).
-- Fonts: `Outfit` for body, `Space Grotesk` for headings/title.
-- All UI text in English.
-- No comments in JS (project convention from prior work).
+if [ -n "${VERCEL_TOKEN:-}" ]; then
+  exec vercel dev --listen "$PORT" --token="$VERCEL_TOKEN" --yes
+else
+  # Sin token: requiere haber hecho `vercel login` previamente.
+  exec vercel dev --listen "$PORT" --yes
+fi
 </file>
 
 <file path="package.json">
@@ -7573,9 +8087,144 @@ No external audio files.
 }
 </file>
 
+<file path=".gitignore">
+.env
+.env.local
+.vercel
+node_modules
+.env*
+!.env.example
+</file>
+
+<file path="api/synthesize.js">
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const apiKey = process.env.GOOGLE_TTS_API_KEY || process.env.GOOGLE_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: 'Google TTS API key is missing on Vercel.' });
+  }
+
+  const { text, voiceName, ssmlGender } = req.body || {};
+
+  if (!text || typeof text !== 'string') {
+    return res.status(400).json({ error: 'Bad request: body must contain a "text" field.' });
+  }
+
+  const speechGender = ssmlGender || 'MALE';
+  const voice = voiceName || 'en-US-Neural2-D';
+
+  const payload = {
+    input: { text: text.substring(0, 500) },
+    voice: {
+      languageCode: 'en-US',
+      name: voice,
+      ssmlGender: speechGender
+    },
+    audioConfig: {
+      audioEncoding: 'MP3'
+    }
+  };
+
+  const endpoint = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`;
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const errBody = await response.text();
+      return res.status(response.status).json({ error: `TTS API returned status ${response.status}: ${errBody}` });
+    }
+
+    const data = await response.json();
+    return res.status(200).json(data);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+}
+</file>
+
+<file path="api/transcribe.js">
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+  const apiKey = process.env.GOOGLE_TTS_API_KEY || process.env.GOOGLE_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: 'Google API key is missing on Vercel.' });
+  }
+  const payload = req.body;
+  if (!payload || !payload.audio || !payload.audio.content) {
+    return res.status(400).json({ error: 'Bad request: body must contain audio.content.' });
+  }
+  const endpoint = `https://speech.googleapis.com/v1/speech:recognize?key=${apiKey}`;
+  const sttPayload = {
+    config: {
+      encoding: 'WEBM_OPUS',
+      sampleRateHertz: 48000,
+      languageCode: 'en-US'
+    },
+    audio: {
+      content: payload.audio.content
+    }
+  };
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(sttPayload)
+    });
+    if (!response.ok) {
+      const errBody = await response.text();
+      return res.status(response.status).json({ error: `Google STT API returned status ${response.status}: ${errBody}` });
+    }
+    const data = await response.json();
+    const transcript = data.results && data.results[0] && data.results[0].alternatives && data.results[0].alternatives[0] ? data.results[0].alternatives[0].transcript : '';
+    return res.status(200).json({ transcript });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+}
+</file>
+
+<file path="~/.config/opencode/opencode.json">
+{
+    "$schema": "https://opencode.ai/config.json",
+    "plugin": ["@warp-dot-dev/opencode-warp", "opencode-gemini-auth@latest"],
+        "provider": {
+            "ollama": {
+                "npm": "@ai-sdk/openai-compatible",
+                "name": "Ollama (local)",
+                "options": {
+                    "baseURL": "http://localhost:11434/v1"
+                },
+                "models": {
+                    "qwen3.6": {
+                        "name": "Qwen 3.6"
+                    }
+		    "deepseek-coder": {
+                        "name": "deepseek-coder"
+                    }
+
+                }
+            }
+        }
+}
+</file>
+
 <file path="api/chat.js">
 export default async function handler(req, res) {
-  // Solo permitimos peticiones POST
+  // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -7692,6 +8341,12 @@ export default async function handler(req, res) {
       "skillPath": "skills/threejs-materials/SKILL.md",
       "computedHash": "4d181db0b35213b772bf20eff5fe6f72f1c84bdc03294db96d1f712dd9047443"
     },
+    "threejs-postprocessing": {
+      "source": "cloudai-x/threejs-skills",
+      "sourceType": "github",
+      "skillPath": "skills/threejs-postprocessing/SKILL.md",
+      "computedHash": "95c3952afb0f1164253e013cce0c1cb1c290b17e3cbdc3583379bd4c66ca2870"
+    },
     "threejs-shaders": {
       "source": "cloudai-x/threejs-skills",
       "sourceType": "github",
@@ -7702,14 +8357,164 @@ export default async function handler(req, res) {
 }
 </file>
 
+<file path="AGENTS.md">
+# webxrenglish — Agent instructions
+
+## Project overview
+
+Single-page VR English practice app: `index.html` is the entire frontend (A-Frame scene + 2D HUD + inline JS logic). Backend is a Vercel serverless proxy (`api/chat.js`) that forwards requests to Google Gemini.
+
+## Architecture
+
+- **Frontend:** `index.html` — no build step, no npm, no framework. A-Frame 1.5.0 from CDN, inline `<script>` logic. No physics engine — wall collision uses custom `position-clamp` component on the rig.
+- **Backend:** `api/chat.js` — Vercel serverless function (ES module). Proxies POST requests to `gemini-2.5-flash-lite` model.
+- **Deployment:** Vercel. `vercel.json` routes `/api/chat` → `api/chat.js`. `cleanUrls: true`.
+- **GLB models on Vercel:** Do NOT use Git LFS for `.glb` files committed to the repo — Vercel cannot fetch LFS objects during build, causing silent 404s. Commit raw binary files directly. `vercel.json` headers set `Content-Type: model/gltf-binary` and routes ensure proper serving under `cleanUrls: true`.
+- **No test suite, no typecheck, no lint.**
+
+## API key
+
+Set `GOOGLE_API_KEY` as Vercel environment variable. The proxy sends it via `X-Goog-Api-Key` header, never as query param.
+
+## Application flow
+
+1. Page loads → `initApp()` selects a random guest profile (4 personalities).
+2. User holds **M key**, clicks button, or VR controller trigger → mic opens (SpeechRecognition).
+3. Spoken text sent to Gemini via `/api/chat` with a system prompt defining the guest persona + JSON output schema.
+4. Gemini returns `{ guestResponse, detectedMissions, currentValues }`.
+5. `updateMissionsAndUI()` updates VR clipboard checkboxes, 2D HUD checklist, plays success chime.
+6. When all 6 missions are complete → `triggerEvaluation()` sends full chat history to Gemini for scoring (5 criteria, 1–10).
+
+## Guest personalities (role reversal)
+
+The user is the receptionist; AI is the guest. Four profiles randomly selected on init/reset:
+- **Polite** (James Sterling, Suite, 2 guests, 3 nights)
+- **Impatient** (Sophia Vance, Single Room, 1 guest, 2 nights) — no stage directions in dialogue
+- **Indecisive** (David Kim, Family Room, 4 guests, 5 nights) — asks receptionist for recommendations
+- **Demanding/VIP** (Elena Rostova, Double Room, 3 guests, 4 nights) — asks about amenities before confirming
+
+Defined in `GUEST_PROFILES` array in `index.html`.
+
+## Mission tracking
+
+6 tasks detected semantically by Gemini from the receptionist's questions:
+`greeted → nameObtained → guestsConfirmed → roomTypeSelected → nightsCountAsked → bookingConfirmed`
+
+Each mission toggles a success chime (Web Audio API, no external files). UI updates in VR clipboard (`#clipboardPanel`) and 2D HUD tasks (`#taskGreet`, etc.).
+
+## Gemini response schema
+
+AI must return valid JSON:
+```json
+{
+  "guestResponse": "spoken reply",
+  "detectedMissions": { /* 6 booleans */ },
+  "currentValues": {
+    "guestName": null | string,
+    "guestsCount": null | number,
+    "roomType": null | string,
+    "nights": null | number,
+    "roomNumberAssigned": null | string
+  }
+}
+```
+
+`responseMimeType: "application/json"` is set on the request payload.
+
+## Evaluation
+
+When `bookingConfirmed === true`, a 2-second timeout triggers `triggerEvaluation()`, which sends the full `chatHistory` to Gemini with a rubric prompt. Returns scores 1–10 for: Communication, Logical Order, Professionalism, Precision, Fluency + overall, summary, mistakes, recommendations.
+
+Renderer on 3D panel (`#evaluationPanel`) and injected into 2D HUD. Reset button spawns in the HUD; clicking it calls `resetSimulation()`.
+
+## Speech APIs
+
+| API | Key detail |
+|-----|-----------|
+| SpeechRecognition | Initialized with cross-browser prefixed detection (`webkit`, `moz`, `ms`) |
+| SpeechSynthesis | Async voice loading via `ensureTtsVoicesLoaded()` before first speak |
+
+Mic permission is requested on user interaction (button/key/trigger press), not on page load. Error messages are browser-specific (Firefox, Safari, Chrome/Edge).
+
+## Environment (Manually Built)
+
+Hotel lobby reception built entirely with A-Frame primitives (no GLB, no external 3D models). Design: beige tones, wooden pillars, marble floors, elegant finish.
+
+## VR scene layout
+
+Room dimensions: 12m × 16m × 4.6m (w × d × h). Centered at `(0, 0, -1.5)`. Key A-Frame elements:
+
+| Element | Position | Notes |
+|---------|----------|-------|
+| Rig (player) | `-0.5 0 -1.0` | Behind desk. Camera local `(0 1.6 0.3)` = eye `(-0.5 1.6 -0.7)`. position-clamp: X `[-3.5, 3.5]`, Z `[-1.5, 1.5]` |
+| Floor (marble) | `0 0.01 -1.5` | 16×12m, beige `#f0e8d8`, roughness 0.2, receives shadows |
+| Back wall (beige) | `0 2.3 2.0` | 16×4.6m, color `#e8e0d0` |
+| Left/Right walls | `±6.0 2.3 -1.5` | 12×4.6m, same beige color |
+| Ceiling | `0 4.6 -1.5` | 12×16m, off-white `#fff8f0`, transparent 0.95 |
+| 4 wooden pillars | `±2.8` × `{0.5, -3.5}` | 0.2m radius, 4.6m tall, wood `#8b5e3c`, frame the lobby |
+| Baseboards | along walls at y=0.08 | Wood trim `#6b4a2e` |
+| Crown molding | along walls at y=4.52 | Wood trim `#8b6a4e` |
+| Reception desk | `0 0.52 -0.9` | 5-part: marble top (`#f0e6d8`), wood front/body/trim/edge |
+| Welcome rug | `0 0.012 -0.5` | 1.8×1.2m, dark brown `#4a3a2a` with border |
+| Chandelier | `0 3.7 -1.8` | Gold ring + rod + 4 emissive bulbs |
+| Clipboard (tasks) | `-0.65 1.40 -0.65` | Tilted -30° X, 25° Y |
+| Holographic panel | `0 1.55 -1.1` | Tilted -10° X, 0° Y |
+| AI cube (guest) | `-0.4 1.6 -1.8` | Behind dialog panel (guest side), envMap ref., bob/rotate |
+| Evaluation panel | `0 1.55 -1.1` | Hidden until booking confirmed, same pos as holographic panel |
+
+## Lighting
+
+| Type | Color | Intensity | Notes |
+|------|-------|-----------|-------|
+| Ambient | `#f5ede0` | 0.35 | Warm fill |
+| Hemisphere | `#fff8e6` / `#c8b8a8` | 0.45 | Warm sky-ground |
+| Directional | `#fff0d8` | 0.8 | Main sun at (4,8,3), casts shadows |
+| 3 recessed points | `#fef5e0` | 0.3–0.35 | Ceiling downlights |
+| Chandelier point | `#fef0d0` | 0.6 | Above waiting area at (0,3.8,-1.8) |
+| Cube light (dynamic) | `#818cf8` | 1.5 | Tracks AI cube at (-0.4,1.6,-1.8) |
+
+## Ambient audio
+
+`initAmbientAudio()` starts on first mic action. Uses Web Audio API exclusively:
+- **HVAC rumble:** Pink noise → low-pass filter (350 Hz) → gain 0.012, looping
+- **Distant footsteps:** Random noise bursts every 6–18 seconds, low-passed
+
+No external audio files.
+
+## Style conventions
+
+- Colors: dark indigo background (`#030712`), purple accent (`#6366f1`), pink accent (`#ec4899`), cyan accent (`#06b6d4`).
+- Fonts: `Outfit` for body, `Space Grotesk` for headings/title.
+- All UI text in English.
+- No comments in JS (project convention from prior work).
+</file>
+
 <file path="vercel.json">
 {
   "version": 2,
   "cleanUrls": true,
-  "routes": [
+  "headers": [
     {
-      "src": "/api/chat",
-      "dest": "/api/chat.js"
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Permissions-Policy",
+          "value": "microphone=(self)"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)\\.(glb|gltf)",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "model/gltf-binary"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     }
   ]
 }
@@ -7725,10 +8530,6 @@ export default async function handler(req, res) {
   
   <!-- A-Frame VR Library -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-  <!-- A-Frame Environment Component (For beautiful sky, ground, and grid) -->
-  <script src="https://unpkg.com/aframe-environment-component@1.3.3/dist/aframe-environment-component.min.js"></script>
-  <!-- A-Frame Physics System for wall colliders -->
-  <script src="https://cdn.jsdelivr.net/npm/aframe-physics-system@1.4.1/dist/aframe-physics-system.min.js"></script>
   
   <!-- Google Fonts for Modern 2D Desktop UI -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -7757,14 +8558,13 @@ export default async function handler(req, res) {
     }
 
     .glass-card {
-      background: rgba(10, 11, 28, 0.85);
+      background: rgba(26, 24, 20, 0.88);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.06);
       border-radius: 20px;
       padding: 24px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 
-                  0 0 40px rgba(99, 102, 241, 0.1);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
       pointer-events: auto;
       transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
@@ -7774,7 +8574,7 @@ export default async function handler(req, res) {
       font-family: 'Space Grotesk', sans-serif;
       font-size: 1.6rem;
       font-weight: 700;
-      background: linear-gradient(135deg, #818cf8, #c084fc, #f472b6);
+      background: linear-gradient(135deg, #c8b88a, #d4ccc0, #e8e0d0);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       letter-spacing: -0.02em;
@@ -7799,69 +8599,66 @@ export default async function handler(req, res) {
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      background: rgba(99, 102, 241, 0.12);
-      border: 1px solid rgba(99, 102, 241, 0.25);
-      color: #a5b4fc;
+      background: rgba(200, 184, 138, 0.10);
+      border: 1px solid rgba(200, 184, 138, 0.20);
+      color: #c8b88a;
       transition: all 0.3s ease;
     }
 
     .status-badge.listening {
-      background: rgba(6, 182, 212, 0.15);
-      border: 1px solid rgba(6, 182, 212, 0.4);
-      color: #22d3ee;
-      box-shadow: 0 0 20px rgba(6, 182, 212, 0.25);
+      background: rgba(200, 184, 138, 0.14);
+      border: 1px solid rgba(200, 184, 138, 0.25);
+      color: #d4ccc0;
     }
 
     .status-badge.thinking {
-      background: rgba(245, 158, 11, 0.15);
-      border: 1px solid rgba(245, 158, 11, 0.4);
-      color: #fbbf24;
-      box-shadow: 0 0 20px rgba(245, 158, 11, 0.25);
+      background: rgba(200, 184, 138, 0.14);
+      border: 1px solid rgba(200, 184, 138, 0.25);
+      color: #d4ccc0;
     }
 
     .status-badge.speaking {
-      background: rgba(236, 72, 153, 0.15);
-      border: 1px solid rgba(236, 72, 153, 0.4);
-      color: #f472b6;
-      box-shadow: 0 0 20px rgba(236, 72, 153, 0.25);
+      background: rgba(200, 184, 138, 0.14);
+      border: 1px solid rgba(200, 184, 138, 0.25);
+      color: #d4ccc0;
     }
 
     .talk-btn {
       margin-top: 15px;
       width: 100%;
       padding: 14px;
-      background: linear-gradient(135deg, #6366f1, #ec4899);
+      background: linear-gradient(135deg, #c8b88a, #a89070);
       border: none;
       border-radius: 12px;
-      color: white;
+      color: #1a1814;
       font-family: 'Space Grotesk', sans-serif;
       font-size: 1rem;
       font-weight: 700;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
       transition: all 0.2s ease, background 0.5s ease;
       pointer-events: auto;
       user-select: none;
       -webkit-user-select: none;
     }
     .talk-btn:hover {
-      background: linear-gradient(135deg, #4f46e5, #db2777);
+      background: linear-gradient(135deg, #d4c4a0, #b8a080);
     }
     .talk-btn.listening {
-      background: linear-gradient(135deg, #06b6d4, #22d3ee);
-      box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
+      background: linear-gradient(135deg, #c8b88a, #d4ccc0);
+      box-shadow: 0 0 16px rgba(200, 184, 138, 0.25);
     }
 
     .talk-btn:active {
       transform: scale(0.97);
-      background: linear-gradient(135deg, #4f46e5, #db2777);
+      background: linear-gradient(135deg, #b8a880, #a89070);
     }
 
     /* 2D Scoreboard styling */
     .hud-scores {
       margin-top: 20px;
       padding-top: 15px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
       display: block;
     }
 
@@ -7879,7 +8676,7 @@ export default async function handler(req, res) {
     }
 
     .stars-display {
-      color: #374151;
+      color: #6b6358;
       font-size: 1.25rem;
       letter-spacing: 2px;
     }
@@ -7887,11 +8684,11 @@ export default async function handler(req, res) {
     .tip-box {
       margin-top: 12px;
       padding: 10px 14px;
-      background: rgba(99, 102, 241, 0.08);
-      border-left: 3px solid #818cf8;
+      background: rgba(200, 184, 138, 0.06);
+      border-left: 3px solid #c8b88a;
       border-radius: 4px;
       font-size: 0.8rem;
-      color: #c7d2fe;
+      color: #d4ccc0;
       line-height: 1.4;
     }
 
@@ -7909,7 +8706,7 @@ export default async function handler(req, res) {
       padding: 2px 6px;
       font-family: 'Space Grotesk', monospace;
       font-weight: 700;
-      color: #ffffff;
+      color: #e8e0d0;
       box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
     }
 
@@ -7919,9 +8716,9 @@ export default async function handler(req, res) {
       border-radius: 12px;
       font-size: 0.8rem;
       line-height: 1.4;
-      background: rgba(239, 68, 68, 0.12);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #fca5a5;
+      background: rgba(180, 120, 100, 0.12);
+      border: 1px solid rgba(180, 120, 100, 0.25);
+      color: #d4bcb0;
       display: none;
       pointer-events: auto;
     }
@@ -7933,8 +8730,49 @@ export default async function handler(req, res) {
       z-index: 10;
       pointer-events: none;
       font-size: 0.75rem;
-      color: #6b7280;
+      color: #6b6358;
       line-height: 1.5;
+    }
+
+    .pico-mic-banner {
+      margin-top: 12px;
+      padding: 14px;
+      border-radius: 12px;
+      background: rgba(200, 184, 138, 0.08);
+      border: 1px solid rgba(200, 184, 138, 0.18);
+      display: none;
+    }
+    .pico-mic-banner.visible {
+      display: block;
+    }
+    .pico-mic-btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      pointer-events: auto;
+      transition: all 0.2s ease;
+    }
+    .pico-mic-btn:hover {
+      background: linear-gradient(135deg, #818cf8, #6366f1);
+    }
+    .pico-mic-btn:active {
+      transform: scale(0.97);
+    }
+    .pico-mic-btn.granted {
+      background: linear-gradient(135deg, #4ade80, #22c55e);
+    }
+    .pico-mic-help {
+      margin-top: 8px;
+      font-size: 0.75rem;
+      color: #9ca3af;
+      line-height: 1.3;
     }
   </style>
 </head>
@@ -7948,11 +8786,29 @@ export default async function handler(req, res) {
       
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <span id="hudStatusBadge" class="status-badge">Idle</span>
-        <span id="langDisplay" style="font-size: 0.75rem; color: #818cf8; font-weight: bold;">Language: English</span>
+        <span id="langDisplay" style="font-size: 0.75rem; color: #c8b88a; font-weight: bold;">Language: English</span>
       </div>
 
       <!-- Desktop Click/Touch talk button -->
       <button id="talkButton" class="talk-btn">Hold to Speak</button>
+
+      <!-- PICO 4 / VR: Mic enable banner, shown before entering VR -->
+      <div id="picoMicBanner" class="pico-mic-banner">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button id="picoEnableMicBtn" class="pico-mic-btn">🎤 Enable Microphone</button>
+        </div>
+        <div class="pico-mic-help">Enable microphone access <strong>before</strong> entering VR. If no prompt appears, go to browser settings and allow this site.</div>
+      </div>
+
+      <!-- Text input fallback for Pico 4 / browsers without mic -->
+      <div id="textInputFallback" style="display: none; margin-top: 10px;">
+        <div style="font-size: 0.75rem; color: #c8b88a; margin-bottom: 6px; font-weight: 600;">⌨️ Mic not available — type your message below:</div>
+        <div style="display: flex; gap: 8px;">
+          <input id="textInput" type="text" placeholder="Type your message to the guest..."
+                 style="flex: 1; padding: 12px 16px; border-radius: 10px; border: 2px solid rgba(200,184,138,0.3); background: rgba(0,0,0,0.6); color: #e8e0d0; font-size: 1.1rem; outline: none;">
+          <button id="textSendBtn" class="talk-btn" style="padding: 12px 24px; white-space: nowrap; font-size: 1rem;">Send ➤</button>
+        </div>
+      </div>
 
 <!-- 2D Scoreboard for booking details -->
 <div id="hudScores" class="hud-scores">
@@ -7965,18 +8821,18 @@ export default async function handler(req, res) {
   <div class="score-row"><span class="score-label" id="taskConfirm">⬜ 6. Confirm the booking</span></div>
   
   <div style="margin-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 10px;">
-    <div class="score-row"><span class="score-label">Guest:</span><span id="guestName2D" style="color: #a5b4fc; font-weight: bold;">TBD</span></div>
-    <div class="score-row"><span class="score-label">Room Type:</span><span id="roomDetails2D" style="color: #a5b4fc; font-weight: bold;">Not Selected</span></div>
-    <div class="score-row"><span class="score-label">Nights:</span><span id="nights2D" style="color: #a5b4fc; font-weight: bold;">TBD</span></div>
-    <div class="score-row"><span class="score-label">Assigned Room:</span><span id="bookingStatus2D" style="color: #fbbf24; font-weight: bold;">TBD</span></div>
+    <div class="score-row"><span class="score-label">Guest:</span><span id="guestName2D" style="color: #c8b88a; font-weight: bold;">TBD</span></div>
+    <div class="score-row"><span class="score-label">Room Type:</span><span id="roomDetails2D" style="color: #c8b88a; font-weight: bold;">Not Selected</span></div>
+    <div class="score-row"><span class="score-label">Nights:</span><span id="nights2D" style="color: #c8b88a; font-weight: bold;">TBD</span></div>
+    <div class="score-row"><span class="score-label">Assigned Room:</span><span id="bookingStatus2D" style="color: #c8b88a; font-weight: bold;">TBD</span></div>
   </div>
   <div id="hudTip" class="tip-box">Welcome! A guest has arrived at your reception desk. Say "Hello!" or "Welcome to our hotel!" to start the check-in process.</div>
 </div>
 
       <div class="mic-instruction">
-        👉 <strong>Inside VR:</strong> Hold the controller Trigger to speak.<br>
-        👉 <strong>On Keyboard:</strong> Hold key <span class="key-cap">M</span> to speak.<br>
-        👉 <strong>On Screen:</strong> Hold the button above or Click directly on the floating cube.
+        👉 <strong>Inside VR:</strong> Hold the controller Trigger to speak (or press thumbstick to turn).<br>
+        👉 <strong>On Keyboard:</strong> Press & hold <span class="key-cap">M</span> to speak.<br>
+        👉 <strong>On Screen:</strong> Hold the button above or click the floating cube.
       </div>
 
       <div id="micWarning" class="mic-warning"></div>
@@ -7984,306 +8840,141 @@ export default async function handler(req, res) {
   </div>
 
   <div id="quick-guide">
-    💡 Localhost or HTTPS is required for mic & WebXR.<br>
-    🔒 Allow mic permissions in your browser when prompted.
+    💡 Localhost or HTTPS required for mic & WebXR.<br>
+    🔒 Pico 4 / VR: If mic doesn't respond, use the text input that appears.
   </div>
 
   <!-- A-FRAME VR SCENE -->
-  <a-scene physics="gravity: 0" fog="type: exponential; color: #1a1628; density: 0.035" shadow="type: pcfsoft" renderer="antialias: true; colorManagement: true;">
-    
-    <!-- CUSTOM LIGHTING SYSTEM -->
-    <a-entity light="type: ambient; color: #c4b5a0; intensity: 0.25"></a-entity>
-    <a-entity light="type: hemisphere; skyColor: #f0e8d8; groundColor: #7a6a5a; intensity: 0.4"></a-entity>
-    <a-entity light="type: directional; color: #fef5e0; intensity: 0.7; castShadow: true" position="3 7 4"></a-entity>
-    <a-entity id="cubeLight" light="type: point; color: #818cf8; intensity: 1.5; distance: 6; castShadow: true" position="0 1.6 -2.2"></a-entity>
+  <a-scene shadow="type: pcfsoft" renderer="antialias: true; colorManagement: true; physicallyCorrectLights: true">
 
-    <!-- CEILING RECESSED LIGHTS -->
-    <a-entity light="type: point; color: #fef5e0; intensity: 0.35; distance: 4" position="-1.5 2.95 -0.5"></a-entity>
-    <a-entity light="type: point; color: #fef5e0; intensity: 0.35; distance: 4" position="1.5 2.95 -0.5"></a-entity>
-    <a-entity light="type: point; color: #fef5e0; intensity: 0.3; distance: 4" position="0 2.95 -2.8"></a-entity>
+    <a-assets>
+    </a-assets>
 
-    <!-- INTERIOR ARCHITECTURE (cajas con static-body para colliders) -->
-    <a-entity id="room">
-      <a-box id="floor" position="0 -0.04 -1.5" scale="8 0.08 5"
-             material="shader: standard; roughness: 0.6; metalness: 0.1" shadow="receive: true"
-             static-body></a-box>
-      <a-box id="backWall" position="0 1.5 0.96" scale="8 3 0.08"
-             material="shader: standard; roughness: 0.9; metalness: 0" shadow="receive: true"
-             static-body></a-box>
-      <a-box id="leftWall" position="-3.96 1.5 -1.5" scale="0.08 3 5"
-             material="shader: standard; roughness: 0.9; metalness: 0" shadow="receive: true"
-             static-body></a-box>
-      <a-box id="rightWall" position="3.96 1.5 -1.5" scale="0.08 3 5"
-             material="shader: standard; roughness: 0.9; metalness: 0" shadow="receive: true"
-             static-body></a-box>
-      <a-box id="ceiling" position="0 3.04 -1.5" scale="8 0.08 5"
-             material="shader: standard; roughness: 0.7; metalness: 0" shadow="receive: true"
-             static-body></a-box>
-    </a-entity>
+    <a-gltf-model src="Models/HotelModel.glb" position="-3.5 0 5" rotation="0 0 0" scale="1.25 1.25 1.25"></a-gltf-model>
 
-    <!-- DECORATIVE MOULDING -->
-    <a-box id="baseboardBack" position="0 0.06 0.99" scale="7.9 0.1 0.02" material="color: #5c4a3a; roughness: 0.7"></a-box>
-    <a-box id="baseboardLeft" position="-3.99 0.06 -1.5" scale="0.02 0.1 4.9" material="color: #5c4a3a; roughness: 0.7"></a-box>
-    <a-box id="baseboardRight" position="3.99 0.06 -1.5" scale="0.02 0.1 4.9" material="color: #5c4a3a; roughness: 0.7"></a-box>
+    <a-light type="ambient" color="#f5ede0" intensity="0.5"></a-light>
+    <a-light type="directional" color="#fff8e8" intensity="0.9" position="3 6 -8"></a-light>
+    <a-light type="point" color="#fef0d0" intensity="1.5" distance="0" decay="1" position="0 3.0 -8.5"></a-light>
+    <a-light type="point" color="#fef0d0" intensity="1.3" distance="0" decay="1" position="-3.5 2.8 -3"></a-light>
+    <a-light type="point" color="#fef0d0" intensity="1.0" distance="0" decay="1" position="-6 2.5 2"></a-light>
+    <a-entity id="cubeLight" light="type: point; color: #818cf8; intensity: 1.5; distance: 0; decay: 1" position="-8.52 2.2 -8.93"></a-entity>
 
-    <!-- LOBBY CHANDELIER / CEILING FIXTURE -->
-    <a-ring position="0 2.98 -1.8" rotation="90 0 0" radius-inner="0.4" radius-outer="0.45" material="color: #c0a878; roughness: 0.4; metalness: 0.6"
-            animation="property: rotation; to: 90 360 0; dur: 30000; loop: true; easing: linear"></a-ring>
-    <a-entity light="type: point; color: #fef0d0; intensity: 0.6; distance: 5" position="0 2.95 -1.8"></a-entity>
+    <a-gltf-model id="aiNPC"
+                  class="clickable"
+                  src="Models/NPC.glb"
+                  position="-8.52 0.05 -8.93"
+                  rotation="0 270 0"
+                  npc-controller>
+    </a-gltf-model>
 
-    <!-- WAITING AREA FURNITURE -->
-    <a-box id="sofaSeat" position="-2.5 0.22 -3" scale="1.4 0.35 0.6"
-           material="color: #3a3a4a; roughness: 0.85; metalness: 0"></a-box>
-    <a-box id="sofaBack" position="-2.5 0.55 -2.64" scale="1.4 0.65 0.12"
-           material="color: #3a3a4a; roughness: 0.85; metalness: 0"></a-box>
-    <a-box id="sofaArmL" position="-3.21 0.32 -3" scale="0.08 0.4 0.6"
-           material="color: #3a3a4a; roughness: 0.85; metalness: 0"></a-box>
-    <a-box id="sofaArmR" position="-1.79 0.32 -3" scale="0.08 0.4 0.6"
-           material="color: #3a3a4a; roughness: 0.85; metalness: 0"></a-box>
-    <a-box id="armchairSeat" position="2.5 0.22 -3" scale="0.8 0.35 0.6"
-           material="color: #3a4a3a; roughness: 0.85; metalness: 0"></a-box>
-    <a-box id="armchairBack" position="2.5 0.55 -2.64" scale="0.8 0.65 0.12"
-           material="color: #3a4a3a; roughness: 0.85; metalness: 0"></a-box>
-    <a-box id="armchairArmL" position="2.1 0.32 -3" scale="0.08 0.4 0.6"
-           material="color: #3a4a3a; roughness: 0.85; metalness: 0"></a-box>
-    <a-box id="armchairArmR" position="2.9 0.32 -3" scale="0.08 0.4 0.6"
-           material="color: #3a4a3a; roughness: 0.85; metalness: 0"></a-box>
-
-    <!-- COFFEE TABLE -->
-    <a-box id="tableTop" position="0 0.42 -3" scale="0.8 0.04 0.5"
-           material="color: #c0b8a8; roughness: 0.1; metalness: 0.3; transparent: true; opacity: 0.7"
-           shadow="receive: true"></a-box>
-    <a-box id="tableLegFL" position="-0.35 0.1 -3.2" scale="0.04 0.2 0.04"
-           material="color: #2a1a0a; roughness: 0.3; metalness: 0.7"></a-box>
-    <a-box id="tableLegFR" position="0.35 0.1 -3.2" scale="0.04 0.2 0.04"
-           material="color: #2a1a0a; roughness: 0.3; metalness: 0.7"></a-box>
-    <a-box id="tableLegBL" position="-0.35 0.1 -2.8" scale="0.04 0.2 0.04"
-           material="color: #2a1a0a; roughness: 0.3; metalness: 0.7"></a-box>
-    <a-box id="tableLegBR" position="0.35 0.1 -2.8" scale="0.04 0.2 0.04"
-           material="color: #2a1a0a; roughness: 0.3; metalness: 0.7"></a-box>
-
-    <!-- CARPET IN WAITING AREA -->
-    <a-plane id="carpet" position="0 0.005 -3" rotation="-90 0 0" width="3.5" height="2"
-             material="shader: standard; roughness: 0.9; metalness: 0; transparent: true; opacity: 0.85"
-             shadow="receive: true"></a-plane>
-
-    <!-- DECORATIVE PLANT -->
-    <a-cylinder id="plantPot" position="-2.5 0.15 -3.8" radius="0.18" height="0.3"
-                material="color: #6a4a2a; roughness: 0.8"></a-cylinder>
-    <a-sphere id="plantFoliage" position="-2.5 0.65 -3.8" radius="0.3"
-              material="color: #2a6a2a; roughness: 0.9; metalness: 0"></a-sphere>
-    <a-sphere id="plantFoliage2" position="-2.35 0.55 -3.95" radius="0.2"
-              material="color: #3a7a3a; roughness: 0.9; metalness: 0"></a-sphere>
-    <a-sphere id="plantFoliage3" position="-2.65 0.55 -3.65" radius="0.2"
-              material="color: #3a7a3a; roughness: 0.9; metalness: 0"></a-sphere>
-
-    <!-- FLOOR LAMP -->
-    <a-cylinder id="lampPole" position="2.5 1.3 -3.8" radius="0.02" height="2.5"
-                material="color: #1a1a1a; roughness: 0.3; metalness: 0.6"></a-cylinder>
-    <a-cylinder id="lampBase" position="2.5 0.04 -3.8" radius="0.15" height="0.04"
-                material="color: #1a1a1a; roughness: 0.3; metalness: 0.6"></a-cylinder>
-    <a-cylinder id="lampShade" position="2.5 2.5 -3.8" radius-top="0.08" radius-bottom="0.25" height="0.3"
-                material="color: #e8e0d0; roughness: 0.8; metalness: 0; transparent: true; opacity: 0.6"></a-cylinder>
-    <a-entity light="type: point; color: #fef0d0; intensity: 0.3; distance: 4" position="2.5 2.4 -3.8"></a-entity>
-
-    <!-- WALL ART & SIGNAGE -->
-    <a-plane id="wallArt" position="-3.99 1.6 -2" rotation="0 -90 0" width="0.6" height="0.8"
-             material="shader: standard; roughness: 0.4; metalness: 0"></a-plane>
-    <a-box id="artFrame" position="-3.99 1.6 -2" scale="0.64 0.84 0.02"
-           material="color: #2a1a0a; roughness: 0.5; metalness: 0.3"></a-box>
-    <a-text id="signageText" value="ROOMS →" position="3.99 2 -2.5" rotation="0 90 0"
-            font="fonts/Roboto-msdf.json" negate="false" color="#c0a878" align="center" width="8"></a-text>
-
-    <!-- RECEPTION TERMINAL -->
-    <a-box id="monitorStand" position="0.5 0.99 -0.55" scale="0.35 0.35 0.02"
-           material="color: #1a1a1a; roughness: 0.3; metalness: 0.5"></a-box>
-    <a-plane id="monitorScreen" position="0.5 1.02 -0.55" rotation="0 0 0" width="0.3" height="0.22"
-             material="shader: standard; color: #0a2a4a; roughness: 0.1; metalness: 0.6; emissive: #0a3a6a; emissiveIntensity: 0.3"></a-plane>
-    <a-box id="monitorBase" position="0.5 0.82 -0.55" scale="0.12 0.02 0.08"
-           material="color: #1a1a1a; roughness: 0.3; metalness: 0.5"></a-box>
-    <a-box id="keyboard" position="0.5 0.84 -0.48" scale="0.28 0.02 0.1"
-           material="color: #1a1a1a; roughness: 0.5; metalness: 0.1"></a-box>
-
-    <!-- RECEPTION PHONE -->
-    <a-box id="phoneBase" position="-0.55 1.0 -0.65" scale="0.08 0.02 0.12"
-           material="color: #1a1a2a; roughness: 0.3; metalness: 0.2"></a-box>
-    <a-box id="phoneHandset" position="-0.55 1.04 -0.65" scale="0.02 0.04 0.06"
-           material="color: #1a1a2a; roughness: 0.3; metalness: 0.2"></a-box>
-    <a-box id="phoneCable" position="-0.55 0.9 -0.6" scale="0.005 0.01 0.2"
-           material="color: #2a2a2a; roughness: 0.9"></a-box>
-
-    <!-- THE AI CHARACTER (Floating & Rotating Metallic Cube) -->
-    <a-box id="aiCube"
-           class="clickable"
-           position="0 1.6 -2.2"
-           rotation="0 45 45"
-           width="0.38" height="0.38" depth="0.38"
-           material="color: #6366f1; roughness: 0.05; metalness: 0.95; emissive: #312e81; emissiveIntensity: 1.2"
-           animation__bob="property: position; to: 0 1.75 -2.2; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine"
-           animation__rotate="property: rotation; to: 360 405 45; dur: 9000; loop: true; easing: linear">
-    </a-box>
-
-    <!-- RECEPCIÓN DE HOTEL - MOSTRADOR -->
-    <a-box id="deskBody" position="0 0.52 -0.9" scale="2.0 0.84 0.56"
-           material="color: #3a2a1a; roughness: 0.7; metalness: 0"
-           shadow="receive: true"></a-box>
-    <a-box id="deskFront" position="0 0.52 -1.19" scale="2.0 0.84 0.04"
-           material="color: #5c4a3a; roughness: 0.6; metalness: 0"
-           shadow="cast: true"></a-box>
-    <a-box id="deskCountertop" position="0 0.97 -0.9" scale="2.2 0.06 0.7"
-           material="color: #e8ddd0; roughness: 0.2; metalness: 0.05"
-           shadow="cast: true; receive: true"></a-box>
-    <a-box id="deskTrim" position="0 0.02 -0.9" scale="2.1 0.04 0.62"
-           material="color: #2a1a0a; roughness: 0.3; metalness: 0.6"></a-box>
-    <a-box id="deskEdge" position="0 0.94 -0.9" scale="2.1 0.02 0.66"
-           material="color: #3a2a1a; roughness: 0.4; metalness: 0.5"
-           shadow="receive: true"></a-box>
-
-    <!-- CLIPBOARD INTERACTIVO (TABLA DE TAREAS) sobre el mostrador -->
-    <a-plane id="clipboardPanel"
-             position="-0.65 1.40 -0.65"
-             rotation="-30 25 0"
-             width="0.65" height="0.80"
-             material="shader: flat; color: #0d1527; opacity: 0.95; transparent: true"
-             class="clickable">
-      
-      <!-- Bordes del clipboard -->
-      <a-plane position="0 0.38 0.005" width="0.65" height="0.03" material="color: #6366f1; shader: flat; emissive: #6366f1; emissiveIntensity: 1.0"></a-plane>
-      <a-plane position="0 -0.38 0.005" width="0.65" height="0.03" material="color: #312e81; shader: flat; emissive: #312e81; emissiveIntensity: 0.5"></a-plane>
-
-      <a-text id="clipTitle" value="RECEPTIONIST CLIPBOARD" align="center" position="0 0.32 0.01" width="1.2" color="#38bdf8" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-
-      <!-- Checklist Items (Checkboxes) -->
-      <a-text id="clipTaskGreet" value="[ ] 1. Greet Guest" align="left" position="-0.28 0.22 0.01" width="1.0" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipTaskName" value="[ ] 2. Ask Name" align="left" position="-0.28 0.15 0.01" width="1.0" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipTaskCount" value="[ ] 3. Ask Guest Count" align="left" position="-0.28 0.08 0.01" width="1.0" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipTaskRoom" value="[ ] 4. Ask Room Type" align="left" position="-0.28 0.01 0.01" width="1.0" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipTaskNights" value="[ ] 5. Ask Nights Count" align="left" position="-0.28 -0.06 0.01" width="1.0" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipTaskConfirm" value="[ ] 6. Confirm Booking" align="left" position="-0.28 -0.13 0.01" width="1.0" color="#ef4444" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-
-      <!-- Seccion de Datos de Reserva -->
-      <a-plane position="0 -0.18 0.004" width="0.58" height="0.002" material="color: #374151; shader: flat"></a-plane>
-      
-      <a-text id="clipGuestLabel" value="Guest Info:" align="left" position="-0.28 -0.22 0.01" width="0.9" color="#9ca3af" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipGuestVal" value="Guest: TBD" align="left" position="-0.08 -0.22 0.01" width="1.0" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-
-      <a-text id="clipRoomLabel" value="Room Type:" align="left" position="-0.28 -0.27 0.01" width="0.9" color="#9ca3af" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipRoomVal" value="Type: TBD" align="left" position="-0.08 -0.27 0.01" width="1.0" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-
-      <a-text id="clipNightsLabel" value="Nights Count:" align="left" position="-0.28 -0.32 0.01" width="0.9" color="#9ca3af" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipNightsVal" value="Nights: TBD" align="left" position="-0.08 -0.32 0.01" width="1.0" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-
-      <a-text id="clipAssignedLabel" value="Room Assigned:" align="left" position="-0.28 -0.37 0.01" width="0.9" color="#9ca3af" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-      <a-text id="clipAssignedVal" value="Room: TBD" align="left" position="-0.08 -0.37 0.01" width="1.0" color="#fbbf24" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
-
-    </a-plane>
-
-    <!-- VR INTERACTION & DISPLAY PANEL (Holographic Screen) centrado -->
     <a-plane id="uiPanel"
-             position="0 1.55 -1.1"
-             rotation="-10 0 0"
-             width="1.4" height="0.8"
-             material="shader: flat; color: #080a14; opacity: 0.88; transparent: true; roughness: 1"
+             position="-8.61 1.8 -7.63"
+             rotation="0 -123 0"
+             width="1.6" height="0.9"
+             material="shader: flat; color: #1a1814; opacity: 0.95; transparent: true; roughness: 1"
              class="clickable">
-      
-      <!-- Sub-frame borders -->
-      <a-plane position="0 0.38 0.005" width="1.4" height="0.03" material="color: #4f46e5; shader: flat; emissive: #4f46e5; emissiveIntensity: 1.5"></a-plane>
-      <a-plane position="0 -0.39 0.005" width="1.4" height="0.03" material="color: #312e81; shader: flat; emissive: #312e81; emissiveIntensity: 0.5"></a-plane>
 
-      <!-- Status indicator -->
       <a-text id="statusText"
               value="HOLD M TO SPEAK"
               align="center"
               position="0 0.30 0.01"
-              width="2.4"
-              color="#38bdf8"
+              width="2.8"
+              color="#e8e0d0"
               font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
               negate="false">
       </a-text>
 
-      <!-- User Text (Your question) -->
       <a-text id="userText"
               value="You: ..."
               align="center"
               position="0 0.10 0.01"
-              width="1.5"
-              color="#a5b4fc"
+              width="2.0"
+              color="#d4ccc0"
               font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
-              wrap-count="35"
+              wrap-count="40"
               negate="false">
       </a-text>
 
-      <!-- AI Text (Guest response) -->
       <a-text id="aiText"
               value="Guest: (Checking in...) Say Hello to begin."
               align="center"
               position="0 -0.15 0.01"
-              width="1.5"
-              color="#f472b6"
+              width="2.0"
+              color="#f0ece4"
               font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
-              wrap-count="35"
+              wrap-count="40"
               negate="false">
       </a-text>
 
     </a-plane>
 
-    <!-- EVALUATION PANEL (visible after booking completion, misma posición que el panel de diálogo) -->
     <a-plane id="evaluationPanel"
-             position="0 1.55 -1.1"
-             rotation="-10 0 0"
-             width="1.8" height="1.3"
-             material="shader: flat; color: #0a0320; opacity: 0.95; transparent: true; roughness: 1"
-             class="clickable"
+             position="-8.61 1.8 -7.63"
+             rotation="0 -123 0"
+             width="2.4" height="1.6"
+             material="shader: flat; color: #1a1814; opacity: 0.95; transparent: true; roughness: 1"
              visible="false">
-      
-      <!-- Borders -->
-      <a-plane position="0 0.63 0.005" width="1.8" height="0.03" material="color: #f472b6; shader: flat; emissive: #f472b6; emissiveIntensity: 1.5"></a-plane>
-      <a-plane position="0 -0.64 0.005" width="1.8" height="0.03" material="color: #831843; shader: flat; emissive: #831843; emissiveIntensity: 0.5"></a-plane>
 
-      <a-text value="EVALUATION REPORT" align="center" position="0 0.55 0.01" width="2.8" color="#f472b6" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text value="EVALUATION REPORT" align="center" position="0 0.60 0.01" width="3.5" color="#e8e0d0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
 
-      <!-- Overall Score -->
-      <a-text id="evalScore" value="OVERALL: -- / 10" align="center" position="0 0.38 0.01" width="2.8" color="#fbbf24" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="evalScore" value="OVERALL: -- / 10" align="center" position="0 0.42 0.01" width="3.5" color="#f0ece4" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
 
-      <!-- Criteria Left Column -->
-      <a-text id="evalCriteria1" value="Communication: -\nLogical Order: -\nProfessionalism: -" align="left" position="-0.80 0.10 0.01" width="1.4" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="evalCriteria1" value="Communication: -\nLogical Order: -\nProfessionalism: -" align="left" position="-0.95 0.10 0.01" width="1.8" color="#d4ccc0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
 
-      <!-- Criteria Right Column -->
-      <a-text id="evalCriteria2" value="Precision: -\nFluency: -" align="left" position="0.10 0.13 0.01" width="1.4" color="#a5b4fc" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="evalCriteria2" value="Precision: -\nFluency: -" align="left" position="0.15 0.13 0.01" width="1.8" color="#d4ccc0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
 
-      <!-- Summary / Recommendations -->
-      <a-text id="evalSummary" value="Summary: awaiting results..." align="center" position="0 -0.18 0.01" width="2.6" color="#e2e8f0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" wrap-count="40" negate="false"></a-text>
+      <a-text id="evalSummary" value="Summary: awaiting results..." align="center" position="0 -0.18 0.01" width="3.2" color="#c8beb0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" wrap-count="45" negate="false"></a-text>
 
-      <!-- Mistakes -->
-      <a-text id="evalMistakes" value="Mistakes: -" align="center" position="0 -0.38 0.01" width="2.6" color="#fca5a5" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" wrap-count="40" negate="false"></a-text>
+      <a-text id="evalMistakes" value="Mistakes: -" align="center" position="0 -0.40 0.01" width="3.2" color="#d4bcb0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" wrap-count="45" negate="false"></a-text>
 
-      <!-- Recommendations -->
-      <a-text id="evalRecommendations" value="Recommendations: -" align="center" position="0 -0.55 0.01" width="2.6" color="#86efac" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" wrap-count="40" negate="false"></a-text>
+      <a-text id="evalRecommendations" value="Recommendations: -" align="center" position="0 -0.58 0.01" width="3.2" color="#b0c8b0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" wrap-count="45" negate="false"></a-text>
 
     </a-plane>
 
-    <!-- PLAYER RIG (Camera & Hands) -->
-    <a-entity id="rig" position="0 0 0" position-clamp>
-      <!-- Camera with a gaze cursor for desktop fallback -->
-      <a-entity id="camera" camera look-controls wasd-controls position="0 1.6 0.3">
+    <a-plane id="clipboardPanel"
+             position="-10.70 1.8 -10.47"
+             rotation="0 -15 0"
+             width="0.85" height="0.95"
+             material="shader: flat; color: #1a1814; opacity: 0.95; transparent: true"
+             class="clickable">
+
+      <a-text id="clipTitle" value="CLIPBOARD" align="center" position="0 0.38 0.01" width="1.6" color="#c8b88a" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+
+      <a-text id="clipTaskGreet" value="[ ] 1. Greet Guest" align="left" position="-0.34 0.26 0.01" width="1.3" color="#e8e0d0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskName" value="[ ] 2. Ask Name" align="left" position="-0.34 0.19 0.01" width="1.3" color="#e8e0d0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskCount" value="[ ] 3. Ask Guest Count" align="left" position="-0.34 0.12 0.01" width="1.3" color="#e8e0d0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskRoom" value="[ ] 4. Ask Room Type" align="left" position="-0.34 0.05 0.01" width="1.3" color="#e8e0d0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskNights" value="[ ] 5. Ask Nights Count" align="left" position="-0.34 -0.02 0.01" width="1.3" color="#e8e0d0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipTaskConfirm" value="[ ] 6. Confirm Booking" align="left" position="-0.34 -0.09 0.01" width="1.3" color="#e8e0d0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+
+      <a-plane position="0 -0.14 0.004" width="0.72" height="0.002" material="color: #554a3a; shader: flat"></a-plane>
+
+      <a-text id="clipGuestVal" value="Guest: TBD" align="left" position="-0.34 -0.18 0.01" width="1.4" color="#d4ccc0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipRoomVal" value="Type: TBD" align="left" position="-0.34 -0.24 0.01" width="1.4" color="#d4ccc0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipNightsVal" value="Nights: TBD" align="left" position="-0.34 -0.30 0.01" width="1.4" color="#d4ccc0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+      <a-text id="clipAssignedVal" value="Room: TBD" align="left" position="-0.34 -0.36 0.01" width="1.4" color="#e8e0d0" font="https://cdn.aframe.io/fonts/Roboto-msdf.json" negate="false"></a-text>
+
+    </a-plane>
+
+    <a-entity id="rig" position="-11.04 0.70 -9.22" rotation="0 -90 0" thumbstick-locomotion>
+      <a-entity id="camera" camera look-controls position="0 1.6 0">
         <a-cursor id="desktopCursor"
-                  raycaster="objects: .clickable; far: 4"
-                  material="color: #818cf8; shader: flat"
+                  raycaster="objects: .clickable; far: 6"
+                  material="color: #c8b88a; shader: flat"
                   position="0 0 -1"
                   geometry="primitive: ring; radiusInner: 0.008; radiusOuter: 0.015">
         </a-cursor>
       </a-entity>
       
-      <!-- VR Laser Controllers -->
       <a-entity id="leftController"
                 laser-controls="hand: left"
-                raycaster="objects: .clickable; far: 10"
-                line="color: #06b6d4; opacity: 0.8; width: 2">
+                raycaster="objects: .clickable; far: 12"
+                line="color: #c8b88a; opacity: 0.6; width: 2">
       </a-entity>
       <a-entity id="rightController"
                 laser-controls="hand: right"
-                raycaster="objects: .clickable; far: 10"
-                line="color: #ec4899; opacity: 0.8; width: 2">
+                raycaster="objects: .clickable; far: 12"
+                line="color: #c8b88a; opacity: 0.6; width: 2">
       </a-entity>
     </a-entity>
 
@@ -8297,9 +8988,116 @@ export default async function handler(req, res) {
     AFRAME.registerComponent('position-clamp', {
       tick: function () {
         const p = this.el.getAttribute('position');
-        p.x = Math.max(-3.8, Math.min(3.8, p.x));
-        p.z = Math.max(-3.8, Math.min(0.8, p.z));
+        p.x = Math.max(-8.0, Math.min(4.0, p.x));
+        p.z = Math.max(-14.0, Math.min(-6.0, p.z));
         this.el.setAttribute('position', p);
+      }
+    });
+
+    AFRAME.registerComponent('npc-controller', {
+      init: function () {
+        this.mixer = null;
+        this.actions = [];
+        this.el.addEventListener('model-loaded', () => {
+          const model = this.el.getObject3D('mesh');
+          if (!model) return;
+          model.scale.set(1.5, 1.5, 1.5);
+          if (model.animations && model.animations.length > 0) {
+            this.mixer = new THREE.AnimationMixer(model);
+            this.actions = model.animations.map(clip => {
+              const action = this.mixer.clipAction(clip);
+              action.loop = THREE.LoopRepeat;
+              action.play();
+              return action;
+            });
+          }
+        });
+      },
+      tick: function (t, dt) {
+        if (this.mixer) this.mixer.update(dt / 1000);
+      },
+      stopAnimations: function () {
+        this.actions.forEach(a => a.stop());
+        this.actions = [];
+        this.mixer = null;
+      }
+    });
+
+    AFRAME.registerComponent('thumbstick-locomotion', {
+      init: function () {
+        this.moveX = 0;
+        this.moveZ = 0;
+        this.rotateY = 0;
+        this.deadZone = 0.15;
+        this.speed = 0.05;
+        this.keys = { w: false, a: false, s: false, d: false };
+
+        const leftEl = document.getElementById('leftController');
+        if (leftEl) {
+          leftEl.addEventListener('axismove', (e) => {
+            const ax = e.detail.axis;
+            if (ax) {
+              this.moveX = Math.abs(ax[0]) > this.deadZone ? ax[0] : 0;
+              this.moveZ = Math.abs(ax[1]) > this.deadZone ? ax[1] : 0;
+            }
+          });
+        }
+        const rightEl = document.getElementById('rightController');
+        if (rightEl) {
+          rightEl.addEventListener('axismove', (e) => {
+            const ax = e.detail.axis;
+            if (ax) {
+              this.rotateY = Math.abs(ax[0]) > this.deadZone ? ax[0] : 0;
+            }
+          });
+        }
+
+        window.addEventListener('keydown', (e) => {
+          const k = e.key.toLowerCase();
+          if (k in this.keys) { this.keys[k] = true; e.preventDefault(); }
+        });
+        window.addEventListener('keyup', (e) => {
+          const k = e.key.toLowerCase();
+          if (k in this.keys) { this.keys[k] = false; e.preventDefault(); }
+        });
+
+        window.addEventListener('keydown', (e) => {
+          if (e.key.toLowerCase() === 'p') {
+            const pos = this.el.getAttribute('position');
+            const rot = this.el.getAttribute('rotation');
+            console.log('RIG:', pos.x.toFixed(2), pos.y.toFixed(2), pos.z.toFixed(2), 'ROT:', rot.y.toFixed(1));
+          }
+        });
+      },
+      tick: function () {
+        if (this.rotateY !== 0) {
+          const r = this.el.getAttribute('rotation') || { x: 0, y: 0, z: 0 };
+          r.y -= this.rotateY * 1.5;
+          this.el.setAttribute('rotation', r);
+        }
+
+        let kx = 0, kz = 0;
+        if (this.keys.w) kz += 1;
+        if (this.keys.s) kz -= 1;
+        if (this.keys.a) kx -= 1;
+        if (this.keys.d) kx += 1;
+
+        const mx = this.moveX + kx;
+        const mz = this.moveZ + kz;
+
+        if (mx !== 0 || mz !== 0) {
+          const cam = document.getElementById('camera');
+          if (cam) {
+            const rigRot = this.el.getAttribute('rotation') || { x: 0, y: 0, z: 0 };
+            const camRot = cam.getAttribute('rotation') || { x: 0, y: 0, z: 0 };
+            const yaw = THREE.MathUtils.degToRad((rigRot.y || 0) + (camRot.y || 0));
+            const s = Math.sin(yaw), c = Math.cos(yaw);
+            const p = this.el.getAttribute('position');
+            p.x += (mx * c - mz * s) * this.speed;
+            p.z += (-mx * s - mz * c) * this.speed;
+            this.el.setAttribute('position', p);
+          }
+        }
       }
     });
 
@@ -8307,12 +9105,8 @@ export default async function handler(req, res) {
     // GLOBAL ERROR MONITORING
     // ==========================================
     window.onerror = function (message, source, lineno, colno, error) {
-      const errMsg = `Error: ${message} (Line ${lineno})`;
-      console.error(errMsg, error);
-      
-      const aiText = document.getElementById('aiText');
-      if (aiText) aiText.setAttribute('value', errMsg);
-      
+      if (message === 'Script error.') return true;
+      console.error(`Error: ${message} (Line ${lineno})`, error);
       showMicWarning(`JS Runtime Error: ${message} (Line ${lineno})`);
       return false;
     };
@@ -8323,274 +9117,79 @@ export default async function handler(req, res) {
     const ENDPOINT = `/api/chat`;
 
 // ==========================================
-// PROCEDURAL TEXTURE SYSTEM (Canvas-based)
-// ==========================================
-function createProceduralTexture(type, params = {}) {
-  const s = params.size || 512;
-  const c = document.createElement('canvas');
-  c.width = s; c.height = s;
-  const ctx = c.getContext('2d');
-  const w = s, h = s;
-
-  ctx.fillStyle = params.bg || '#ffffff';
-  ctx.fillRect(0, 0, w, h);
-
-  if (type === 'marble') {
-    ctx.globalAlpha = 0.15;
-    for (let i = 0; i < 30; i++) {
-      ctx.strokeStyle = `hsl(0,0%,${45 + Math.random() * 30}%)`;
-      ctx.beginPath();
-      const x = Math.random() * w, y = Math.random() * h;
-      ctx.moveTo(x, y);
-      for (let j = 0; j < 8; j++) {
-        const cx = x + (j * w/8) + Math.sin(j * 0.7 + i) * 20;
-        const cy = y + Math.sin(j * 1.2 + i * 2) * 30 + j * 8;
-        ctx.lineTo(cx + Math.random() * 15, cy + Math.random() * 15);
-      }
-      ctx.stroke();
-    }
-    ctx.globalAlpha = 1;
-    return c;
-  }
-
-  if (type === 'wood') {
-    const base = params.base || '#8B6914';
-    const dark = params.dark || '#5C4A1E';
-    for (let y = 0; y < h; y++) {
-      const wave = Math.sin(y * 0.05) * 8 + Math.sin(y * 0.12) * 3;
-      const grain = (y % 12 < 2) ? 0.15 : 0;
-      const bright = 1 - (y / h) * 0.3 + Math.sin(y * 0.3) * 0.05;
-      const r = (parseInt(base.slice(1,3),16) * bright) | 0;
-      const g = (parseInt(base.slice(3,5),16) * bright) | 0;
-      const b = (parseInt(base.slice(5,7),16) * (bright - grain)) | 0;
-      ctx.fillStyle = `rgb(${r},${g},${b})`;
-      ctx.fillRect(0, y + wave, w, 1);
-    }
-    return c;
-  }
-
-  if (type === 'fabric') {
-    const base = params.base || '#4a4a5a';
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        const weave = (Math.floor(x / 4) + Math.floor(y / 4)) % 2 === 0 ? 0 : 0.08;
-        const noise = (Math.random() - 0.5) * 0.04;
-        const val = 1 - weave + noise;
-        const r = parseInt(base.slice(1,3),16) * val;
-        const g = parseInt(base.slice(3,5),16) * val;
-        const b = parseInt(base.slice(5,7),16) * val;
-        ctx.fillStyle = `rgb(${r|0},${g|0},${b|0})`;
-        ctx.fillRect(x, y, 1, 1);
-      }
-    }
-    return c;
-  }
-
-  if (type === 'floorTile') {
-    const ts = params.tileSize || 64;
-    const gap = params.gap || 3;
-    const light = params.light || '#e8e0d0';
-    const dark = params.dark || '#c8c0b0';
-    for (let y = 0; y < h; y += ts) {
-      for (let x = 0; x < w; x += ts) {
-        const off = ((y / ts) % 2 === 0) ? 0 : ts / 2;
-        const v = (Math.sin(x * 0.1) * 0.5 + 0.5) * 20 + 60;
-        ctx.fillStyle = `hsl(40,${8}%,${v}%)`;
-        ctx.fillRect(x + off + gap, y + gap, ts - gap * 2, ts - gap * 2);
-        ctx.fillStyle = `hsl(40,5%,${v - 10}%)`;
-        ctx.fillRect(x + off, y, ts, gap);
-        ctx.fillRect(x + off, y + ts - gap, ts, gap);
-        ctx.fillRect(x + off, y, gap, ts);
-        ctx.fillRect(x + off + ts - gap, y, gap, ts);
-      }
-    }
-    return c;
-  }
-
-  if (type === 'carpet') {
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        const speckle = Math.random() < 0.15 ? 15 : 0;
-        const v = 60 + speckle + Math.sin(x * 0.02) * 3 + Math.sin(y * 0.02) * 3;
-        ctx.fillStyle = `hsl(220,15%,${v}%)`;
-        ctx.fillRect(x, y, 1, 1);
-      }
-    }
-    return c;
-  }
-
-  if (type === 'wallPaint') {
-    const base = params.base || '#e8e4dc';
-    const r0 = parseInt(base.slice(1,3),16);
-    const g0 = parseInt(base.slice(3,5),16);
-    const b0 = parseInt(base.slice(5,7),16);
-    const imgData = ctx.createImageData(w, h);
-    for (let i = 0; i < imgData.data.length; i += 4) {
-      const noise = (Math.random() - 0.5) * 8;
-      imgData.data[i] = Math.max(0, Math.min(255, r0 + noise));
-      imgData.data[i+1] = Math.max(0, Math.min(255, g0 + noise));
-      imgData.data[i+2] = Math.max(0, Math.min(255, b0 + noise));
-      imgData.data[i+3] = 255;
-    }
-    ctx.putImageData(imgData, 0, 0);
-    return c;
-  }
-
-  if (type === 'ceilingTile') {
-    const ts = params.tileSize || 64;
-    const gap = params.gap || 2;
-    for (let y = 0; y < h; y += ts) {
-      for (let x = 0; x < w; x += ts) {
-        const v = 88 + Math.random() * 4;
-        ctx.fillStyle = `hsl(40,5%,${v}%)`;
-        ctx.fillRect(x + gap, y + gap, ts - gap * 2, ts - gap * 2);
-        ctx.fillStyle = 'rgba(0,0,0,0.08)';
-        ctx.fillRect(x, y, ts, gap);
-        ctx.fillRect(x, y, gap, ts);
-      }
-    }
-    return c;
-  }
-
-  if (type === 'abstractArt') {
-    const colors = params.colors || ['#c0392b','#2980b9','#f39c12','#27ae60','#8e44ad','#e67e22'];
-    for (let i = 0; i < 20; i++) {
-      ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
-      const x = Math.random() * w, y = Math.random() * h;
-      const rw = 30 + Math.random() * 80, rh = 30 + Math.random() * 80;
-      ctx.globalAlpha = 0.7 + Math.random() * 0.3;
-      if (Math.random() > 0.5) {
-        ctx.fillRect(x, y, rw, rh);
-      } else {
-        ctx.beginPath();
-        ctx.arc(x, y, rw / 2, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-    ctx.globalAlpha = 1;
-    ctx.strokeStyle = '#2a1a0a';
-    ctx.lineWidth = 6;
-    ctx.strokeRect(2, 2, w - 4, h - 4);
-    return c;
-  }
-
-  return c;
-}
-
-function getThreeObject(entityId) {
-  const el = document.getElementById(entityId);
-  if (!el) return null;
-  if (el.object3D && el.object3D.children.length > 0) {
-    return el.object3D.children.find(c => c.isMesh) || el.object3D;
-  }
-  return el.object3D;
-}
-
-function setTexture(entityId, canvas, mapType = 'map', repeatX = 1, repeatY = 1) {
-  const el = document.getElementById(entityId);
-  if (!el) return;
-  const obj = getThreeObject(entityId);
-  if (!obj || !obj.material) {
-    el.setAttribute('material', 'src', canvas);
-    return;
-  }
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(repeatX, repeatY);
-  if (obj.material) {
-    obj.material[mapType] = tex;
-    obj.material.needsUpdate = true;
-  }
-}
-
-function buildEnvironment() {
-  const floorTex = createProceduralTexture('floorTile', { tileSize: 64, light: '#e8ddd0', dark: '#d0c5b5' });
-  const marbleTex = createProceduralTexture('marble', { bg: '#e8ddd0' });
-  const woodTex = createProceduralTexture('wood', { base: '#6a4a2a', dark: '#4a2a1a' });
-
-  setTexture('floor', floorTex, 'map', 8, 5);
-  setTexture('floor', createBumpFromBase(floorTex, 0.15), 'bumpMap', 8, 5);
-  setTexture('backWall', createProceduralTexture('wallPaint', { base: '#e4e0d8' }), 'map', 4, 2);
-  setTexture('leftWall', createProceduralTexture('wallPaint', { base: '#ddd9d0' }), 'map', 3, 2);
-  setTexture('rightWall', createProceduralTexture('wallPaint', { base: '#ddd9d0' }), 'map', 3, 2);
-  setTexture('ceiling', createProceduralTexture('ceilingTile', { tileSize: 64 }), 'map', 6, 4);
-  setTexture('deskCountertop', marbleTex, 'map', 2, 1);
-  setTexture('deskCountertop', createBumpFromBase(marbleTex, 0.3), 'bumpMap', 2, 1);
-  setTexture('deskFront', woodTex, 'map', 4, 2);
-  setTexture('deskFront', createBumpFromBase(woodTex, 0.4), 'bumpMap', 4, 2);
-  setTexture('carpet', createProceduralTexture('carpet'), 'map', 4, 3);
-  setTexture('sofaSeat', createProceduralTexture('fabric', { base: '#3a3a4a' }), 'map', 2, 1);
-  setTexture('sofaBack', createProceduralTexture('fabric', { base: '#3a3a4a' }), 'map', 2, 1);
-  setTexture('sofaArmL', createProceduralTexture('fabric', { base: '#3a3a4a' }), 'map', 1, 1);
-  setTexture('sofaArmR', createProceduralTexture('fabric', { base: '#3a3a4a' }), 'map', 1, 1);
-  setTexture('armchairSeat', createProceduralTexture('fabric', { base: '#3a4a3a' }), 'map', 1, 1);
-  setTexture('armchairBack', createProceduralTexture('fabric', { base: '#3a4a3a' }), 'map', 1, 1);
-  setTexture('armchairArmL', createProceduralTexture('fabric', { base: '#3a4a3a' }), 'map', 1, 1);
-  setTexture('armchairArmR', createProceduralTexture('fabric', { base: '#3a4a3a' }), 'map', 1, 1);
-  setTexture('wallArt', createProceduralTexture('abstractArt'), 'map', 1, 1);
-
-  const envMap = createEnvMap();
-  const cubeObj = getThreeObject('aiCube');
-  if (cubeObj && cubeObj.material) {
-    cubeObj.material.envMap = envMap;
-    cubeObj.material.envMapIntensity = 1.8;
-    cubeObj.material.needsUpdate = true;
-  }
-}
-
-function createBumpFromBase(canvas, strength = 1) {
-  const s = canvas.width;
-  const out = document.createElement('canvas');
-  out.width = s; out.height = s;
-  const ctx = out.getContext('2d');
-  ctx.drawImage(canvas, 0, 0);
-  const imgData = ctx.getImageData(0, 0, s, s);
-  for (let i = 0; i < imgData.data.length; i += 4) {
-    const gray = (imgData.data[i] + imgData.data[i+1] + imgData.data[i+2]) / 3;
-    const val = Math.max(0, Math.min(255, Math.round(gray * strength)));
-    imgData.data[i] = val;
-    imgData.data[i+1] = val;
-    imgData.data[i+2] = val;
-    imgData.data[i+3] = 255;
-  }
-  ctx.putImageData(imgData, 0, 0);
-  return out;
-}
-
-function createEnvMap() {
-  const size = 32;
-  const faces = [];
-  for (let i = 0; i < 6; i++) {
-    const c = document.createElement('canvas');
-    c.width = size; c.height = size;
-    const ctx = c.getContext('2d');
-    const grad = ctx.createLinearGradient(0, 0, size, size);
-    grad.addColorStop(0, '#f0e8d8');
-    grad.addColorStop(0.5, '#d0c0a8');
-    grad.addColorStop(1, '#a09078');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, size, size);
-    faces.push(c);
-  }
-  return new THREE.CubeTexture(faces);
-}
-
-// ==========================================
      // SPEECH RECOGNITION & SYNTHESIS SETUP
      // Cross-browser compatibility improvements applied
      // ==========================================
 // Cross-browser SpeechRecognition detection with fallbacks
+class PicoAudioRecorder {
+  constructor() {
+    this.mediaRecorder = null;
+    this.audioChunks = [];
+    this.stream = null;
+  }
+  async start() {
+    this.audioChunks = [];
+    let stream = window.globalMicStream;
+    if (!stream) {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      window.globalMicStream = stream;
+    }
+    this.stream = stream;
+    let options = {};
+    if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+      options.mimeType = 'audio/webm;codecs=opus';
+    } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+      options.mimeType = 'audio/webm';
+    }
+    this.mediaRecorder = new MediaRecorder(this.stream, options);
+    this.mediaRecorder.ondataavailable = (event) => {
+      if (event.data && event.data.size > 0) {
+        this.audioChunks.push(event.data);
+      }
+    };
+    this.mediaRecorder.start();
+  }
+  async stop() {
+    return new Promise((resolve) => {
+      if (!this.mediaRecorder || this.mediaRecorder.state === 'inactive') {
+        resolve(null);
+        return;
+      }
+      this.mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(this.audioChunks, { type: this.mediaRecorder.mimeType });
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64data = reader.result.split(',')[1];
+          resolve(base64data);
+        };
+        reader.readAsDataURL(audioBlob);
+      };
+      this.mediaRecorder.stop();
+    });
+  }
+}
+const picoRecorder = new PicoAudioRecorder();
+function detectBrowser() {
+  const ua = navigator.userAgent.toLowerCase();
+  if (ua.includes('pico') || ua.includes('picovr')) return 'pico';
+  if (ua.includes('firefox')) return 'firefox';
+  if (ua.includes('samsungbrowser')) return 'samsung';
+  if (ua.includes('edg/') || ua.includes('edge/')) return 'edge';
+  if (ua.includes('opr/') || ua.includes('opera')) return 'opera';
+  if (ua.includes('chrome') || ua.includes('chromium')) return 'chrome';
+  if (ua.includes('safari')) return 'safari';
+  return 'unknown';
+}
 const SpeechRecognition = window.SpeechRecognition 
                         || window.webkitSpeechRecognition 
                         || window.mozSpeechRecognition 
                         || window.msSpeechRecognition;
+let usePicoRecorder = (!SpeechRecognition || detectBrowser() === 'pico');
 let recognition = null;
 
 // Initialize SpeechRecognition if supported
 function initializeSpeechRecognition() {
   if (!SpeechRecognition) {
-    console.warn("SpeechRecognition not supported in this browser.");
-    showMicWarning("Speech recognition is NOT supported in this browser. Please use Chrome, Edge, or Safari.");
     return false;
   }
   
@@ -8675,54 +9274,8 @@ function initializeSpeechRecognition() {
     let chatHistory = [];
     let recognitionStarted = false;
 
-// Preload TTS voices once globally with proper async handling
-let ttsVoiceList = [];
-let ttsVoicesLoaded = false;
 
-function loadTtsVoices() {
-  if (!window.speechSynthesis) return;
-  
-  // Get initial voices
-  ttsVoiceList = window.speechSynthesis.getVoices();
-  
-  // If voices aren't loaded yet, wait for the onvoiceschanged event
-  if (ttsVoiceList.length === 0) {
-    window.speechSynthesis.onvoiceschanged = () => {
-      ttsVoiceList = window.speechSynthesis.getVoices();
-      ttsVoicesLoaded = true;
-      console.log(`TTS voices loaded: ${ttsVoiceList.length} voices available`);
-    };
-  } else {
-    ttsVoicesLoaded = true;
-    console.log(`TTS voices loaded: ${ttsVoiceList.length} voices available`);
-  }
-}
-
-// Wait for voices to load before attempting to use them
-function ensureTtsVoicesLoaded() {
-  return new Promise((resolve) => {
-    if (ttsVoicesLoaded) {
-      resolve();
-    } else {
-      // Check periodically if voices have loaded
-      const checkInterval = setInterval(() => {
-        if (ttsVoicesLoaded || ttsVoiceList.length > 0) {
-          clearInterval(checkInterval);
-          resolve();
-        }
-      }, 100);
-      
-      // Timeout after 5 seconds
-      setTimeout(() => {
-        clearInterval(checkInterval);
-        resolve(); // Resolve anyway to prevent hanging
-      }, 5000);
-    }
-  });
-}
-
-// Initialize voice loading
-loadTtsVoices();
+let ttsAudioCtx = null;
     
 // Hardcode practice language to English (US) as we are practicing English
      const currentLang = 'en-US';
@@ -8732,39 +9285,97 @@ loadTtsVoices();
    // Initialization failed, warning already shown in function
  }
 
- // Function to request microphone permission when needed (not on page load)
- async function requestMicPermissionIfNeeded() {
-   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-     showMicWarning("Your browser does not support microphone access. Please use a modern browser like Chrome, Firefox, or Safari.");
-     return false;
-   }
+function getAudioConstraints() {
+  if (detectBrowser() === 'pico') {
+    return { audio: { deviceId: 'default', echoCancellation: true, noiseSuppression: true, sampleRate: 16000 } };
+  }
+  return { audio: true };
+}
 
-   try {
-     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-     // Permission granted, immediately release the resources
-     stream.getTracks().forEach(track => track.stop());
-     console.log("Microphone permission verified.");
-     return true;
-   } catch (err) {
-     console.warn("Microphone access permission prompt failed or denied:", err);
-     // Provide browser-specific guidance
-     let browserGuidance = "";
-     const userAgent = navigator.userAgent;
-     
-     if (userAgent.includes("Firefox")) {
-       browserGuidance = " In Firefox, click the microphone icon in the address bar and select 'Allow Audio Capture'.";
-     } else if (userAgent.includes("Safari")) {
-       browserGuidance = " In Safari, go to Settings > Websites > Microphone and ensure this site is set to 'Allow'.";
-     } else if (userAgent.includes("Chrome") || userAgent.includes("Edge")) {
-       browserGuidance = " Click the microphone icon in the address bar and select 'Allow'.";
-     } else {
-       browserGuidance = " Please check your browser's microphone permissions settings.";
-     }
-     
-     showMicWarning("Microphone access is blocked." + browserGuidance + " Please allow microphone permissions and refresh the page.");
-     return false;
-   }
- }
+async function checkMicPermissionState() {
+  if (!navigator.permissions || !navigator.permissions.query) return 'unknown';
+  try {
+    const status = await navigator.permissions.query({ name: 'microphone' });
+    return status.state;
+  } catch { return 'unknown'; }
+}
+
+function showPicoMicFailureHelp() {
+  const warningEl = document.getElementById('micWarning');
+  if (warningEl) {
+    warningEl.innerHTML = `⚠️ <strong>PICO Mic Issue:</strong><br>
+1. In the PICO browser address bar, type <strong>chrome://settings/content/microphone</strong><br>
+2. Find this site and set to <strong>Allow</strong><br>
+3. Return here and refresh the page<br>
+Or use the text input below.`;
+    warningEl.style.display = 'block';
+  }
+}
+
+function initPicoMicHandler() {
+  const banner = document.getElementById('picoMicBanner');
+  const btn = document.getElementById('picoEnableMicBtn');
+  if (!banner || !btn) return;
+  banner.classList.add('visible');
+  checkMicPermissionState().then(state => {
+    if (state === 'granted') {
+      btn.textContent = '✓ Microphone Enabled';
+      btn.classList.add('granted');
+      btn.disabled = true;
+    } else if (state === 'denied') {
+      btn.textContent = '❌ Mic Blocked';
+      showPicoMicFailureHelp();
+    }
+  });
+  btn.addEventListener('click', async () => {
+    if (window.globalMicStream) return;
+    btn.textContent = 'Requesting...';
+    btn.disabled = true;
+    const granted = await requestMicPermissionIfNeeded();
+    if (granted) {
+      btn.textContent = '✓ Microphone Enabled';
+      btn.classList.add('granted');
+      btn.disabled = true;
+    } else {
+      btn.textContent = '🎤 Try Again';
+      btn.disabled = false;
+    }
+  });
+}
+
+  // Function to request microphone permission when needed (not on page load)
+  async function requestMicPermissionIfNeeded() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      showMicWarning("Your browser does not support microphone access. Please use a modern browser like Chrome, Firefox, or Safari.");
+      showTextInputFallback();
+      return false;
+    }
+    if (window.globalMicStream) {
+      return true;
+    }
+    try {
+      const constraints = getAudioConstraints();
+      const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000));
+      const stream = await Promise.race([
+        navigator.mediaDevices.getUserMedia(constraints),
+        timeout
+      ]);
+      window.globalMicStream = stream;
+      console.log("Microphone permission verified.");
+      return true;
+    } catch (err) {
+      console.warn("Microphone access failed:", err);
+      if (detectBrowser() === 'pico') {
+        showPicoMicFailureHelp();
+      } else if (err.message === 'timeout') {
+        showMicWarning("Microphone access timed out. Check your microphone and try again.");
+      } else {
+        showMicWarning("Microphone access denied. Please allow microphone permissions in your browser settings and refresh.");
+      }
+      showTextInputFallback();
+      return false;
+    }
+  }
 
     // ==========================================
     // INITIALIZATION & USER INPUTS
@@ -8780,8 +9391,16 @@ loadTtsVoices();
 
     function initApp() {
       console.log("App ready.");
-      
-      buildEnvironment();
+
+      const hotelModel = document.querySelector('a-gltf-model[src="Models/HotelModel.glb"]');
+      if (hotelModel) {
+        hotelModel.addEventListener('model-error', (e) => console.error('Hotel model error:', e.detail));
+      }
+
+      const npcModel = document.getElementById('aiNPC');
+      if (npcModel) {
+        npcModel.addEventListener('model-error', (e) => console.error('NPC model error:', e.detail));
+      }
       
       // Select random guest profile for role reversal
       selectRandomGuestProfile();
@@ -8804,7 +9423,7 @@ window.addEventListener('keydown', async (e) => {
         }
       });
 
-      // B. 2D Button Hook (Desktop/Mobile overlay)
+       // B. 2D Button Hook (Desktop/Mobile overlay)
       const talkBtn = document.getElementById('talkButton');
       if (talkBtn) {
 talkBtn.addEventListener('mousedown', async () => { await startRecording(); });
@@ -8822,10 +9441,31 @@ talkBtn.addEventListener('mousedown', async () => { await startRecording(); });
          });
       }
 
+      // Text input fallback for Pico 4 / browsers without mic
+      const textInput = document.getElementById('textInput');
+      const textSendBtn = document.getElementById('textSendBtn');
+      const sendTextMessage = () => {
+        if (!textInput) return;
+        const msg = textInput.value.trim();
+        if (!msg) return;
+        textInput.value = '';
+        document.getElementById('userText').setAttribute('value', `You: "${msg}"`);
+        recognizedText = msg;
+        updateUIState("Thinking...");
+        setCubeState("thinking");
+        sendToGemini(msg);
+      };
+      if (textInput) {
+        textInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendTextMessage(); });
+      }
+      if (textSendBtn) {
+        textSendBtn.addEventListener('click', sendTextMessage);
+      }
+
       // C. Click on AI Cube Hook (Toggles voice)
-      const cubeEl = document.getElementById('aiCube');
+      const cubeEl = document.getElementById('aiNPC');
       if (cubeEl) {
-cubeEl.addEventListener('click', async () => {
+        cubeEl.addEventListener('click', async () => {
            if (isRecording) {
              stopRecording();
            } else {
@@ -8834,35 +9474,62 @@ cubeEl.addEventListener('click', async () => {
          });
       }
 
-      // D. VR Controller Trigger Hooks
+      // Initialize PICO mic banner if on PICO device
+      if (detectBrowser() === 'pico') {
+        initPicoMicHandler();
+      }
+      
       const bindControllerEvents = (controllerId) => {
         const controllerEl = document.getElementById(controllerId);
         if (!controllerEl) return;
-
-controllerEl.addEventListener('triggerdown', () => {
-           console.log(`VR Controller Trigger start: ${controllerId}`);
-           startRecording(); // Note: Not awaiting for simplicity in event handler
-         });
-
-        controllerEl.addEventListener('triggerup', () => {
-          console.log(`VR Controller Trigger stop: ${controllerId}`);
+        let triggerBusy = false;
+        const onStart = () => {
+          if (triggerBusy) return;
+          triggerBusy = true;
+          console.log(`VR Controller start: ${controllerId}`);
+          startRecording();
+        };
+        const onEnd = () => {
+          if (!triggerBusy) return;
+          triggerBusy = false;
+          console.log(`VR Controller stop: ${controllerId}`);
           stopRecording();
+        };
+        controllerEl.addEventListener('triggerdown', onStart);
+        controllerEl.addEventListener('selectstart', onStart);
+        controllerEl.addEventListener('triggerup', onEnd);
+        controllerEl.addEventListener('selectend', onEnd);
+        controllerEl.addEventListener('controllerconnected', (e) => {
+          console.log(`Controller connected: ${controllerId}`, e.detail);
         });
       };
 
       bindControllerEvents('leftController');
       bindControllerEvents('rightController');
 
-      // E. Clean up desktop camera cursor when entering VR mode
       const sceneEl = document.querySelector('a-scene');
       sceneEl.addEventListener('enter-vr', () => {
         const cursor = document.getElementById('desktopCursor');
         if (cursor) cursor.setAttribute('visible', 'false');
+        const hud = document.getElementById('hud-overlay');
+        if (hud) hud.style.display = 'none';
+        if (!window.globalMicStream) {
+          requestMicPermissionIfNeeded();
+        }
       });
       sceneEl.addEventListener('exit-vr', () => {
         const cursor = document.getElementById('desktopCursor');
         if (cursor) cursor.setAttribute('visible', 'true');
+        const hud = document.getElementById('hud-overlay');
+        if (hud) hud.style.display = 'block';
+        usePicoRecorder = (!SpeechRecognition || detectBrowser() === 'pico');
       });
+
+      window.addEventListener('click', async (e) => {
+        if (e.target && (e.target.classList.contains('a-enter-vr-button') || e.target.closest('.a-enter-vr-button'))) {
+          await requestMicPermissionIfNeeded();
+        }
+      }, true);
 
       // Unlock Audio Context on chrome on first user click - removed to avoid WebSocket voice extraction error
     }
@@ -8871,85 +9538,126 @@ controllerEl.addEventListener('triggerdown', () => {
     // RECORDING CONTROL FLOW
     // ==========================================
 async function startRecording() {
-       if (!recognition) {
-         showMicWarning("Speech recognition is not available in this browser.");
-         return;
-       }
-       if (isRecording) return;
-
-       // Request microphone permission if needed
-       const hasPermission = await requestMicPermissionIfNeeded();
-       if (!hasPermission) {
-         return; // Permission denied, warning already shown
-       }
-
-        initAmbientAudio();
-
-        // Update UI button visual state
-        const talkBtn = document.getElementById('talkButton');
-       if (talkBtn) {
-         talkBtn.classList.add('listening');
-         talkBtn.textContent = 'Hold to Speak (Listening…)';
-       }
-
-       // Reset text
-       recognizedText = "";
-
-       // Interrupt TTS
-       if (window.speechSynthesis) {
-         window.speechSynthesis.cancel();
-       }
-       stopSpeakingAnimation();
-
-       // Reset cube position and restore bob animation if it flew away
-       const cubeEl = document.getElementById('aiCube');
-       if (cubeEl) {
-         cubeEl.removeAttribute('animation__move_room');
-          cubeEl.setAttribute('position', '0 1.6 -2.2');
-         if (!cubeEl.hasAttribute('animation__bob')) {
-            cubeEl.setAttribute('animation__bob', 'property: position; to: 0 1.75 -2.2; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine');
-         }
-       }
-
-       isRecording = true;
-       updateUIState("Listening...");
-       setCubeState("listening");
-       document.getElementById('userText').setAttribute('value', "You: [Listening...]");
-       
-       recognitionStarted = false;
-       try {
-         recognition.lang = currentLang;
-         recognition.start();
-       } catch (err) {
-         console.error("Failed to start speech recognition:", err);
-         isRecording = false;
-         updateUIState("HOLD M TO SPEAK");
-         setCubeState("idle");
-       }
-     }
-
-    function stopRecording() {
-      if (!isRecording || !recognition) return;
-      if (!recognitionStarted) {
-        isRecording = false;
-        return;
-      }
-      
-      try {
-        recognition.stop();
-      } catch (err) {
-        console.error("Failed to stop speech recognition:", err);
-      }
-
-      // Safety fallback: VR browsers sometimes fail to fire the onend event.
-      clearTimeout(recognitionFallbackTimeout);
-      recognitionFallbackTimeout = setTimeout(() => {
-        if (isRecording) {
-          console.warn("Safety fallback: onend did not fire. Forcing reset.");
-          recognition.onend();
-        }
-      }, 3000);
+  if (!recognition && !usePicoRecorder) {
+    showTextInputFallback();
+    return;
+  }
+  if (isRecording) return;
+  const browser = detectBrowser();
+  const hasPermission = await requestMicPermissionIfNeeded();
+  if (!hasPermission) {
+    showTextInputFallback();
+    return;
+  }
+  initAmbientAudio();
+  if (!ttsAudioCtx) {
+    ttsAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (ttsAudioCtx.state === 'suspended') {
+    ttsAudioCtx.resume();
+  }
+  const talkBtn = document.getElementById('talkButton');
+  if (talkBtn) {
+    talkBtn.classList.add('listening');
+    talkBtn.textContent = usePicoRecorder ? 'Hold to Speak (Recording...)' : 'Hold to Speak (Listening...)';
+  }
+  recognizedText = "";
+  stopSpeakingAnimation();
+  const cubeEl = document.getElementById('aiNPC');
+  if (cubeEl) {
+    cubeEl.removeAttribute('animation__move_room');
+    cubeEl.setAttribute('position', '-8.52 0.05 -8.93');
+    cubeEl.setAttribute('rotation', '0 270 0');
+  }
+  isRecording = true;
+  updateUIState("Listening...");
+  setCubeState("listening");
+  document.getElementById('userText').setAttribute('value', "You: [Listening...]");
+  if (usePicoRecorder) {
+    try {
+      await picoRecorder.start();
+    } catch (err) {
+      console.error(err);
+      isRecording = false;
+      updateUIState("HOLD M TO SPEAK");
+      setCubeState("idle");
+      showTextInputFallback();
     }
+  } else {
+    recognitionStarted = false;
+    try {
+      recognition.lang = currentLang;
+      recognition.start();
+    } catch (err) {
+      console.error(err);
+      isRecording = false;
+      updateUIState("HOLD M TO SPEAK");
+      setCubeState("idle");
+    }
+  }
+}
+
+async function stopRecording() {
+  if (!isRecording) return;
+  if (usePicoRecorder) {
+    isRecording = false;
+    updateUIState("Transcribing...");
+    document.getElementById('userText').setAttribute('value', "You: [Transcribing...]");
+    const talkBtn = document.getElementById('talkButton');
+    if (talkBtn) {
+      talkBtn.classList.remove('listening');
+      talkBtn.textContent = 'Hold to Speak';
+    }
+    try {
+      const base64Audio = await picoRecorder.stop();
+      if (base64Audio) {
+        const res = await fetch('/api/transcribe', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            audio: {
+              content: base64Audio
+            }
+          })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          recognizedText = data.transcript || '';
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+    if (recognizedText) {
+      updateUIState("Thinking...");
+      setCubeState("thinking");
+      sendToGemini(recognizedText);
+    } else {
+      updateUIState("HOLD M TO SPEAK");
+      setCubeState("idle");
+      document.getElementById('userText').setAttribute('value', 'You: ...');
+    }
+  } else {
+    if (!recognition) return;
+    if (!recognitionStarted) {
+      isRecording = false;
+      return;
+    }
+    try {
+      recognition.stop();
+    } catch (err) {
+      console.error(err);
+    }
+    clearTimeout(recognitionFallbackTimeout);
+    recognitionFallbackTimeout = setTimeout(() => {
+      if (isRecording) {
+        recognition.onend();
+      }
+    }, 3000);
+  }
+}
 
     // ==========================================
     // DYNAMIC VISUAL STATES & ANIMATIONS
@@ -8960,10 +9668,10 @@ async function startRecording() {
       if (status3D) {
         status3D.setAttribute('value', stateText.toUpperCase());
         
-        if (stateText === "Listening...") status3D.setAttribute('color', '#22d3ee');
-        else if (stateText === "Thinking...") status3D.setAttribute('color', '#fbbf24');
-        else if (stateText === "Speaking...") status3D.setAttribute('color', '#f472b6');
-        else status3D.setAttribute('color', '#38bdf8');
+        if (stateText === "Listening...") status3D.setAttribute('color', '#d4ccc0');
+        else if (stateText === "Thinking...") status3D.setAttribute('color', '#d4ccc0');
+        else if (stateText === "Speaking...") status3D.setAttribute('color', '#d4ccc0');
+        else status3D.setAttribute('color', '#e8e0d0');
       }
 
       // 2D Desktop badge
@@ -8978,36 +9686,27 @@ async function startRecording() {
     }
 
     function setCubeState(state) {
-      const cube = document.getElementById('aiCube');
       const light = document.getElementById('cubeLight');
-      if (!cube || !light) return;
+      if (!light) return;
 
       switch (state) {
         case "idle":
-          cube.setAttribute('material', 'color: #6366f1; emissive: #312e81; emissiveIntensity: 1.2; roughness: 0.05; metalness: 0.95');
-          light.setAttribute('light', 'color: #818cf8; intensity: 1.5; distance: 6');
-          cube.setAttribute('animation__rotate', 'property: rotation; to: 360 405 45; dur: 9000; loop: true; easing: linear');
+          light.setAttribute('light', 'color: #c8b88a; intensity: 1.2; distance: 6');
           stopSpeakingAnimation();
           break;
 
         case "listening":
-          cube.setAttribute('material', 'color: #22d3ee; emissive: #0891b2; emissiveIntensity: 2.0; roughness: 0.1; metalness: 0.8');
-          light.setAttribute('light', 'color: #22d3ee; intensity: 2.2; distance: 7');
-          cube.setAttribute('animation__rotate', 'property: rotation; to: 360 405 45; dur: 4500; loop: true; easing: linear');
+          light.setAttribute('light', 'color: #d4ccc0; intensity: 1.5; distance: 6');
           stopSpeakingAnimation();
           break;
 
         case "thinking":
-          cube.setAttribute('material', 'color: #fbbf24; emissive: #b45309; emissiveIntensity: 2.5; roughness: 0.15; metalness: 0.8');
-          light.setAttribute('light', 'color: #fbbf24; intensity: 2.5; distance: 7');
-          cube.setAttribute('animation__rotate', 'property: rotation; to: 720 405 45; dur: 2200; loop: true; easing: linear');
+          light.setAttribute('light', 'color: #d4ccc0; intensity: 1.5; distance: 6');
           stopSpeakingAnimation();
           break;
 
         case "speaking":
-          cube.setAttribute('material', 'color: #ec4899; emissive: #db2777; emissiveIntensity: 2.2; roughness: 0.05; metalness: 0.9');
-          light.setAttribute('light', 'color: #f472b6; intensity: 2.0; distance: 8');
-          cube.setAttribute('animation__rotate', 'property: rotation; to: 360 405 45; dur: 6000; loop: true; easing: linear');
+          light.setAttribute('light', 'color: #d4ccc0; intensity: 1.5; distance: 6');
           startSpeakingAnimation();
           break;
       }
@@ -9015,17 +9714,16 @@ async function startRecording() {
 
     function startSpeakingAnimation() {
       stopSpeakingAnimation();
-      const cube = document.getElementById('aiCube');
-      if (!cube) return;
-
-      let direction = 1;
-      let scale = 1.0;
+      const light = document.getElementById('cubeLight');
+      if (!light) return;
+      let dir = 1;
+      let intensity = 1.2;
       speechAnimationInterval = setInterval(() => {
-        scale += (0.04 + Math.random() * 0.03) * direction;
-        if (scale >= 1.25) direction = -1;
-        else if (scale <= 0.88) direction = 1;
-        cube.setAttribute('scale', `${scale} ${scale} ${scale}`);
-      }, 65);
+        intensity += 0.08 * dir;
+        if (intensity >= 2.0) dir = -1;
+        else if (intensity <= 1.0) dir = 1;
+        light.setAttribute('light', `color: #d4ccc0; intensity: ${intensity}; distance: 8`);
+      }, 80);
     }
 
     function stopSpeakingAnimation() {
@@ -9033,9 +9731,9 @@ async function startRecording() {
         clearInterval(speechAnimationInterval);
         speechAnimationInterval = null;
       }
-      const cube = document.getElementById('aiCube');
-      if (cube) {
-        cube.setAttribute('scale', '1 1 1');
+      const light = document.getElementById('cubeLight');
+      if (light) {
+        light.setAttribute('light', 'color: #c8b88a; intensity: 1.2; distance: 8');
       }
     }
 
@@ -9111,37 +9809,37 @@ async function startRecording() {
 
     let evaluationComplete = false;
 
-    // Native feedback chime using Web Audio API (cross-browser compatible)
+    let successAudioCtx = null;
+
     function playSuccessSound() {
       try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (!successAudioCtx) {
+          successAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
         
-        // First note (C5)
-        const osc1 = audioCtx.createOscillator();
-        const gain1 = audioCtx.createGain();
+        const now = successAudioCtx.currentTime;
+        
+        const osc1 = successAudioCtx.createOscillator();
+        const gain1 = successAudioCtx.createGain();
         osc1.type = "sine";
-        osc1.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
-        gain1.gain.setValueAtTime(0.12, audioCtx.currentTime);
-        gain1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+        osc1.frequency.setValueAtTime(523.25, now);
+        gain1.gain.setValueAtTime(0.12, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
         osc1.connect(gain1);
-        gain1.connect(audioCtx.destination);
-        osc1.start();
-        osc1.stop(audioCtx.currentTime + 0.15);
+        gain1.connect(successAudioCtx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.15);
         
-        // Second note (E5) after 0.08 seconds
-        setTimeout(() => {
-          const osc2 = audioCtx.createOscillator();
-          const gain2 = audioCtx.createGain();
-          osc2.type = "sine";
-          osc2.frequency.setValueAtTime(659.25, audioCtx.currentTime); // E5
-          gain2.gain.setValueAtTime(0.12, audioCtx.currentTime);
-          gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
-          osc2.connect(gain2);
-          gain2.connect(audioCtx.destination);
-          osc2.start();
-          osc2.stop(audioCtx.currentTime + 0.25);
-        }, 80);
-        
+        const osc2 = successAudioCtx.createOscillator();
+        const gain2 = successAudioCtx.createGain();
+        osc2.type = "sine";
+        osc2.frequency.setValueAtTime(659.25, now + 0.08);
+        gain2.gain.setValueAtTime(0.12, now + 0.08);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.33);
+        osc2.connect(gain2);
+        gain2.connect(successAudioCtx.destination);
+        osc2.start(now + 0.08);
+        osc2.stop(now + 0.33);
       } catch (err) {
         console.warn("Could not play success sound:", err);
       }
@@ -9238,7 +9936,7 @@ function initAmbientAudio() {
       };
       
       const getTaskColor = (isCompleted) => {
-        return isCompleted ? "#4ade80" : "#ef4444";
+        return isCompleted ? "#8aaa88" : "#e8e0d0";
       };
       
       const clipTaskGreet = document.getElementById('clipTaskGreet');
@@ -9336,7 +10034,7 @@ function initAmbientAudio() {
       if (nights2D) nights2D.textContent = obtainedValues.nights;
       if (bookingStatus2D) {
         bookingStatus2D.textContent = obtainedValues.roomNumberAssigned;
-        bookingStatus2D.style.color = (obtainedValues.roomNumberAssigned !== "TBD") ? "#4ade80" : "#fbbf24";
+        bookingStatus2D.style.color = (obtainedValues.roomNumberAssigned !== "TBD") ? "#8aaa88" : "#c8b88a";
       }
       
       if (hudTip) {
@@ -9556,6 +10254,15 @@ Be honest but constructive. Use numbers only for scores (1-10).`;
       updateUIState("HOLD M TO SPEAK");
       setCubeState("idle");
 
+      const npc = document.getElementById('aiNPC');
+      if (npc) {
+        npc.removeAttribute('animation__move_room');
+        npc.setAttribute('position', '-8.52 0.05 -8.93');
+        npc.setAttribute('rotation', '0 270 0');
+        npc.removeAttribute('npc-controller');
+        npc.setAttribute('npc-controller', '');
+      }
+
       const hudTip = document.getElementById('hudTip');
       if (hudTip) hudTip.textContent = "A new guest has arrived! Say 'Hello!' to start.";
     }
@@ -9687,7 +10394,7 @@ Always output ONLY valid JSON. Speak only in English in guestResponse.`;
 
         // If booking is confirmed, options for evaluation trigger
         if (currentValues.roomNumberAssigned && detectedMissions.bookingConfirmed === true) {
-          // Will trigger evaluation after brief delay
+          triggerGoToRoomAnimation();
           setTimeout(() => {
             if (missions.bookingConfirmed && !evaluationComplete) {
               triggerEvaluation();
@@ -9710,52 +10417,112 @@ const fallbackText = "Sorry, our booking system is currently down. Let's try aga
     }
 
     function triggerGoToRoomAnimation() {
-      const cubeEl = document.getElementById('aiCube');
+      const cubeEl = document.getElementById('aiNPC');
       if (cubeEl) {
-        cubeEl.removeAttribute('animation__bob');
-        cubeEl.setAttribute('animation__move_room', 'property: position; to: -15 2 -20; dur: 8000; easing: easeInOutQuad');
+        cubeEl.components['npc-controller'].stopAnimations();
+        cubeEl.removeAttribute('npc-controller');
+        cubeEl.setAttribute('animation__move_room', 'property: position; to: -15 0 -20; dur: 8000; easing: easeInOutQuad');
         cubeEl.addEventListener('animationcomplete', function onMoveDone() {
           cubeEl.removeEventListener('animationcomplete', onMoveDone);
         });
       }
     }
 
+function getGuestVoiceConfig() {
+  if (!currentGuestProfile) {
+    return { voiceName: 'en-US-Standard-D', ssmlGender: 'MALE' };
+  }
+  const name = currentGuestProfile.name;
+  if (name === 'Sophia Vance') return { voiceName: 'en-US-Standard-F', ssmlGender: 'FEMALE' };
+  if (name === 'David Kim') return { voiceName: 'en-US-Standard-J', ssmlGender: 'MALE' };
+  if (name === 'Elena Rostova') return { voiceName: 'en-US-Standard-H', ssmlGender: 'FEMALE' };
+  return { voiceName: 'en-US-Standard-D', ssmlGender: 'MALE' };
+}
+
+function speakViaAudio(text) {
+  return new Promise(async (resolve) => {
+    const done = () => {
+      updateUIState("HOLD M TO SPEAK");
+      setCubeState("idle");
+      resolve();
+    };
+
+    try {
+      const voiceConfig = getGuestVoiceConfig();
+      const res = await fetch('/api/synthesize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: text,
+          voiceName: voiceConfig.voiceName,
+          ssmlGender: voiceConfig.ssmlGender
+        })
+      });
+
+      if (!res.ok) {
+        showTextResponse(text);
+        done();
+        return;
+      }
+
+      const data = await res.json();
+      if (!data.audioContent) {
+        showTextResponse(text);
+        done();
+        return;
+      }
+
+      if (!ttsAudioCtx || ttsAudioCtx.state === 'closed') {
+        ttsAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (ttsAudioCtx.state === 'suspended') {
+        await ttsAudioCtx.resume();
+      }
+
+      const binary = atob(data.audioContent);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+
+      const audioBuffer = await ttsAudioCtx.decodeAudioData(bytes.buffer);
+      const source = ttsAudioCtx.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(ttsAudioCtx.destination);
+      source.onended = done;
+      source.start();
+    } catch (e) {
+      console.warn('Audio TTS play failed:', e);
+      showTextResponse(text);
+      done();
+    }
+  });
+}
+
 async function speakText(textToSpeak) {
-       if (!window.speechSynthesis) return;
-
-       // Ensure TTS voices are loaded before attempting to use them
-       await ensureTtsVoicesLoaded();
-
-       window.speechSynthesis.cancel(); // clear queue
-
-       const utterance = new SpeechSynthesisUtterance(textToSpeak);
-       utterance.lang = currentLang;
-
-       // Find compatible voice using preloaded list (Task 3.2 fix)
-       const voices = ttsVoiceList.length > 0 ? ttsVoiceList : window.speechSynthesis.getVoices();
-       const preferredVoice = voices.find(v => v.lang.startsWith(currentLang.substring(0, 2)) && (v.name.includes('Google') || v.name.includes('Natural'))) ||
-     voices.find(v => v.lang.startsWith(currentLang.substring(0, 2))) ||
-     voices[0];
-       
-       if (preferredVoice) {
-         utterance.voice = preferredVoice;
-       }
-
-       utterance.onend = () => {
-         updateUIState("HOLD M TO SPEAK");
-         setCubeState("idle");
-       };
-
-       utterance.onerror = (err) => {
-         console.error("SpeechSynthesis speak Error:", err);
-         updateUIState("HOLD M TO SPEAK");
-         setCubeState("idle");
-       };
-
-       window.speechSynthesis.speak(utterance);
-     }
+  await speakViaAudio(textToSpeak);
+}
 
     // Helper alerts
+    function showTextInputFallback() {
+      const container = document.getElementById('textInputFallback');
+      const talkBtn = document.getElementById('talkButton');
+      if (container) {
+        container.style.display = 'block';
+        const input = document.getElementById('textInput');
+        if (input) setTimeout(() => input.focus(), 100);
+      }
+      if (talkBtn) talkBtn.style.display = 'none';
+      updateUIState("TYPE YOUR MESSAGE");
+    }
+
+    function showTextResponse(text) {
+      const hudTip = document.getElementById('hudTip');
+      if (hudTip) {
+        hudTip.innerHTML = `<strong>Guest said:</strong> "${text}"`;
+      }
+    }
+
     function showMicWarning(msg) {
       const warningEl = document.getElementById('micWarning');
       if (warningEl) {
